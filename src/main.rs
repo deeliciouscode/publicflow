@@ -1,30 +1,33 @@
-use std::io;
-use std::cmp::Ordering;
-use rand::Rng;
+mod infrastructs;
+mod config;
+
+use std::{thread, time};
+pub use self::infrastructs::{get_state, State};
+pub use self::config::{SPEED_FACTOR};
+// TODO: first implement something where people are just moving mindlessly, without destination
 
 fn main() {
-    println!("Guess the no.!");
-
-    let secret_number = rand::thread_rng().gen_range(1..101);
-
-    // println!("The secret number is: {}", secret_number);
-    println!("Please input your guess");
-
-    let mut guess = String::new();
-
-    io::stdin()
-        .read_line(&mut guess)
-        .expect("Failed to read line.");
-
-    let guess: u32 = guess.trim().parse().expect("Please type a number dog!");
-
-    match guess.cmp(&secret_number) {
-        Ordering::Less => println!("Too small!"),
-        Ordering::Greater => println!("Too big!"),
-        Ordering::Equal => println!("You win!"),
+    let mut state = get_state();
+    let mut seconds = 0;
+    loop {
+        if seconds >= 1000 {
+            break;
+        }
+        thread::sleep(time::Duration::from_millis(1000/SPEED_FACTOR));
+        seconds += 1;
+        // println!("{}", state.graph.connections[0].stations == state.graph.connections[1].stations);
+        // println!("{}", state.network.get_station_by_id(seconds).since_last_pod);
+        step_one_second(&mut state)
     }
-    
-    println!("You guessed: {}", guess)
 }
 
-// continue here -> https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html
+fn step_one_second(state: &mut State) {
+    for station in &mut state.network.stations {
+        station.since_last_pod += 1;
+    }
+    for person in &mut state.people {
+        let station = state.network.get_station_by_id(person.station_id);
+        println!("{}", station.since_last_pod);
+        // person.is_moving;
+    }
+}
