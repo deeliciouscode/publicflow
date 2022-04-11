@@ -8,6 +8,7 @@ mod station;
 
 use crate::config::SPEED_FACTOR;
 use crate::state::{get_state, State};
+use rand::Rng;
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
 
@@ -39,7 +40,7 @@ fn step_one_second(state: &mut State) {
             } else {
                 pod.in_station = false;
                 let current_station_id = pod.get_station_id();
-                pod.leave_station(&state.network);
+                pod.leave_station(&mut state.network);
 
                 let maybe_station = state.network.get_station_by_id(current_station_id);
                 match maybe_station {
@@ -48,14 +49,38 @@ fn step_one_second(state: &mut State) {
                 }
             }
         } else {
+            println!("Out there.")
         }
     }
 
     for person in &mut state.people {
-        // let station = state.network.get_station_by_id(person.station_id);
-        // println!("{}", station.since_last_pod);
-        // person.is_moving;
+        if person.station_id >= 0 {
+            if person.in_station_since < person.transition_time {
+                person.in_station_since += 1;
+                continue;
+            }
 
-        if person.pod_id != -1 {}
+            println!("ready to leave");
+
+            let maybe_station = state.network.get_station_by_id(person.station_id);
+            let maybe_pod_ids: Option<Vec<i32>>;
+
+            match maybe_station {
+                // TODO: probably suboptimal - look for solution without clone
+                Some(station) => maybe_pod_ids = station.get_pods_in_station_as_vec(),
+                None => panic!("There is no station with id: {}", person.station_id),
+            }
+
+            match maybe_pod_ids {
+                Some(pod_ids) => {
+                    let mut rng = rand::thread_rng();
+                    let pod_id_to_take = pod_ids[rng.gen_range(0..pod_ids.len())];
+                    person.take_pod(pod_id_to_take);
+                    println!("riding in pod with id: {} now", pod_id_to_take);
+                }
+                None => println!("Can't leave the station, no pod here."),
+            }
+        } else { // entirely different when riding the pod
+        }
     }
 }

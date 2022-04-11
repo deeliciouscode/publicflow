@@ -29,16 +29,19 @@ pub fn get_state() -> State {
         id: 0,
         since_last_pod: 0,
         edges_to: vec![1],
+        pods_in_station: HashSet::from([0]),
     };
     let two = Station {
         id: 1,
         since_last_pod: 0,
         edges_to: vec![0, 2],
+        pods_in_station: HashSet::new(),
     };
     let three = Station {
         id: 2,
         since_last_pod: 0,
         edges_to: vec![1],
+        pods_in_station: HashSet::new(),
     };
 
     let conn01 = Connection {
@@ -64,14 +67,14 @@ pub fn get_state() -> State {
         direction: 1,
         in_station: true,
         in_station_since: 0,
-        in_station_for: 30,
+        in_station_for: 10,
     };
 
     let person = Person {
-        in_station_since: 0,
+        in_station_since: 15, // to be able to take the first train
         pod_id: -1,
         station_id: 0,
-        transition_time: 60,
+        transition_time: 20,
     };
 
     let state = State {

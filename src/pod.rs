@@ -23,18 +23,22 @@ impl Pod {
         } else if self.get_station_id() + self.direction < 0 {
             self.direction *= -1;
         }
-        let new_ix = self.get_station_id() + self.direction; 
+        let new_ix = self.get_station_id() + self.direction;
         self.line[new_ix as usize]
     }
 
-    pub fn leave_station(&mut self, net: &Network) {
+    pub fn leave_station(&mut self, net: &mut Network) {
         let current = self.get_station_id();
         let next = self.get_next_station_id();
         let maybe_connection = net.get_connection(current, next);
         match maybe_connection {
             Some(connection) => self.time_to_next_station = connection.travel_time,
-            None => panic!("There is no connection between: {} and {}", current, next)
-        } 
+            None => panic!("There is no connection between: {} and {}", current, next),
+        }
+        let maybe_station = net.get_station_by_id(current);
+        match maybe_station {
+            Some(station) => station.deregister_pod(current),
+            None => panic!("There is no station with id: {}", current),
+        }
     }
 }
-
