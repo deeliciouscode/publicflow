@@ -33,12 +33,12 @@ fn step_one_second(state: &mut State) {
         station.since_last_pod += 1;
     }
 
-    for pod in &mut state.pods {
+    for pod in &mut state.pods_box.pods {
         if pod.in_station {
+            println!("Pod is in station.");
             if pod.in_station_since < pod.in_station_for {
                 pod.in_station_since += 1;
             } else {
-                pod.in_station = false;
                 let current_station_id = pod.get_station_id();
                 pod.leave_station(&mut state.network);
 
@@ -49,18 +49,22 @@ fn step_one_second(state: &mut State) {
                 }
             }
         } else {
-            println!("Out there.")
+            println!("Pod is out there.");
+            pod.driving_since += 1;
+            if pod.driving_since >= pod.time_to_next_station {
+                pod.arrive_in_station();
+                println!("Just arrived in station {}", pod.get_station_id());
+            }
         }
     }
-
-    for person in &mut state.people {
+    for person in &mut state.people_box.people {
         if person.station_id >= 0 {
             if person.in_station_since < person.transition_time {
                 person.in_station_since += 1;
                 continue;
             }
 
-            println!("ready to leave");
+            println!("person {} is ready to hop a pod.", person.id);
 
             let maybe_station = state.network.get_station_by_id(person.station_id);
             let maybe_pod_ids: Option<Vec<i32>>;
@@ -68,7 +72,7 @@ fn step_one_second(state: &mut State) {
             match maybe_station {
                 // TODO: probably suboptimal - look for solution without clone
                 Some(station) => maybe_pod_ids = station.get_pods_in_station_as_vec(),
-                None => panic!("There is no station with id: {}", person.station_id),
+                None => panic!("There is no station with id: {}.", person.station_id),
             }
 
             match maybe_pod_ids {
@@ -76,11 +80,27 @@ fn step_one_second(state: &mut State) {
                     let mut rng = rand::thread_rng();
                     let pod_id_to_take = pod_ids[rng.gen_range(0..pod_ids.len())];
                     person.take_pod(pod_id_to_take);
-                    println!("riding in pod with id: {} now", pod_id_to_take);
+                    println!("Getting into pod with id: {} now", pod_id_to_take);
                 }
                 None => println!("Can't leave the station, no pod here."),
             }
-        } else { // entirely different when riding the pod
+        } else if person.pod_id >= 0 {
+            // entirely different when riding the pod
+            println!(
+                "Person {} is riding in pod {} now.",
+                person.id, person.pod_id
+            );
+            let maybe_pod = state.pods_box.get_pod_by_id(person.pod_id);
+            match maybe_pod {
+                Some(pod) => {
+                    // if pod.
+                }
+                None => {
+                    println!("Somethings not right, person should be in either pod or station")
+                }
+            }
+        } else {
+            println!("Somethings not right, person should be in either pod or station");
         }
     }
 }

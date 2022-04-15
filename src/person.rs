@@ -1,5 +1,10 @@
 // TODO: implement destinations
+pub struct PeopleBox {
+    pub people: Vec<Person>,
+}
+
 pub struct Person {
+    pub id: i32,
     pub in_station_since: i32,
     pub pod_id: i32,
     pub station_id: i32,
