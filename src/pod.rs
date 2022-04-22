@@ -71,17 +71,23 @@ impl Pod {
         }
         let maybe_station = net.get_station_by_id(current);
         match maybe_station {
-            Some(station) => station.deregister_pod(current),
+            Some(station) => station.deregister_pod(self.id),
             None => panic!("There is no station with id: {}", current),
         }
     }
 
-    pub fn arrive_in_station(&mut self) {
+    pub fn arrive_in_station(&mut self, net: &mut Network) {
         self.in_station = true;
         self.in_station_since = 0;
         self.line_ix = self.next_ix;
         self.time_to_next_station = 0;
         self.driving_since = 0;
+        let current = self.get_station_id();
+        let maybe_station = net.get_station_by_id(current);
+        match maybe_station {
+            Some(station) => station.register_pod(self.id),
+            None => panic!("There is no station with id: {}", current),
+        }
     }
 
     pub fn try_register_person(&mut self, person_id: i32) -> bool {

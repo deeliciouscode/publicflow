@@ -65,6 +65,7 @@ pub fn get_state() -> State {
         in_station_since: 15, // to be able to take the first train
         pod_id: -1,
         station_id: 0,
+        last_station_id: 0,
         transition_time: 20,
     };
 

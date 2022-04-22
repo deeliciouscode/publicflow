@@ -35,7 +35,7 @@ fn step_one_second(state: &mut State) {
 
     for pod in &mut state.pods_box.pods {
         if pod.in_station {
-            println!("Pod is in station.");
+            println!("Pod is in station {}.", pod.get_station_id());
             if pod.in_station_since < pod.in_station_for {
                 pod.in_station_since += 1;
             } else {
@@ -52,7 +52,7 @@ fn step_one_second(state: &mut State) {
             println!("Pod is out there.");
             pod.driving_since += 1;
             if pod.driving_since >= pod.time_to_next_station {
-                pod.arrive_in_station();
+                pod.arrive_in_station(&mut state.network);
                 println!("Just arrived in station {}", pod.get_station_id());
             }
         }
@@ -64,7 +64,7 @@ fn step_one_second(state: &mut State) {
                 continue;
             }
 
-            println!("person {} is ready to hop a pod.", person.id);
+            println!("person {} in station {} is ready to hop a pod.", person.id, person.station_id);
 
             let maybe_station = state.network.get_station_by_id(person.station_id);
             let maybe_pod_ids: Option<Vec<i32>>;
@@ -93,7 +93,10 @@ fn step_one_second(state: &mut State) {
             let maybe_pod = state.pods_box.get_pod_by_id(person.pod_id);
             match maybe_pod {
                 Some(pod) => {
-                    // if pod.
+                    let mut rng = rand::thread_rng();
+                    if pod.get_station_id() != person.last_station_id && rng.gen_bool(0.5) {
+                        person.get_off_pod(pod.get_next_station_id())                      
+                    }
                 }
                 None => {
                     println!("Somethings not right, person should be in either pod or station")
