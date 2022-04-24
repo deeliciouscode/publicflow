@@ -1,16 +1,16 @@
 mod config;
 mod connection;
+mod meta;
 mod network;
 mod person;
 mod pod;
 mod state;
 mod station;
-mod meta;
 
 use crate::config::SPEED_FACTOR;
-use crate::state::{get_state, gen_state, State};
+use crate::state::{gen_state, get_state, State};
 // use crate::state::{get_state, State};
-use crate::meta::{load_file};
+use crate::meta::load_file;
 use rand::Rng;
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination

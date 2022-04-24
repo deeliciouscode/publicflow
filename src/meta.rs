@@ -11,5 +11,5 @@ pub fn load_file(file: &str) -> Yaml {
         .expect("Unable to read file");
 
     let docs = YamlLoader::load_from_str(&contents).unwrap();
-    return docs[0].clone()
+    return docs[0].clone();
 }

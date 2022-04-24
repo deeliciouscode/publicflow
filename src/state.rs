@@ -3,9 +3,9 @@ use crate::network::Network;
 use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
+use linked_hash_map::LinkedHashMap;
 use std::collections::HashSet;
 use yaml_rust::yaml::{Hash, Yaml};
-use linked_hash_map::LinkedHashMap;
 
 pub struct State {
     pub network: Network,
@@ -87,45 +87,48 @@ pub fn get_state() -> State {
 }
 
 // Hash({
-//     String("network"): Hash({       
-//         String("n_stations"): Integer(13), 
+//     String("network"): Hash({
+//         String("n_stations"): Integer(13),
 //         String("lines"): Array([
 //             Hash({
-//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(4)]), 
-//                 String("circular"): Boolean(false)}), 
+//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(4)]),
+//                 String("circular"): Boolean(false)}),
 //             Hash({
-//                 String("stations"): Array([Integer(4), Integer(5), Integer(6)]), 
-//                 String("circular"): Boolean(false)}), 
+//                 String("stations"): Array([Integer(4), Integer(5), Integer(6)]),
+//                 String("circular"): Boolean(false)}),
 //             Hash({
-//                 String("stations"): Array([Integer(7), Integer(8), Integer(9), Integer(10)]), 
-//                 String("circular"): Boolean(false)}), 
+//                 String("stations"): Array([Integer(7), Integer(8), Integer(9), Integer(10)]),
+//                 String("circular"): Boolean(false)}),
 //             Hash({
-//                 String("stations"): Array([Integer(2), Integer(6), Integer(9), Integer(11), Integer(12)]), 
-//                 String("circular"): Boolean(false)}), 
+//                 String("stations"): Array([Integer(2), Integer(6), Integer(9), Integer(11), Integer(12)]),
+//                 String("circular"): Boolean(false)}),
 //             Hash({
-//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(3), Integer(10), Integer(9), Integer(8), Integer(7), Integer(4)]), 
-//                 String("circular"): Boolean(true)})]), 
-//         String("pods"): 
-//             Hash({String("n_pods"): Integer(13)})}), 
+//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(3), Integer(10), Integer(9), Integer(8), Integer(7), Integer(4)]),
+//                 String("circular"): Boolean(true)})]),
+//         String("pods"):
+//             Hash({String("n_pods"): Integer(13)})}),
 //     String("people"): Hash({String("n_people"): Integer(100)})})
 
 pub fn gen_state(config_yaml: &Yaml) -> State {
-
     let mut n_stations: i64 = 0;
     let mut n_pods: i64 = 0;
     let mut n_people: i64 = 0;
-    
+
     if let Yaml::Hash(config_hash) = config_yaml {
         if let Some(network_yaml) = config_hash.get(&Yaml::String(String::from("network"))) {
             if let Yaml::Hash(network_hash) = network_yaml {
-                if let Some(n_stations_yaml) = network_hash.get(&Yaml::String(String::from("n_stations"))) {
+                if let Some(n_stations_yaml) =
+                    network_hash.get(&Yaml::String(String::from("n_stations")))
+                {
                     if let Yaml::Integer(value) = n_stations_yaml {
                         n_stations = *value;
                     }
-                } 
+                }
                 if let Some(pods_yaml) = network_hash.get(&Yaml::String(String::from("pods"))) {
                     if let Yaml::Hash(pods_hash) = pods_yaml {
-                        if let Some(n_pods_yaml) = pods_hash.get(&Yaml::String(String::from("n_pods"))) {
+                        if let Some(n_pods_yaml) =
+                            pods_hash.get(&Yaml::String(String::from("n_pods")))
+                        {
                             if let Yaml::Integer(value) = n_pods_yaml {
                                 n_pods = *value;
                             }
@@ -133,10 +136,12 @@ pub fn gen_state(config_yaml: &Yaml) -> State {
                     }
                 }
             }
-        } 
+        }
         if let Some(people_yaml) = config_hash.get(&Yaml::String(String::from("people"))) {
             if let Yaml::Hash(people_hash) = people_yaml {
-                if let Some(n_people_yaml) = people_hash.get(&Yaml::String(String::from("n_people"))) {
+                if let Some(n_people_yaml) =
+                    people_hash.get(&Yaml::String(String::from("n_people")))
+                {
                     if let Yaml::Integer(value) = n_people_yaml {
                         n_people = *value;
                     }
@@ -144,8 +149,11 @@ pub fn gen_state(config_yaml: &Yaml) -> State {
             }
         }
     }
-    
-    println!("n_stations: {}, n_pods: {}, n_people: {}", n_stations, n_pods, n_people);
+
+    println!(
+        "n_stations: {}, n_pods: {}, n_people: {}",
+        n_stations, n_pods, n_people
+    );
 
     get_state()
 }
@@ -158,7 +166,7 @@ pub fn gen_state(config_yaml: &Yaml) -> State {
 //             edges_to: vec![1],
 //             pods_in_station: HashSet::from([i]),
 //         };
-        
+
 //     }
 
 //     let conn01 = Connection {
