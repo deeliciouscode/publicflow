@@ -1,0 +1,27 @@
+# 0--1--2--3
+# |     |  |
+# 4--5--6  |
+# |     |  |
+# 7--8--9--10
+#       |
+#       11
+#       |
+#       12
+
+network:
+  n_stations: 13
+  lines: 
+    - stations: [0,1,2,4]
+      circular: false
+    - stations: [4,5,6]
+      circular: false
+    - stations: [7,8,9,10]
+      circular: false
+    - stations: [2,6,9,11,12]
+      circular: false
+    - stations: [0,1,2,3,10,9,8,7,4]
+      circular: true
+  pods:
+    n_pods: 13
+people:
+  n_people: 100

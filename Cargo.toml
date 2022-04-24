@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 rand = "0.8.3"
 petgraph = "0.6.0"
+yaml-rust = "0.4.5"
+linked-hash-map = "0.5.3"

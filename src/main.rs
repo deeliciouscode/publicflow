@@ -5,15 +5,24 @@ mod person;
 mod pod;
 mod state;
 mod station;
+mod meta;
 
 use crate::config::SPEED_FACTOR;
-use crate::state::{get_state, State};
+use crate::state::{get_state, gen_state, State};
+// use crate::state::{get_state, State};
+use crate::meta::{load_file};
 use rand::Rng;
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
 
 fn main() {
-    let mut state = get_state();
+    let yaml = load_file("./meta/network.yaml");
+
+    println!("{:?}", yaml);
+
+    let mut state = gen_state(&yaml);
+    // let mut state = get_s    tate();
+
     let mut seconds = 0;
     loop {
         if seconds >= 1000 {
@@ -57,6 +66,7 @@ fn step_one_second(state: &mut State) {
             }
         }
     }
+
     for person in &mut state.people_box.people {
         if person.station_id >= 0 {
             if person.in_station_since < person.transition_time {
@@ -64,7 +74,10 @@ fn step_one_second(state: &mut State) {
                 continue;
             }
 
-            println!("person {} in station {} is ready to hop a pod.", person.id, person.station_id);
+            println!(
+                "person {} in station {} is ready to hop a pod.",
+                person.id, person.station_id
+            );
 
             let maybe_station = state.network.get_station_by_id(person.station_id);
             let maybe_pod_ids: Option<Vec<i32>>;
@@ -95,7 +108,7 @@ fn step_one_second(state: &mut State) {
                 Some(pod) => {
                     let mut rng = rand::thread_rng();
                     if pod.get_station_id() != person.last_station_id && rng.gen_bool(0.5) {
-                        person.get_off_pod(pod.get_next_station_id())                      
+                        person.get_off_pod(pod.get_next_station_id())
                     }
                 }
                 None => {
