@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 
 // TODO: Maybe define capacity of HashSet when using it (for performance)
+#[derive(Clone)]
 pub struct Station {
     pub id: i32,
     pub since_last_pod: i32,
-    pub edges_to: Vec<i32>,
+    pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,
 }
 

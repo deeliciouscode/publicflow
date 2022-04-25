@@ -1,9 +1,14 @@
-#[derive(Debug)]
+use crate::connection::Connection;
+use std::collections::HashSet;
+
+#[derive(Debug, Clone)]
 pub struct Line {
     pub stations: Vec<i32>,
     pub circular: bool,
+    pub connections: Vec<Connection>,
 }
 
+#[derive(Clone)]
 pub struct LineState {
     pub line: Line,
     pub line_ix: i32,
@@ -31,5 +36,14 @@ impl LineState {
 
     pub fn update_line_ix(&mut self) {
         self.line_ix = self.next_ix;
+    }
+
+    pub fn get_connection(&self, fst: i32, snd: i32) -> Option<&Connection> {
+        for connection in &self.line.connections {
+            if connection.station_ids == HashSet::from([fst, snd]) {
+                return Some(connection);
+            }
+        }
+        return None;
     }
 }

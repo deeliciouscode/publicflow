@@ -1,11 +1,10 @@
-use crate::connection::Connection;
+use crate::line::Line;
 use crate::station::Station;
 
-use std::collections::HashSet;
-
+#[derive(Clone)]
 pub struct Network {
     pub stations: Vec<Station>,
-    pub connections: Vec<Connection>,
+    pub lines: Vec<Line>,
 }
 
 impl Network {
@@ -13,15 +12,6 @@ impl Network {
         for station in &mut self.stations {
             if station.id == id {
                 return Some(station);
-            }
-        }
-        return None;
-    }
-
-    pub fn get_connection(&self, fst: i32, snd: i32) -> Option<&Connection> {
-        for connection in &self.connections {
-            if connection.station_ids == HashSet::from([fst, snd]) {
-                return Some(connection);
             }
         }
         return None;

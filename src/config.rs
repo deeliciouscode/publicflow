@@ -1,4 +1,6 @@
+use crate::connection::Connection;
 use crate::line::Line;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
 use yaml_rust::yaml::Yaml;
@@ -21,25 +23,26 @@ pub fn load_file(file: &str) -> Yaml {
 
 #[derive(Debug)]
 pub struct NetworkConfig {
-    n_stations: i32,
-    lines: Vec<Line>,
-    pods: PodsConfig,
+    pub n_stations: i32,
+    pub edge_map: HashMap<i32, HashSet<i32>>,
+    pub lines: Vec<Line>,
+    pub pods: PodsConfig,
 }
 
 #[derive(Debug)]
 pub struct PodsConfig {
-    n_pods: i32,
+    pub n_pods: i32,
 }
 
 #[derive(Debug)]
 pub struct PeopleConfig {
-    n_people: i32,
+    pub n_people: i32,
 }
 
 #[derive(Debug)]
 pub struct Config {
-    network: NetworkConfig,
-    people: PeopleConfig,
+    pub network: NetworkConfig,
+    pub people: PeopleConfig,
 }
 
 pub fn parse_yaml(config_yaml: &Yaml) -> Config {
@@ -47,6 +50,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     let mut lines: Vec<Line> = vec![];
     let mut n_pods: i64 = 0;
     let mut n_people: i64 = 0;
+    let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
 
     // This whole construct essentially parses the raw Yaml typed structure we get into the more
     // usable Config structure from above.
@@ -86,9 +90,12 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                         circular = *circular_bool;
                                     }
                                 }
+                                update_edge_map(&stations, circular, &mut edge_map);
+                                let connections = calc_connections(&stations, circular);
                                 let line = Line {
                                     stations: stations,
                                     circular: circular,
+                                    connections: connections,
                                 };
                                 lines.push(line);
                             }
@@ -138,6 +145,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
 
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
+        edge_map: edge_map,
         lines: lines,
         pods: pods_config,
     };
@@ -145,6 +153,62 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     Config {
         network: network_config,
         people: people_config,
+    }
+}
+
+fn calc_connections(station_ids: &Vec<i32>, circular: bool) -> Vec<Connection> {
+    let mut connections: Vec<Connection> = vec![];
+
+    for i in 0..station_ids.len() {
+        if i == station_ids.len() - 1 && circular {
+            connections.push(Connection {
+                station_ids: HashSet::from([station_ids[i], station_ids[0]]),
+                travel_time: 20,
+            });
+            break;
+        } else if i == station_ids.len() - 1 {
+            break;
+        } else {
+            connections.push(Connection {
+                station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
+                travel_time: 20,
+            });
+        }
+    }
+    connections
+}
+
+fn update_edge_map(
+    station_ids: &Vec<i32>,
+    circular: bool,
+    edge_map: &mut HashMap<i32, HashSet<i32>>,
+) {
+    for i in 0..station_ids.len() {
+        let station_id = station_ids[i];
+        if !edge_map.contains_key(&station_id) {
+            edge_map.insert(station_id, HashSet::new());
+        }
+
+        if i == station_ids.len() - 1 {
+            if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
+                mut_hashset.insert(station_ids[i - 1]);
+                if circular {
+                    mut_hashset.insert(station_ids[0]);
+                }
+            }
+        } else if i == 0 {
+            if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
+                mut_hashset.insert(station_ids[i + 1]);
+                if circular {
+                    mut_hashset.insert(station_ids[station_ids.len() - 1]);
+                }
+            }
+        } else {
+            if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
+                mut_hashset.insert(station_ids[i - 1]);
+                mut_hashset.insert(station_ids[i + 1]);
+            }
+        }
     }
 }
 

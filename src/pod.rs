@@ -2,6 +2,7 @@ use crate::line::LineState;
 use crate::network::Network;
 use std::collections::HashSet;
 
+#[derive(Clone)]
 pub struct PodsBox {
     pub pods: Vec<Pod>,
 }
@@ -26,7 +27,7 @@ impl PodsBox {
     }
 }
 
-// #[derive(Clone)]
+#[derive(Clone)]
 pub struct Pod {
     pub id: i32,
     pub capacity: i32,
@@ -45,7 +46,7 @@ impl Pod {
         self.line_state.set_next_station_id();
         let current = self.line_state.get_station_id();
         let next = self.line_state.get_next_station_id();
-        let maybe_connection = net.get_connection(current, next);
+        let maybe_connection = self.line_state.get_connection(current, next);
         match maybe_connection {
             Some(connection) => self.time_to_next_station = connection.travel_time,
             None => panic!("There is no connection between: {} and {}", current, next),

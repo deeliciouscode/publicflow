@@ -8,10 +8,12 @@
 #       |
 #       12
 
+# TODO: implement connections to clearly define time between stations
+# TODO: implement a way to assign pods to lines
 network:
   n_stations: 13
   lines: 
-    - stations: [0,1,2,4]
+    - stations: [0,1,2,3]
       circular: false
     - stations: [4,5,6]
       circular: false
