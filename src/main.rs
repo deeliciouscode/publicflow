@@ -1,28 +1,29 @@
 mod config;
 mod connection;
-mod meta;
+mod line;
 mod network;
 mod person;
 mod pod;
 mod state;
 mod station;
 
-use crate::config::SPEED_FACTOR;
+use crate::config::{load_file, parse_yaml, SPEED_FACTOR};
 use crate::state::{gen_state, get_state, State};
 // use crate::state::{get_state, State};
-use crate::meta::load_file;
 use rand::Rng;
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
 
 fn main() {
-    let yaml = load_file("./meta/network.yaml");
+    let yaml = load_file("./config/network.yaml");
+    let config = parse_yaml(&yaml);
 
-    println!("{:?}", yaml);
+    println!("{:?}\n", config);
 
-    let mut state = gen_state(&yaml);
+    let mut state = gen_state(&config);
     // let mut state = get_s    tate();
 
+    println!("start simulation...");
     let mut seconds = 0;
     loop {
         if seconds >= 1000 {
@@ -44,11 +45,11 @@ fn step_one_second(state: &mut State) {
 
     for pod in &mut state.pods_box.pods {
         if pod.in_station {
-            println!("Pod is in station {}.", pod.get_station_id());
+            println!("Pod is in station {}.", pod.line_state.get_station_id());
             if pod.in_station_since < pod.in_station_for {
                 pod.in_station_since += 1;
             } else {
-                let current_station_id = pod.get_station_id();
+                let current_station_id = pod.line_state.get_station_id();
                 pod.leave_station(&mut state.network);
 
                 let maybe_station = state.network.get_station_by_id(current_station_id);
@@ -62,7 +63,10 @@ fn step_one_second(state: &mut State) {
             pod.driving_since += 1;
             if pod.driving_since >= pod.time_to_next_station {
                 pod.arrive_in_station(&mut state.network);
-                println!("Just arrived in station {}", pod.get_station_id());
+                println!(
+                    "Just arrived in station {}",
+                    pod.line_state.get_station_id()
+                );
             }
         }
     }
@@ -107,8 +111,10 @@ fn step_one_second(state: &mut State) {
             match maybe_pod {
                 Some(pod) => {
                     let mut rng = rand::thread_rng();
-                    if pod.get_station_id() != person.last_station_id && rng.gen_bool(0.5) {
-                        person.get_off_pod(pod.get_next_station_id())
+                    if pod.line_state.get_station_id() != person.last_station_id
+                        && rng.gen_bool(0.5)
+                    {
+                        person.get_off_pod(pod.line_state.get_next_station_id())
                     }
                 }
                 None => {
