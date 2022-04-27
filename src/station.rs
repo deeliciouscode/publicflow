@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 // TODO: Maybe define capacity of HashSet when using it (for performance)
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Station {
     pub id: i32,
     pub since_last_pod: i32,

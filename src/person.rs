@@ -1,10 +1,10 @@
 // TODO: implement destinations
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PeopleBox {
     pub people: Vec<Person>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Person {
     pub id: i32,
     pub in_station_since: i32,

@@ -1,7 +1,7 @@
 use crate::line::Line;
 use crate::station::Station;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Network {
     pub stations: Vec<Station>,
     pub lines: Vec<Line>,

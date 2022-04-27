@@ -18,7 +18,7 @@ fn main() {
     let yaml = load_file("./config/network.yaml");
     let config = parse_yaml(&yaml);
 
-    println!("{:?}\n", config);
+    // println!("{:?}\n", config);
 
     let mut state = gen_state(&config);
     // let mut state = get_s    tate();
@@ -45,7 +45,11 @@ fn step_one_second(state: &mut State) {
 
     for pod in &mut state.pods_box.pods {
         if pod.in_station {
-            println!("Pod is in station {}.", pod.line_state.get_station_id());
+            println!(
+                "Pod {} is in station {}.",
+                pod.id,
+                pod.line_state.get_station_id()
+            );
             if pod.in_station_since < pod.in_station_for {
                 pod.in_station_since += 1;
             } else {

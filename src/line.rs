@@ -8,7 +8,7 @@ pub struct Line {
     pub connections: Vec<Connection>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LineState {
     pub line: Line,
     pub line_ix: i32,
@@ -22,16 +22,19 @@ impl LineState {
     }
 
     pub fn get_next_station_id(&self) -> i32 {
+        if self.next_ix == -1 {
+            panic!("next ix cant be -1")
+        }
         self.line.stations[self.next_ix as usize]
     }
 
-    pub fn set_next_station_id(&mut self) {
-        if self.get_station_id() + self.direction > (self.line.stations.len() - 1) as i32 {
+    pub fn set_next_station_ix(&mut self) {
+        if self.line_ix + self.direction > (self.line.stations.len() - 1) as i32 {
             self.direction *= -1;
-        } else if self.get_station_id() + self.direction < 0 {
+        } else if self.line_ix + self.direction < 0 {
             self.direction *= -1;
         }
-        self.next_ix = self.get_station_id() + self.direction;
+        self.next_ix = self.line_ix + self.direction;
     }
 
     pub fn update_line_ix(&mut self) {
