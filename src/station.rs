@@ -7,6 +7,7 @@ pub struct Station {
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,
+    pub coordinates: (i32, i32),
 }
 
 impl Station {

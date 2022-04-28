@@ -16,26 +16,29 @@ use std::{thread, time};
 
 fn main() {
     let yaml = load_file("./config/network.yaml");
+
+    println!("{:?}\n", yaml);
+
     let config = parse_yaml(&yaml);
 
-    // println!("{:?}\n", config);
+    println!("{:?}\n", config);
 
     let mut state = gen_state(&config);
     // let mut state = get_s    tate();
 
     println!("start simulation...");
-    let mut seconds = 0;
-    loop {
-        if seconds >= 1000 {
-            break;
-        }
-        thread::sleep(time::Duration::from_millis(1000 / SPEED_FACTOR));
-        seconds += 1;
-        println!("{}", seconds);
-        // println!("{}", state.graph.connections[0].stations == state.graph.connections[1].stations);
-        // println!("{}", state.network.get_station_by_id(seconds).since_last_pod);
-        step_one_second(&mut state)
-    }
+    // let mut seconds = 0;
+    // loop {
+    //     if seconds >= 1000 {
+    //         break;
+    //     }
+    //     thread::sleep(time::Duration::from_millis(1000 / SPEED_FACTOR));
+    //     seconds += 1;
+    //     println!("{}", seconds);
+    //     // println!("{}", state.graph.connections[0].stations == state.graph.connections[1].stations);
+    //     // println!("{}", state.network.get_station_by_id(seconds).since_last_pod);
+    //     step_one_second(&mut state)
+    // }
 }
 
 fn step_one_second(state: &mut State) {

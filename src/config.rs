@@ -24,6 +24,7 @@ pub fn load_file(file: &str) -> Yaml {
 #[derive(Debug)]
 pub struct NetworkConfig {
     pub n_stations: i32,
+    pub coordinates_map: HashMap<i32, (i32, i32)>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
     pub pods: PodsConfig,
@@ -47,6 +48,7 @@ pub struct Config {
 
 pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     let mut n_stations: i64 = 0;
+    let mut coordinates_map: HashMap<i32, (i32, i32)> = HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut n_pods: i64 = 0;
     let mut n_people: i64 = 0;
@@ -64,6 +66,46 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                 {
                     if let Yaml::Integer(value) = n_stations_yaml {
                         n_stations = *value;
+                    }
+                }
+                if let Some(coordinates_yaml) =
+                    network_hash.get(&Yaml::String(String::from("station_coordinates")))
+                {
+                    if let Yaml::Hash(coordinates_hash) = coordinates_yaml {
+                        println!("{:?}", coordinates_hash);
+
+                        let mut coordinates_clone = coordinates_hash.clone();
+                        let coordinate_entries = coordinates_clone.entries();
+                        for entry in coordinate_entries {
+                            let key_yaml = entry.key();
+                            let values_yaml = entry.get();
+                            let mut key_i32: i32 = -1;
+                            let mut x_i32: i32 = -1;
+                            let mut y_i32: i32 = -1;
+
+                            if let Yaml::Integer(key_int) = key_yaml {
+                                key_i32 = *key_int as i32
+                            }
+
+                            if let Yaml::Hash(values_hash) = values_yaml {
+                                if let Some(x_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("x")))
+                                {
+                                    if let Yaml::Integer(x_int) = x_yaml {
+                                        x_i32 = *x_int as i32
+                                    }
+                                }
+                                if let Some(y_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("y")))
+                                {
+                                    if let Yaml::Integer(y_int) = y_yaml {
+                                        y_i32 = *y_int as i32
+                                    }
+                                }
+                            }
+
+                            coordinates_map.insert(key_i32, (x_i32, y_i32));
+                        }
                     }
                 }
                 if let Some(lines_yaml) = network_hash.get(&Yaml::String(String::from("lines"))) {
@@ -128,13 +170,6 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
         }
     }
 
-    // println!(
-    //     "n_stations: {}, n_pods: {}, n_people: {}",
-    //     n_stations, n_pods, n_people
-    // );
-
-    // println!("lines: {:?}", lines);
-
     let pods_config = PodsConfig {
         n_pods: n_pods as i32,
     };
@@ -145,6 +180,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
 
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
+        coordinates_map: coordinates_map,
         edge_map: edge_map,
         lines: lines,
         pods: pods_config,
@@ -211,27 +247,3 @@ fn update_edge_map(
         }
     }
 }
-
-// Example of a yaml structure we get from load_file()
-// Hash({
-//     String("network"): Hash({
-//         String("n_stations"): Integer(13),
-//         String("lines"): Array([
-//             Hash({
-//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(4)]),
-//                 String("circular"): Boolean(false)}),
-//             Hash({
-//                 String("stations"): Array([Integer(4), Integer(5), Integer(6)]),
-//                 String("circular"): Boolean(false)}),
-//             Hash({
-//                 String("stations"): Array([Integer(7), Integer(8), Integer(9), Integer(10)]),
-//                 String("circular"): Boolean(false)}),
-//             Hash({
-//                 String("stations"): Array([Integer(2), Integer(6), Integer(9), Integer(11), Integer(12)]),
-//                 String("circular"): Boolean(false)}),
-//             Hash({
-//                 String("stations"): Array([Integer(0), Integer(1), Integer(2), Integer(3), Integer(10), Integer(9), Integer(8), Integer(7), Integer(4)]),
-//                 String("circular"): Boolean(true)})]),
-//         String("pods"):
-//             Hash({String("n_pods"): Integer(13)})}),
-//     String("people"): Hash({String("n_people"): Integer(100)})})
