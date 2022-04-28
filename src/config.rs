@@ -72,7 +72,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                     network_hash.get(&Yaml::String(String::from("station_coordinates")))
                 {
                     if let Yaml::Hash(coordinates_hash) = coordinates_yaml {
-                        println!("{:?}", coordinates_hash);
+                        // println!("{:?}", coordinates_hash);
 
                         let mut coordinates_clone = coordinates_hash.clone();
                         let coordinate_entries = coordinates_clone.entries();
