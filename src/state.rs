@@ -82,11 +82,11 @@ pub fn gen_state(config: &Config) -> State {
     for person_id in 0..config.people.n_people {
         people.push(Person {
             id: person_id,
-            in_station_since: 0,
+            in_station_since: 9,
             pod_id: -1,
             station_id: 0, // TODO: change later, all start at 0 for tests
             last_station_id: 0,
-            transition_time: 20,
+            transition_time: 10,
         });
     }
 
@@ -101,8 +101,8 @@ pub fn gen_state(config: &Config) -> State {
             time_to_next_station: 0,
             driving_since: 0,
             in_station: true,
-            in_station_since: 0,
-            in_station_for: 0,
+            in_station_since: 5,
+            in_station_for: 10,
             people_in_pod: HashSet::new(), // TODO: init with capacity
         });
     }

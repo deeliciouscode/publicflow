@@ -27,3 +27,26 @@ impl Person {
         self.pod_id = -1;
     }
 }
+
+// #[derive(Clone, Debug)]
+// pub struct PersonSM {
+//     pub id: i32,
+//     pub transition_time: i32,
+//     state: PersonState,
+// }
+
+// #[derive(Debug, Clone, Copy)]
+// enum PersonState {
+//     ReadyToTakePod { station_id: i32 },
+//     RidingPod { pod_id: i32 },
+//     TransitioningToNewPod { station_id: i32, previous_pod_id: i32, time_in_station: i32 },
+// }
+
+
+// Person State Machine:
+
+// ReadyToTakePod ---> RidingTrain ---> TransitioningToNewPod
+//      ^                    ^                    |       |
+//      |                    |--------------------|       |
+//      |-------------------------------------------------|
+

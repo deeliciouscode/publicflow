@@ -49,4 +49,15 @@ impl LineState {
         }
         return None;
     }
+
+    pub fn get_current_connection(&self) -> Option<&Connection> {
+        let fst = self.line.stations[self.line_ix as usize];
+        let snd = self.line.stations[self.next_ix as usize];
+        for connection in &self.line.connections {
+            if connection.station_ids == HashSet::from([fst, snd]) {
+                return Some(connection);
+            }
+        }
+        return None;
+    }
 }

@@ -1,0 +1,29 @@
+# 0--1--2--3
+#       |
+#       4
+#       |
+# 5--6--7  
+
+network:
+  n_stations: 8 # could also be infered
+  station_coordinates:
+    0: {x: 1, y: 5}
+    1: {x: 2, y: 5}
+    2: {x: 3, y: 5}
+    3: {x: 4, y: 5}
+    4: {x: 1, y: 4}
+    5: {x: 2, y: 4}
+    6: {x: 3, y: 4}
+    7: {x: 1, y: 3}
+  lines: 
+    - stations: [0,1,2,3]
+      circular: false
+    - stations: [2,4,7]
+      circular: false
+    - stations: [5,6,7]
+      circular: false
+  pods:
+    n_pods: 10 # one per station per line | could be infered if n_pods == sum(len(line.stations))
+people:
+  n_people: 10
+
