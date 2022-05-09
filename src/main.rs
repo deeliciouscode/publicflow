@@ -83,62 +83,70 @@ fn step_one_second(state: &mut State, rng: &mut rand::prelude::ThreadRng) {
     }
 
     for person in &mut state.people_box.people {
-        if person.station_id >= 0 {
-            if person.in_station_since < person.transition_time {
-                person.in_station_since += 1;
-                println!(
-                    "person {} in station {} is not yet ready to hop a pod.",
-                    person.id, person.station_id
-                );
-                continue;
-            }
-
-            println!(
-                "person {} in station {} is ready to hop a pod.",
-                person.id, person.station_id
-            );
-
-            let maybe_station = state.network.get_station_by_id(person.station_id);
-            let maybe_pod_ids: Option<Vec<i32>>;
-
-            match maybe_station {
-                // TODO: probably suboptimal - look for solution without clone
-                Some(station) => maybe_pod_ids = station.get_pods_in_station_as_vec(),
-                None => panic!("There is no station with id: {}.", person.station_id),
-            }
-
-            match maybe_pod_ids {
-                Some(pod_ids) => {
-                    let range = rng.gen_range(0..pod_ids.len());
-                    println!("the random range: {:?}", range);
-                    let pod_id_to_take = pod_ids[range];
-                    person.take_pod(pod_id_to_take);
-                    println!("Getting into pod with id: {} now", pod_id_to_take);
-                }
-                None => println!("Can't leave the station, no pod here."),
-            }
-        } else if person.pod_id >= 0 {
-            // entirely different when riding the pod
-            println!(
-                "Person {} is riding in pod {} now.",
-                person.id, person.pod_id
-            );
-            let maybe_pod = state.pods_box.get_pod_by_id(person.pod_id);
-            match maybe_pod {
-                Some(pod) => {
-                    println!("station ids: {} | {}", pod.line_state.get_station_id(), person.last_station_id);
-                    if pod.line_state.get_station_id() != person.last_station_id {
-                        let get_out = rng.gen_bool(0.5);
-                        println!("get_out: {:?}", get_out);
-                        person.get_off_pod(pod.line_state.get_next_station_id())
-                    }
-                }
-                None => {
-                    println!("Somethings not right, person should be in either pod or station")
-                }
-            }
-        } else {
-            println!("Somethings not right, person should be in either pod or station");
-        }
+        person.update_state(&mut state.pods_box, &mut state.network);
     }
+
+    // for person in &mut state.people_box.people {
+    //     if person.station_id >= 0 {
+    //         if person.in_station_since < person.transition_time {
+    //             person.in_station_since += 1;
+    //             println!(
+    //                 "person {} in station {} is not yet ready to hop a pod.",
+    //                 person.id, person.station_id
+    //             );
+    //             continue;
+    //         }
+
+    //         println!(
+    //             "person {} in station {} is ready to hop a pod.",
+    //             person.id, person.station_id
+    //         );
+
+    //         let maybe_station = state.network.get_station_by_id(person.station_id);
+    //         let maybe_pod_ids: Option<Vec<i32>>;
+
+    //         match maybe_station {
+    //             // TODO: probably suboptimal - look for solution without clone
+    //             Some(station) => maybe_pod_ids = station.get_pods_in_station_as_vec(),
+    //             None => panic!("There is no station with id: {}.", person.station_id),
+    //         }
+
+    //         match maybe_pod_ids {
+    //             Some(pod_ids) => {
+    //                 let range = rng.gen_range(0..pod_ids.len());
+    //                 println!("the random range: {:?}", range);
+    //                 let pod_id_to_take = pod_ids[range];
+    //                 person.take_pod(pod_id_to_take);
+    //                 println!("Getting into pod with id: {} now", pod_id_to_take);
+    //             }
+    //             None => println!("Can't leave the station, no pod here."),
+    //         }
+    //     } else if person.pod_id >= 0 {
+    //         // entirely different when riding the pod
+    //         println!(
+    //             "Person {} is riding in pod {} now.",
+    //             person.id, person.pod_id
+    //         );
+    //         let maybe_pod = state.pods_box.get_pod_by_id(person.pod_id);
+    //         match maybe_pod {
+    //             Some(pod) => {
+    //                 println!(
+    //                     "station ids: {} | {}",
+    //                     pod.line_state.get_station_id(),
+    //                     person.last_station_id
+    //                 );
+    //                 if pod.line_state.get_station_id() != person.last_station_id {
+    //                     let get_out = rng.gen_bool(0.5);
+    //                     println!("get_out: {:?}", get_out);
+    //                     person.get_off_pod(pod.line_state.get_next_station_id())
+    //                 }
+    //             }
+    //             None => {
+    //                 println!("Somethings not right, person should be in either pod or station")
+    //             }
+    //         }
+    //     } else {
+    //         println!("Somethings not right, person should be in either pod or station");
+    //     }
+    // }
 }

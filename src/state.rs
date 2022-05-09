@@ -2,7 +2,7 @@ use crate::config::Config;
 use crate::connection::Connection;
 use crate::line::{Line, LineState};
 use crate::network::Network;
-use crate::person::{PeopleBox, Person};
+use crate::person::{PeopleBox, Person, PersonState};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
 use rand::Rng;
@@ -80,14 +80,7 @@ pub fn gen_state(config: &Config) -> State {
 
     let mut people: Vec<Person> = vec![];
     for person_id in 0..config.people.n_people {
-        people.push(Person {
-            id: person_id,
-            in_station_since: 9,
-            pod_id: -1,
-            station_id: 0, // TODO: change later, all start at 0 for tests
-            last_station_id: 0,
-            transition_time: 10,
-        });
+        people.push(Person::new(person_id, 10));
     }
 
     let people_box = PeopleBox { people: people };
@@ -184,14 +177,7 @@ pub fn get_state() -> State {
         people_in_pod: HashSet::new(), // TODO: init with capacity
     };
 
-    let person = Person {
-        id: 0,
-        in_station_since: 15, // to be able to take the first train
-        pod_id: -1,
-        station_id: 0,
-        last_station_id: 0,
-        transition_time: 20,
-    };
+    let person = Person::new(0, 10);
 
     let people_box = PeopleBox {
         people: vec![person],
