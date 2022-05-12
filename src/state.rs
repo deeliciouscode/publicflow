@@ -2,7 +2,7 @@ use crate::config::Config;
 use crate::connection::Connection;
 use crate::line::{Line, LineState};
 use crate::network::Network;
-use crate::person::{PeopleBox, Person, PersonState};
+use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
 use rand::Rng;
@@ -13,6 +13,13 @@ pub struct State {
     pub network: Network,
     pub pods_box: PodsBox,
     pub people_box: PeopleBox,
+}
+
+impl State {
+    pub fn print_state(&self) {
+        self.pods_box.print_state();
+        self.people_box.print_state();
+    }
 }
 
 // TODO: make this non dependent on n_pods == sum(len(line.stations))
@@ -87,17 +94,7 @@ pub fn gen_state(config: &Config) -> State {
 
     let mut pods: Vec<Pod> = vec![];
     for pod_id in 0..config.network.pods.n_pods {
-        pods.push(Pod {
-            id: pod_id,
-            capacity: 10,
-            line_state: calc_line_state(&pod_id),
-            time_to_next_station: 0,
-            driving_since: 0,
-            in_station: true,
-            in_station_since: 5,
-            in_station_for: 10,
-            people_in_pod: HashSet::new(), // TODO: init with capacity
-        });
+        pods.push(Pod::new(pod_id, 10, 5, calc_line_state(&pod_id)));
     }
 
     let pods_box = PodsBox { pods: pods };
@@ -114,7 +111,7 @@ pub fn gen_state(config: &Config) -> State {
 }
 
 // simplest possible dummy state - for debugging purposes
-pub fn get_state() -> State {
+pub fn _get_state() -> State {
     let one = Station {
         id: 0,
         since_last_pod: 0,
@@ -165,17 +162,7 @@ pub fn get_state() -> State {
         direction: 1,
     };
 
-    let pod = Pod {
-        id: 0,
-        capacity: 10,
-        line_state: line_state,
-        time_to_next_station: 0,
-        driving_since: 0,
-        in_station: true,
-        in_station_since: 0,
-        in_station_for: 10,
-        people_in_pod: HashSet::new(), // TODO: init with capacity
-    };
+    let pod = Pod::new(0, 10, 10, line_state);
 
     let person = Person::new(0, 10);
 

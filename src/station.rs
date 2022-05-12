@@ -19,7 +19,7 @@ impl Station {
         self.pods_in_station.remove(&pod_id);
     }
 
-    pub fn get_pods_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
+    pub fn get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
         if self.pods_in_station.is_empty() {
             return None;
         }

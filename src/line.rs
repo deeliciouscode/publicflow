@@ -22,9 +22,6 @@ impl LineState {
     }
 
     pub fn get_next_station_id(&self) -> i32 {
-        if self.next_ix == -1 {
-            panic!("next ix cant be -1")
-        }
         self.line.stations[self.next_ix as usize]
     }
 

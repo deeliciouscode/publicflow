@@ -8,9 +8,8 @@ mod state;
 mod station;
 
 use crate::config::{load_file, parse_yaml, SPEED_FACTOR};
-use crate::state::{gen_state, get_state, State};
+use crate::state::{gen_state, State};
 // use crate::state::{get_state, State};
-use rand::Rng;
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
 
@@ -24,7 +23,6 @@ fn main() {
     // println!("{:?}\n", config);
 
     let mut state = gen_state(&config);
-    let mut rng = rand::thread_rng();
     // let mut state = get_s    tate();
 
     println!("start simulation...");
@@ -38,49 +36,52 @@ fn main() {
         println!("{}", seconds);
         // println!("{}", state.graph.connections[0].stations == state.graph.connections[1].stations);
         // println!("{}", state.network.get_station_by_id(seconds).since_last_pod);
-        step_one_second(&mut state, &mut rng)
+        step_one_second(&mut state)
     }
+
+    state.print_state();
 }
 
-fn step_one_second(state: &mut State, rng: &mut rand::prelude::ThreadRng) {
+fn step_one_second(state: &mut State) {
     for station in &mut state.network.stations {
         station.since_last_pod += 1;
     }
 
     for pod in &mut state.pods_box.pods {
-        if pod.in_station {
-            println!(
-                "Pod {} is in station {}.",
-                pod.id,
-                pod.line_state.get_station_id()
-            );
-            if pod.in_station_since < pod.in_station_for {
-                pod.in_station_since += 1;
-            } else {
-                let current_station_id = pod.line_state.get_station_id();
-                pod.leave_station(&mut state.network);
-
-                let maybe_station = state.network.get_station_by_id(current_station_id);
-                match maybe_station {
-                    Some(station) => station.since_last_pod = 0,
-                    None => panic!("The pod is in a station that does not exist, whoopsie."),
-                }
-            }
-        } else {
-            println!(
-                "Pod is between {:?}.",
-                pod.line_state.get_current_connection()
-            );
-            pod.driving_since += 1;
-            if pod.driving_since >= pod.time_to_next_station {
-                pod.arrive_in_station(&mut state.network);
-                println!(
-                    "Just arrived in station {}",
-                    pod.line_state.get_station_id()
-                );
-            }
-        }
+        pod.update_state(&mut state.network)
     }
+    // if pod.in_station {
+    //     println!(
+    //         "Pod {} is in station {}.",
+    //         pod.id,
+    //         pod.line_state.get_station_id()
+    //     );
+    //     if pod.in_station_since < pod.in_station_for {
+    //         pod.in_station_since += 1;
+    //     } else {
+    //         let current_station_id = pod.line_state.get_station_id();
+    //         pod.leave_station(&mut state.network);
+
+    //         let maybe_station = state.network.get_station_by_id(current_station_id);
+    //         match maybe_station {
+    //             Some(station) => station.since_last_pod = 0,
+    //             None => panic!("The pod is in a station that does not exist, whoopsie."),
+    //         }
+    //     }
+    // } else {
+    //     println!(
+    //         "Pod is between {:?}.",
+    //         pod.line_state.get_current_connection()
+    //     );
+    //     pod.driving_since += 1;
+    //     if pod.driving_since >= pod.time_to_next_station {
+    //         pod.arrive_in_station(&mut state.network);
+    //         println!(
+    //             "Just arrived in station {}",
+    //             pod.line_state.get_station_id()
+    //         );
+    //     }
+    // }
 
     for person in &mut state.people_box.people {
         person.update_state(&mut state.pods_box, &mut state.network);

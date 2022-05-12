@@ -7,7 +7,7 @@ use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
 
 // CONSTANTS
-pub const SPEED_FACTOR: u64 = 1;
+pub const SPEED_FACTOR: u64 = 100;
 
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {
