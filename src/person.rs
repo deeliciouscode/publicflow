@@ -134,7 +134,7 @@ impl Person {
         match maybe_pod {
             Some(pod) => {
                 if pod.is_in_just_arrived_state() {
-                    self.state.to_just_arrived(pod.get_station_id());
+                    self.state = self.state.to_just_arrived(pod.get_station_id());
                 }
             }
             None => panic!("Pod with id: {} does not exist.", pod_id),
@@ -144,7 +144,9 @@ impl Person {
     fn make_on_arrival_descission(&mut self, pods_box: &mut PodsBox, pod_id: i32) {
         let mut rng = rand::thread_rng();
         let get_out = rng.gen_bool(0.5);
+        // println!("get_out: {}", get_out);
         if get_out {
+            // println!("Person {} wants to get out", self.id);
             self.state = self.state.to_transitioning();
             let maybe_pod = pods_box.get_pod_by_id(pod_id);
             match maybe_pod {
@@ -156,10 +158,6 @@ impl Person {
         } else {
             self.state = self.state.to_riding(pod_id); // pod_id is ignored in this case
         }
-
-        // person.get_off_pod(pod.line_state.get_next_station_id());
-
-        self.state = self.state.to_transitioning();
     }
 
     pub fn try_get_station_id(&self) -> Option<i32> {

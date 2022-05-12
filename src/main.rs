@@ -14,7 +14,8 @@ use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
 
 fn main() {
-    let yaml = load_file("./config/network_debug.yaml");
+    // let yaml = load_file("./config/network.yaml");
+    let yaml = load_file("./config/network_simple.yaml");
     // println!("{:?}\n", yaml);
 
     let config = parse_yaml(&yaml);

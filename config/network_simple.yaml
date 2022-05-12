@@ -25,5 +25,5 @@ network:
   pods:
     n_pods: 10 # one per station per line | could be infered if n_pods == sum(len(line.stations))
 people:
-  n_people: 10
+  n_people: 20
 
