@@ -7,8 +7,8 @@ use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
 
 // CONSTANTS
-pub const SPEED_FACTOR: u64 = 100;
-
+pub const SPEED_FACTOR: u64 = 1000;
+pub const SIMULATION_DURATION: u64 = 1000;
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {
     let mut file = File::open(file).expect("Unable to open file");

@@ -76,7 +76,7 @@ impl Pod {
                 station_id_to: _,
                 time_to_next_station,
             } => {
-                println!("Pod in BetweenStations State");
+                // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
                     self.state = self.state.drive_a_sec();
                 } else {
@@ -84,14 +84,14 @@ impl Pod {
                 }
             }
             PodState::JustArrived { station_id: _ } => {
-                println!("Pod in JustArrived State");
+                // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
             }
             PodState::InStation {
                 station_id: _,
                 time_in_station,
             } => {
-                println!("Pod in InStation state");
+                // println!("Pod in InStation state");
                 if self.in_station_for > *time_in_station {
                     self.state = self.state.wait_a_sec();
                 } else {

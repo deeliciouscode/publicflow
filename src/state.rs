@@ -20,6 +20,20 @@ impl State {
         self.pods_box.print_state();
         self.people_box.print_state();
     }
+
+    pub fn update(&mut self) {
+        for station in &mut self.network.stations {
+            station.since_last_pod += 1;
+        }
+
+        for pod in &mut self.pods_box.pods {
+            pod.update_state(&mut self.network)
+        }
+
+        for person in &mut self.people_box.people {
+            person.update_state(&mut self.pods_box, &mut self.network);
+        }
+    }
 }
 
 // TODO: make this non dependent on n_pods == sum(len(line.stations))

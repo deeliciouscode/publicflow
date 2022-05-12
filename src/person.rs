@@ -56,14 +56,14 @@ impl Person {
     pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
-                println!("person in ready state");
+                // println!("person in ready state");
                 // Assign first instead of ..try_to_take_a_pod(.., .., *station_id) because:
                 // https://github.com/rust-lang/rust/issues/59159
                 let station_id_deref = *station_id;
                 self.try_to_take_a_pod(pods_box, network, station_id_deref);
             }
             PersonState::RidingPod { pod_id } => {
-                println!("person in riding state");
+                // println!("person in riding state");
                 let pod_id_deref = *pod_id;
                 self.ride_pod(pods_box, pod_id_deref);
             }
@@ -71,7 +71,7 @@ impl Person {
                 pod_id,
                 station_id: _,
             } => {
-                println!("person in arrived state");
+                // println!("person in arrived state");
                 let pod_id_deref = *pod_id;
                 self.make_on_arrival_descission(pods_box, pod_id_deref);
             }
@@ -81,10 +81,10 @@ impl Person {
                 time_in_station,
             } => {
                 if *time_in_station < self.transition_time {
-                    println!("person in transitioning state and not ready.");
+                    // println!("person in transitioning state and not ready.");
                     self.state = self.state.wait_a_sec();
                 } else {
-                    println!("person in transitioning state and going to ready state.");
+                    // println!("person in transitioning state and going to ready state.");
                     self.state = self.state.to_ready();
                 }
             }
@@ -113,13 +113,13 @@ impl Person {
                     Some(pod) => {
                         let got_in = pod.try_register_person(self.id);
                         if got_in {
-                            println!("Getting into pod with id: {} now", pod_id_to_take);
+                            // println!("Getting into pod with id: {} now", pod_id_to_take);
                             self.state = self.state.to_riding(pod_id_to_take);
                         } else {
-                            println!(
-                                "Couldn't get into pod with id: {} - it's full.",
-                                pod_id_to_take
-                            );
+                            // println!(
+                            //     "Couldn't get into pod with id: {} - it's full.",
+                            //     pod_id_to_take
+                            // );
                         }
                     }
                     None => println!("Pod with id: {}, does not exist.", pod_id_to_take),
