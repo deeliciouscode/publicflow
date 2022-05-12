@@ -7,8 +7,8 @@ mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_file, parse_yaml, SPEED_FACTOR, SIMULATION_DURATION};
-use crate::state::{gen_state};
+use crate::config::{load_file, parse_yaml, SIMULATION_DURATION, SPEED_FACTOR};
+use crate::state::gen_state;
 // use crate::state::{get_state, State};
 use std::{thread, time};
 // TODO: first implement something where people are just moving mindlessly, without destination
@@ -36,7 +36,7 @@ fn main() {
 
         if seconds % 100 == 0 {
             state.print_state();
-        } 
+        }
     }
 
     // state.print_state();
