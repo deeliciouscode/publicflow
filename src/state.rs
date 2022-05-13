@@ -151,7 +151,7 @@ impl EventHandler for State {
         // Draw code here...
 
         for station in &self.network.stations {
-            station.draw(ctx);
+            let res = station.draw(ctx); // TODO: handle result error case
         }
 
         graphics::present(ctx)

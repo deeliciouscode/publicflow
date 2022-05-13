@@ -1,6 +1,6 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION};
 use ggez::graphics::Rect;
-use ggez::{event, graphics, timer, Context, GameResult};
+use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
 // TODO: Maybe define capacity of HashSet when using it (for performance)
