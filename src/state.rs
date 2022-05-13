@@ -1,10 +1,13 @@
-use crate::config::Config;
+use crate::config::{Config, DESIRED_FPS};
 use crate::connection::Connection;
 use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
+use ggez::event::EventHandler;
+use ggez::graphics::{self, Color};
+use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
 
@@ -13,6 +16,7 @@ pub struct State {
     pub network: Network,
     pub pods_box: PodsBox,
     pub people_box: PeopleBox,
+    pub time_passed: u32,
 }
 
 impl State {
@@ -35,98 +39,122 @@ impl State {
             person.update_state(&mut self.pods_box, &mut self.network);
         }
     }
-}
 
-// TODO: make this non dependent on n_pods == sum(len(line.stations))
-pub fn gen_state(config: &Config) -> State {
-    let mut stations: Vec<Station> = vec![];
-    for station_id in 0..config.network.n_stations {
-        // unwrap can panic, maybe do pattern matching instead??
-        let coordinates = config.network.coordinates_map.get(&station_id).unwrap();
-        stations.push(Station {
-            id: station_id,
-            since_last_pod: 0,
-            edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
-            pods_in_station: HashSet::from([]), // The pods will register themselves later
-            coordinates: *coordinates,
-        })
-    }
+    pub fn new(config: &Config) -> Self {
+        let mut stations: Vec<Station> = vec![];
+        for station_id in 0..config.network.n_stations {
+            // unwrap can panic, maybe do pattern matching instead??
+            let coordinates = config.network.coordinates_map.get(&station_id).unwrap();
+            stations.push(Station {
+                id: station_id,
+                since_last_pod: 0,
+                edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
+                pods_in_station: HashSet::from([]), // The pods will register themselves later
+                coordinates: *coordinates,
+            })
+        }
 
-    let network = Network {
-        stations: stations,
-        lines: config.network.lines.clone(),
-    };
-
-    // let mut stations_occupied: Vec<i32> = vec![];
-    let calc_line_state = |pod_id: &i32| -> LineState {
-        let mut rng = rand::thread_rng();
-        let mut n_stations_skipped = 0;
-        let mut line: Line = Line {
-            stations: vec![],
-            circular: true,
-            connections: vec![],
+        let network = Network {
+            stations: stations,
+            lines: config.network.lines.clone(),
         };
-        let mut line_ix: i32 = -1;
-        // let mut station_id: i32 = -1;
-        let mut direction: i32 = 1;
 
-        for lineref in &config.network.lines {
-            // println!("{}, {}", pod_id, n_stations_skipped);
-            if *pod_id > n_stations_skipped + (lineref.stations.len() as i32 - 1) {
-                n_stations_skipped += lineref.stations.len() as i32;
-                continue;
+        // let mut stations_occupied: Vec<i32> = vec![];
+        let calc_line_state = |pod_id: &i32| -> LineState {
+            let mut rng = rand::thread_rng();
+            let mut n_stations_skipped = 0;
+            let mut line: Line = Line {
+                stations: vec![],
+                circular: true,
+                connections: vec![],
+            };
+            let mut line_ix: i32 = -1;
+            // let mut station_id: i32 = -1;
+            let mut direction: i32 = 1;
+
+            for lineref in &config.network.lines {
+                // println!("{}, {}", pod_id, n_stations_skipped);
+                if *pod_id > n_stations_skipped + (lineref.stations.len() as i32 - 1) {
+                    n_stations_skipped += lineref.stations.len() as i32;
+                    continue;
+                }
+
+                line_ix = pod_id - n_stations_skipped;
+                line = lineref.clone();
+                // station_id = lineref.stations[line_ix as usize];
+                direction = if rng.gen_bool(0.5) { 1 } else { -1 };
+                break;
             }
 
-            line_ix = pod_id - n_stations_skipped;
-            line = lineref.clone();
-            // station_id = lineref.stations[line_ix as usize];
-            direction = if rng.gen_bool(0.5) { 1 } else { -1 };
-            break;
-        }
+            if line.stations.is_empty() {
+                panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
+            }
 
-        if line.stations.is_empty() {
-            panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
-        }
+            let line_state = LineState {
+                line: line,
+                line_ix: line_ix,
+                next_ix: -1,
+                direction: direction,
+            };
 
-        let line_state = LineState {
-            line: line,
-            line_ix: line_ix,
-            next_ix: -1,
-            direction: direction,
+            // println!("-------------> {:?}", line_state);
+
+            return line_state;
         };
 
-        // println!("-------------> {:?}", line_state);
+        let mut people: Vec<Person> = vec![];
+        for person_id in 0..config.people.n_people {
+            people.push(Person::new(person_id, 10));
+        }
 
-        return line_state;
-    };
+        let people_box = PeopleBox { people: people };
 
-    let mut people: Vec<Person> = vec![];
-    for person_id in 0..config.people.n_people {
-        people.push(Person::new(person_id, 10));
+        let mut pods: Vec<Pod> = vec![];
+        for pod_id in 0..config.network.pods.n_pods {
+            pods.push(Pod::new(pod_id, 10, 5, calc_line_state(&pod_id)));
+        }
+
+        let pods_box = PodsBox { pods: pods };
+
+        let state = State {
+            network: network,
+            people_box: people_box,
+            pods_box: pods_box,
+            time_passed: 0,
+        };
+
+        // println!("{:?}", state);
+
+        return state;
+    }
+}
+
+impl EventHandler for State {
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        // Update code here...
+        while timer::check_update_time(ctx, DESIRED_FPS) {
+            println!("lel: {}", timer::fps(ctx));
+            self.time_passed += 1;
+            self.update();
+
+            if self.time_passed % 25 == 0 {
+                println!("-------------------------------");
+                println!("time passed: {}", self.time_passed);
+                self.print_state();
+            }
+        }
+        Ok(())
     }
 
-    let people_box = PeopleBox { people: people };
-
-    let mut pods: Vec<Pod> = vec![];
-    for pod_id in 0..config.network.pods.n_pods {
-        pods.push(Pod::new(pod_id, 10, 5, calc_line_state(&pod_id)));
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx, Color::WHITE);
+        // Draw code here...
+        graphics::present(ctx)
     }
-
-    let pods_box = PodsBox { pods: pods };
-
-    let state = State {
-        network: network,
-        people_box: people_box,
-        pods_box: pods_box,
-    };
-
-    // println!("{:?}", state);
-
-    return state;
 }
 
 // simplest possible dummy state - for debugging purposes
-pub fn _get_state() -> State {
+pub fn _get_dummy_state() -> State {
     let one = Station {
         id: 0,
         since_last_pod: 0,
@@ -191,6 +219,7 @@ pub fn _get_state() -> State {
         network: network,
         people_box: people_box,
         pods_box: pods_box,
+        time_passed: 0,
     };
 
     state.clone()

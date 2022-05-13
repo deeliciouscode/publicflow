@@ -7,10 +7,12 @@ mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_file, parse_yaml, SIMULATION_DURATION, SPEED_FACTOR};
-use crate::state::gen_state;
+use crate::config::{load_file, parse_yaml, SCREEN_SIZE};
+use crate::state::State;
+// use crate::state::{gen_state, State};
 // use crate::state::{get_state, State};
-use std::{thread, time};
+use ggez::event::{self};
+use ggez::ContextBuilder;
 // TODO: first implement something where people are just moving mindlessly, without destination
 
 fn main() {
@@ -19,29 +21,17 @@ fn main() {
     // println!("{:?}\n", yaml);
 
     let config = parse_yaml(&yaml);
-    println!("config: {:?}\n", config);
+    // println!("config: {:?}\n", config);
 
-    // let mut state = get_state();
-    let mut state = gen_state(&config);
-    // println!("initial state: {:?}\n", state);
-    state.print_state();
+    // Make a Context.
+    let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")
+        .window_setup(ggez::conf::WindowSetup::default().title("PublicFlow Simulation"))
+        .window_setup(ggez::conf::WindowSetup::default().vsync(true)) // sync fps to screen refresh rate
+        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        .build()
+        .expect("aieee, could not create ggez context!");
 
+    let state = State::new(&config);
     println!("start simulation...");
-    let mut seconds = 0;
-    loop {
-        if seconds >= SIMULATION_DURATION {
-            break;
-        }
-        thread::sleep(time::Duration::from_millis(1000 / SPEED_FACTOR));
-        seconds += 1;
-        state.update();
-
-        if seconds % 25 == 0 {
-            println!("-------------------------------");
-            println!("time passed: {}", seconds);
-            state.print_state();
-        }
-    }
-
-    // state.print_state();
+    event::run(ctx, event_loop, state);
 }
