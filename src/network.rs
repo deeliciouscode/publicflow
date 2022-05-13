@@ -16,4 +16,13 @@ impl Network {
         }
         return None;
     }
+
+    pub fn print_state(&self) {
+        for station in &self.stations {
+            println!(
+                "Station: {} | Pods: {:?}",
+                station.id, station.pods_in_station
+            )
+        }
+    }
 }

@@ -125,7 +125,7 @@ impl Person {
                     None => println!("Pod with id: {}, does not exist.", pod_id_to_take),
                 }
             }
-            None => println!("Can't leave the station, no pod here."),
+            None => {} // None => println!("Can't leave the station, no pod here."),
         }
     }
 

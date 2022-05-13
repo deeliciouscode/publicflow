@@ -17,6 +17,7 @@ pub struct State {
 
 impl State {
     pub fn print_state(&self) {
+        self.network.print_state();
         self.pods_box.print_state();
         self.people_box.print_state();
     }
@@ -46,7 +47,7 @@ pub fn gen_state(config: &Config) -> State {
             id: station_id,
             since_last_pod: 0,
             edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
-            pods_in_station: HashSet::from([station_id]),
+            pods_in_station: HashSet::from([]), // The pods will register themselves later
             coordinates: *coordinates,
         })
     }

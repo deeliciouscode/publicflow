@@ -129,10 +129,11 @@ impl Pod {
         let maybe_connection = self.line_state.get_connection(current, next);
         match maybe_connection {
             Some(connection) => {
-                self.state = self.state.to_between_stations(next, connection.travel_time)
+                self.state = self.state.to_between_stations(next, connection.travel_time);
             }
             None => panic!("There is no connection between: {} and {}", current, next),
         }
+
         let maybe_station = net.get_station_by_id(current);
         match maybe_station {
             Some(station) => station.deregister_pod(self.id),

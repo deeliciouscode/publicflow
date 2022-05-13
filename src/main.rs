@@ -19,10 +19,12 @@ fn main() {
     // println!("{:?}\n", yaml);
 
     let config = parse_yaml(&yaml);
-    // println!("{:?}\n", config);
+    println!("config: {:?}\n", config);
 
-    let mut state = gen_state(&config);
     // let mut state = get_state();
+    let mut state = gen_state(&config);
+    // println!("initial state: {:?}\n", state);
+    state.print_state();
 
     println!("start simulation...");
     let mut seconds = 0;
@@ -32,10 +34,11 @@ fn main() {
         }
         thread::sleep(time::Duration::from_millis(1000 / SPEED_FACTOR));
         seconds += 1;
-        println!("{}", seconds);
         state.update();
 
-        if seconds % 100 == 0 {
+        if seconds % 25 == 0 {
+            println!("-------------------------------");
+            println!("time passed: {}", seconds);
             state.print_state();
         }
     }
