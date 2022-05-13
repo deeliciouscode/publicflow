@@ -11,6 +11,9 @@ pub const _SPEED_FACTOR: u64 = 1000;
 pub const _SIMULATION_DURATION: u64 = 1000;
 
 pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1080.0);
+pub const MAX_XY: (f32, f32) = (3.0, 2.0);
+pub const OFFSET: f32 = 100.0;
+pub const SIDELEN_STATION: f32 = 50.0;
 pub const DESIRED_FPS: u32 = 60; // TODO: decouple game speed from draw rate
 
 // EXTERNAL CONFIG

@@ -44,13 +44,13 @@ impl State {
         let mut stations: Vec<Station> = vec![];
         for station_id in 0..config.network.n_stations {
             // unwrap can panic, maybe do pattern matching instead??
-            let coordinates = config.network.coordinates_map.get(&station_id).unwrap();
+            let (coords_x, coords_y) = config.network.coordinates_map.get(&station_id).unwrap();
             stations.push(Station {
                 id: station_id,
                 since_last_pod: 0,
                 edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
                 pods_in_station: HashSet::from([]), // The pods will register themselves later
-                coordinates: *coordinates,
+                coordinates: (*coords_x as f32, *coords_y as f32),
             })
         }
 
@@ -133,14 +133,14 @@ impl EventHandler for State {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Update code here...
         while timer::check_update_time(ctx, DESIRED_FPS) {
-            println!("lel: {}", timer::fps(ctx));
+            // println!("fps: {}", timer::fps(ctx));
             self.time_passed += 1;
             self.update();
 
             if self.time_passed % 25 == 0 {
-                println!("-------------------------------");
-                println!("time passed: {}", self.time_passed);
-                self.print_state();
+                // println!("-------------------------------");
+                // println!("time passed: {}", self.time_passed);
+                // self.print_state();
             }
         }
         Ok(())
@@ -149,6 +149,11 @@ impl EventHandler for State {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::WHITE);
         // Draw code here...
+
+        for station in &self.network.stations {
+            station.draw(ctx);
+        }
+
         graphics::present(ctx)
     }
 }
@@ -160,21 +165,21 @@ pub fn _get_dummy_state() -> State {
         since_last_pod: 0,
         edges_to: HashSet::from([1]),
         pods_in_station: HashSet::from([0]),
-        coordinates: (1, 1),
+        coordinates: (1., 1.),
     };
     let two = Station {
         id: 1,
         since_last_pod: 0,
         edges_to: HashSet::from([0, 2]),
         pods_in_station: HashSet::new(),
-        coordinates: (2, 1),
+        coordinates: (2.0, 1.),
     };
     let three = Station {
         id: 2,
         since_last_pod: 0,
         edges_to: HashSet::from([1]),
         pods_in_station: HashSet::new(),
-        coordinates: (3, 1),
+        coordinates: (3., 1.),
     };
 
     let conn01 = Connection {
