@@ -1,5 +1,8 @@
+use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION, WIDTH_LINE};
 use crate::line::LineState;
 use crate::network::Network;
+use ggez::graphics::Rect;
+use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
@@ -40,6 +43,12 @@ impl PodsBox {
             )
         }
     }
+
+    pub fn draw(&self, ctx: &mut Context, network: &Network) {
+        for pod in &self.pods {
+            let _res = pod.draw(ctx, network);
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -66,6 +75,77 @@ impl Pod {
                 time_in_station: 0,
             },
         }
+    }
+
+    fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
+        let color = [0.2, 0.2, 0.2, 1.0].into();
+        let mut res: GameResult<()> = std::result::Result::Ok(());
+
+        match &self.state {
+            PodState::InStation {
+                station_id,
+                time_in_station: _,
+            } => {}
+            PodState::JustArrived { station_id } => {}
+            PodState::BetweenStations {
+                station_id_from,
+                station_id_to,
+                time_to_next_station,
+            } => {
+                let travel_time = self
+                    .line_state
+                    .get_connection(*station_id_from, *station_id_to)
+                    .unwrap()
+                    .travel_time;
+
+                let station_from = network
+                    .try_get_station_by_id_unmut(*station_id_from)
+                    .unwrap();
+                let station_to = network.try_get_station_by_id_unmut(*station_id_to).unwrap();
+
+                let coords_from = station_from.get_real_coordinates();
+                let coords_to = station_to.get_real_coordinates();
+
+                let x_shift: f32;
+                let y_shift: f32;
+
+                if coords_from.0 == coords_to.0 && self.line_state.direction == 1 {
+                    x_shift = SIDELEN_STATION - SIDELEN_POD;
+                    y_shift = 0.;
+                } else if self.line_state.direction == 1 {
+                    x_shift = 0.;
+                    y_shift = SIDELEN_STATION - SIDELEN_POD;
+                } else {
+                    x_shift = 0.;
+                    y_shift = 0.;
+                }
+
+                let x = coords_from.0
+                    + (coords_to.0 - coords_from.0)
+                        * (*time_to_next_station as f32 / travel_time as f32);
+
+                let y = coords_from.1
+                    + (coords_to.1 - coords_from.1)
+                        * (*time_to_next_station as f32 / travel_time as f32);
+
+                let station_rect = Rect {
+                    x: x + x_shift,
+                    y: y + y_shift,
+                    w: 20.,
+                    h: 20.,
+                };
+                let rectangle = graphics::Mesh::new_rectangle(
+                    ctx,
+                    graphics::DrawMode::fill(),
+                    station_rect,
+                    color,
+                )?;
+                res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            }
+            PodState::InvalidState { reason } => {}
+        }
+
+        res
     }
 
     // TODO: remove unused stuff
@@ -108,7 +188,7 @@ impl Pod {
         self.line_state.update_line_ix();
         self.state = self.state.to_just_arrived();
         let arrived_in_id = self.state.get_station_id();
-        let maybe_station = net.get_station_by_id(arrived_in_id);
+        let maybe_station = net.try_get_station_by_id(arrived_in_id);
         match maybe_station {
             Some(station) => station.register_pod(self.id),
             None => panic!("There is no station with id: {}", arrived_in_id),
@@ -134,7 +214,7 @@ impl Pod {
             None => panic!("There is no connection between: {} and {}", current, next),
         }
 
-        let maybe_station = net.get_station_by_id(current);
+        let maybe_station = net.try_get_station_by_id(current);
         match maybe_station {
             Some(station) => station.deregister_pod(self.id),
             None => panic!("There is no station with id: {}", current),

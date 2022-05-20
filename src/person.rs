@@ -1,5 +1,9 @@
+use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION, WIDTH_LINE};
+use crate::line::LineState;
 use crate::network::Network;
 use crate::pod::PodsBox;
+use ggez::graphics::Rect;
+use ggez::{graphics, Context, GameResult};
 use rand::Rng;
 
 // TODO: implement destinations
@@ -30,30 +34,84 @@ impl PeopleBox {
             )
         }
     }
+
+    pub fn draw(&self, ctx: &mut Context, network: &Network) {
+        for pod in &self.people {
+            let _res = pod.draw(ctx);
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct Person {
     pub id: i32,
     transition_time: i32,
+    real_coordinates: (f32, f32),
     state: PersonState,
 }
 
 impl Person {
-    pub fn new(id: i32, transition_time: i32) -> Self {
-        Person {
+    pub fn new(id: i32, transition_time: i32, network: &Network) -> Self {
+        let mut person = Person {
             id: id,
             transition_time: transition_time,
+            real_coordinates: (0., 0.),
             state: PersonState::Transitioning {
                 station_id: 0,
                 previous_pod_id: -1,
                 time_in_station: transition_time - 1,
             },
+        };
+        person.set_real_coordinates(0, network);
+        person
+    }
+
+    fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+        let color = [1.0, 0.2, 0.2, 1.0].into();
+        let mut res: GameResult<()> = std::result::Result::Ok(());
+        let mut draw_in_station = || -> GameResult<()> {
+            // println!("real: {:?}", self.real_coordinates);
+            let station_rect = Rect {
+                x: self.real_coordinates.0,
+                y: self.real_coordinates.1,
+                w: 5.,
+                h: 5.,
+            };
+            let rectangle = graphics::Mesh::new_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                station_rect,
+                color,
+            )?;
+            let rez = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            return rez;
+        };
+
+        match &self.state {
+            PersonState::ReadyToTakePod { station_id: _ } => {
+                res = draw_in_station();
+            }
+            PersonState::RidingPod { pod_id: _ } => {}
+            PersonState::JustArrived {
+                pod_id: _,
+                station_id: _,
+            } => {}
+            PersonState::Transitioning {
+                station_id: _,
+                previous_pod_id: _,
+                time_in_station: _,
+            } => {
+                res = draw_in_station();
+            }
+            PersonState::InvalidState { reason: _ } => {}
         }
+
+        res
     }
 
     // TODO: move logic of people from main to this function
     pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
+        // println!("person state: {:?}", self.state);
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
                 // println!("person in ready state");
@@ -74,6 +132,16 @@ impl Person {
                 // println!("person in arrived state");
                 let pod_id_deref = *pod_id;
                 self.make_on_arrival_descission(pods_box, pod_id_deref);
+                let maybe_station_id = self.try_get_station_id();
+
+                match maybe_station_id {
+                    Some(station_id) => {
+                        self.set_real_coordinates(station_id, network);
+                    }
+                    None => {
+                        // println!("none")
+                    }
+                }
             }
             PersonState::Transitioning {
                 station_id: _,
@@ -101,7 +169,7 @@ impl Person {
         station_id: i32,
     ) {
         let mut rng = rand::thread_rng();
-        let station = network.get_station_by_id(station_id).unwrap();
+        let station = network.try_get_station_by_id(station_id).unwrap();
         let maybe_pod_ids: Option<Vec<i32>> = station.get_pod_ids_in_station_as_vec();
         match maybe_pod_ids {
             Some(pod_ids) => {
@@ -158,6 +226,19 @@ impl Person {
         } else {
             self.state = self.state.to_riding(pod_id); // pod_id is ignored in this case
         }
+    }
+
+    fn set_real_coordinates(&mut self, station_id: i32, network: &Network) {
+        // println!("set real coords");
+        let station = network.try_get_station_by_id_unmut(station_id).unwrap();
+        let coords_station = station.get_real_coordinates();
+        let mut rng = rand::thread_rng();
+        let x_rnd: f32 = rng.gen();
+        let y_rnd: f32 = rng.gen();
+        let x_shift: f32 = x_rnd * SIDELEN_POD * 2.;
+        let y_shift: f32 = y_rnd * SIDELEN_POD * 2.;
+
+        self.real_coordinates = (coords_station.0 + x_shift, coords_station.1 + y_shift)
     }
 
     pub fn try_get_station_id(&self) -> Option<i32> {

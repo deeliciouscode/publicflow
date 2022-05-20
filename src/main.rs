@@ -7,7 +7,7 @@ mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_file, parse_yaml, SCREEN_SIZE};
+use crate::config::{load_file, parse_yaml, CONFIG_PATH, SCREEN_SIZE};
 use crate::state::State;
 // use crate::state::{gen_state, State};
 // use crate::state::{get_state, State};
@@ -17,7 +17,7 @@ use ggez::ContextBuilder;
 
 fn main() {
     // let yaml = load_file("./config/network.yaml");
-    let yaml = load_file("./config/network_simple.yaml");
+    let yaml = load_file(CONFIG_PATH);
     // println!("{:?}\n", yaml);
 
     let config = parse_yaml(&yaml);

@@ -63,6 +63,7 @@ impl State {
         let calc_line_state = |pod_id: &i32| -> LineState {
             let mut rng = rand::thread_rng();
             let mut n_stations_skipped = 0;
+            // default, needed so Line can never be nothing
             let mut line: Line = Line {
                 stations: vec![],
                 circular: true,
@@ -104,7 +105,7 @@ impl State {
 
         let mut people: Vec<Person> = vec![];
         for person_id in 0..config.people.n_people {
-            people.push(Person::new(person_id, 10));
+            people.push(Person::new(person_id, 10, &network));
         }
 
         let people_box = PeopleBox { people: people };
@@ -124,7 +125,7 @@ impl State {
         };
 
         // println!("{:?}", state);
-
+        // println!("conns: {:?}", state.network.lines);
         return state;
     }
 }
@@ -148,11 +149,10 @@ impl EventHandler for State {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::WHITE);
-        // Draw code here...
 
-        for station in &self.network.stations {
-            let res = station.draw(ctx); // TODO: handle result error case
-        }
+        self.network.draw(ctx);
+        self.pods_box.draw(ctx, &self.network);
+        self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)
     }
@@ -212,7 +212,7 @@ pub fn _get_dummy_state() -> State {
 
     let pod = Pod::new(0, 10, 10, line_state);
 
-    let person = Person::new(0, 10);
+    let person = Person::new(0, 10, &network);
 
     let people_box = PeopleBox {
         people: vec![person],
