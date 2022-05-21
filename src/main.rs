@@ -26,7 +26,7 @@ fn main() {
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")
         .window_setup(ggez::conf::WindowSetup::default().title("PublicFlow Simulation"))
-        .window_setup(ggez::conf::WindowSetup::default().vsync(true)) // sync fps to screen refresh rate
+        .window_setup(ggez::conf::WindowSetup::default().vsync(false)) // sync fps to screen refresh rate
         .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
         .build()
         .expect("aieee, could not create ggez context!");
