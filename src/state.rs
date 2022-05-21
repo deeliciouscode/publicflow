@@ -1,4 +1,4 @@
-use crate::config::{Config, DESIRED_FPS};
+use crate::config::{Config, DESIRED_FPS, POD_CAPACITY};
 use crate::connection::Connection;
 use crate::line::{Line, LineState};
 use crate::network::Network;
@@ -112,7 +112,7 @@ impl State {
 
         let mut pods: Vec<Pod> = vec![];
         for pod_id in 0..config.network.pods.n_pods {
-            pods.push(Pod::new(pod_id, 10, 5, calc_line_state(&pod_id)));
+            pods.push(Pod::new(pod_id, 10, POD_CAPACITY, calc_line_state(&pod_id)));
         }
 
         let pods_box = PodsBox { pods: pods };

@@ -1,7 +1,7 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION, WIDTH_LINE};
 use crate::line::LineState;
 use crate::network::Network;
-use ggez::graphics::Rect;
+use ggez::graphics::{Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -105,14 +105,28 @@ impl Pod {
 
                 let coords_from = station_from.get_real_coordinates();
                 let coords_to = station_to.get_real_coordinates();
+                let x = coords_from.0
+                    + (coords_to.0 - coords_from.0)
+                        * ((travel_time as f32 - *time_to_next_station as f32)
+                            / travel_time as f32);
+
+                let y = coords_from.1
+                    + (coords_to.1 - coords_from.1)
+                        * ((travel_time as f32 - *time_to_next_station as f32)
+                            / travel_time as f32);
+
+                let same_on_x = coords_from.0 == coords_to.0;
+                let same_on_y = coords_from.1 == coords_to.1;
+                let driving_right = coords_from.0 < coords_to.0;
+                let driving_up = coords_from.1 > coords_to.1;
 
                 let x_shift: f32;
                 let y_shift: f32;
 
-                if coords_from.0 == coords_to.0 && self.line_state.direction == 1 {
+                if same_on_x && driving_up {
                     x_shift = SIDELEN_STATION - SIDELEN_POD;
                     y_shift = 0.;
-                } else if self.line_state.direction == 1 {
+                } else if same_on_y && driving_right {
                     x_shift = 0.;
                     y_shift = SIDELEN_STATION - SIDELEN_POD;
                 } else {
@@ -120,19 +134,29 @@ impl Pod {
                     y_shift = 0.;
                 }
 
-                let x = coords_from.0
-                    + (coords_to.0 - coords_from.0)
-                        * (*time_to_next_station as f32 / travel_time as f32);
+                let width: f32;
+                let height: f32;
+                
+                if same_on_x {
+                    width = 20.;
+                    height = 60.;
+                } else {
+                    width = 60.;
+                    height = 20.;
+                }
 
-                let y = coords_from.1
-                    + (coords_to.1 - coords_from.1)
-                        * (*time_to_next_station as f32 / travel_time as f32);
+                // if self.id == 7 {
+                //     println!("from: {}, to: {}, coords: {:?}", station_id_from, station_id_to, (x,y))
+                // }
+
+                let real_x = x + x_shift;
+                let real_y = y + y_shift;
 
                 let station_rect = Rect {
-                    x: x + x_shift,
-                    y: y + y_shift,
-                    w: 20.,
-                    h: 20.,
+                    x: real_x,
+                    y: real_y,
+                    w: width,
+                    h: height,
                 };
                 let rectangle = graphics::Mesh::new_rectangle(
                     ctx,
@@ -140,7 +164,17 @@ impl Pod {
                     station_rect,
                     color,
                 )?;
+                // let text = Text::new(String::from("1"));
+                let text = Text::new(String::from(self.id.to_string()));
                 res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+                res = graphics::draw(
+                    ctx,
+                    &text,
+                    (ggez::mint::Point2 {
+                        x: real_x,
+                        y: real_y,
+                    },),
+                );
             }
             PodState::InvalidState { reason } => {}
         }

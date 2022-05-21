@@ -10,14 +10,16 @@ use yaml_rust::YamlLoader;
 pub const _SPEED_FACTOR: u64 = 1000;
 pub const _SIMULATION_DURATION: u64 = 1000;
 
-pub const CONFIG_PATH: &str = "./config/network.yaml";
-pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1080.0);
-pub const MAX_XY: (f32, f32) = (3.0, 4.0);
+pub const CONFIG_PATH: &str = "./config/network_simple.yaml";
+pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1000.0);
+pub const MAX_XY: (f32, f32) = (3.0, 2.0);
 pub const OFFSET: f32 = 100.0;
 pub const SIDELEN_STATION: f32 = 50.0;
 pub const SIDELEN_POD: f32 = 20.0;
 pub const WIDTH_LINE: f32 = 5.0;
 pub const DESIRED_FPS: u32 = 60; // TODO: decouple game speed from draw rate
+pub const TRAVEL_TIME: i32 = 120;
+pub const POD_CAPACITY: i32 = 10;
 
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {
@@ -209,7 +211,7 @@ fn calc_connections(station_ids: &Vec<i32>, circular: bool) -> Vec<Connection> {
         if i == station_ids.len() - 1 && circular {
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[0]]),
-                travel_time: 20,
+                travel_time: TRAVEL_TIME,
             });
             break;
         } else if i == station_ids.len() - 1 {
@@ -217,7 +219,7 @@ fn calc_connections(station_ids: &Vec<i32>, circular: bool) -> Vec<Connection> {
         } else {
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
-                travel_time: 20,
+                travel_time: TRAVEL_TIME,
             });
         }
     }
