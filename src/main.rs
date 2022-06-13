@@ -2,12 +2,13 @@ mod config;
 mod connection;
 mod line;
 mod network;
+mod pathstate;
 mod person;
 mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_file, parse_yaml, CONFIG_PATH, SCREEN_SIZE};
+use crate::config::{load_file, parse_yaml, CONFIG_PATH, SCREEN_SIZE, VSYNC};
 use crate::state::State;
 // use crate::state::{gen_state, State};
 // use crate::state::{get_state, State};
@@ -26,7 +27,7 @@ fn main() {
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")
         .window_setup(ggez::conf::WindowSetup::default().title("PublicFlow Simulation"))
-        .window_setup(ggez::conf::WindowSetup::default().vsync(false)) // sync fps to screen refresh rate
+        .window_setup(ggez::conf::WindowSetup::default().vsync(VSYNC)) // sync fps to screen refresh rate
         .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
         .build()
         .expect("aieee, could not create ggez context!");

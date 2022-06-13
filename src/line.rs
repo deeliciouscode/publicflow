@@ -1,5 +1,5 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE};
-use crate::connection::Connection;
+use crate::connection::{Connection, YieldTuple};
 use crate::network::Network;
 use ggez::graphics::Rect;
 use ggez::{graphics, Context, GameResult};
@@ -129,11 +129,22 @@ impl LineState {
 
     pub fn set_next_station_ix(&mut self) {
         if self.line_ix + self.direction > (self.line.stations.len() - 1) as i32 {
-            self.direction *= -1;
+            if !self.line.circular {
+                self.direction *= -1;
+                self.next_ix = self.line_ix + self.direction;
+            } else {
+                self.next_ix = 0;
+            }
         } else if self.line_ix + self.direction < 0 {
-            self.direction *= -1;
+            if !self.line.circular {
+                self.direction *= -1;
+                self.next_ix = self.line_ix + self.direction;
+            } else {
+                self.next_ix = (self.line.stations.len() - 1) as i32;
+            }
+        } else {
+            self.next_ix = self.line_ix + self.direction;
         }
-        self.next_ix = self.line_ix + self.direction;
     }
 
     pub fn update_line_ix(&mut self) {

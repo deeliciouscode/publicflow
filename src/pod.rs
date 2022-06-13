@@ -136,7 +136,7 @@ impl Pod {
 
                 let width: f32;
                 let height: f32;
-                
+
                 if same_on_x {
                     width = 20.;
                     height = 60.;
@@ -220,6 +220,7 @@ impl Pod {
 
     fn arrive_in_station(&mut self, net: &mut Network) {
         self.line_state.update_line_ix();
+        self.line_state.set_next_station_ix();
         self.state = self.state.to_just_arrived();
         let arrived_in_id = self.state.get_station_id();
         let maybe_station = net.try_get_station_by_id(arrived_in_id);
@@ -230,7 +231,6 @@ impl Pod {
     }
 
     fn depart_from_station(&mut self, net: &mut Network) {
-        self.line_state.set_next_station_ix();
         let next = self.line_state.get_next_station_id();
         let current = self.state.get_station_id();
         // println!(

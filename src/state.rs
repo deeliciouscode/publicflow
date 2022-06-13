@@ -41,6 +41,7 @@ impl State {
     }
 
     pub fn new(config: &Config) -> Self {
+        let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
         for station_id in 0..config.network.n_stations {
             // unwrap can panic, maybe do pattern matching instead??
@@ -54,10 +55,7 @@ impl State {
             })
         }
 
-        let network = Network {
-            stations: stations,
-            lines: config.network.lines.clone(),
-        };
+        let network = Network::new(stations, config.network.lines.clone());
 
         // let mut stations_occupied: Vec<i32> = vec![];
         let calc_line_state = |pod_id: &i32| -> LineState {
@@ -91,12 +89,14 @@ impl State {
                 panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
             }
 
-            let line_state = LineState {
+            let mut line_state = LineState {
                 line: line,
                 line_ix: line_ix,
                 next_ix: -1,
                 direction: direction,
             };
+
+            line_state.set_next_station_ix();
 
             // println!("-------------> {:?}", line_state);
 
@@ -105,7 +105,8 @@ impl State {
 
         let mut people: Vec<Person> = vec![];
         for person_id in 0..config.people.n_people {
-            people.push(Person::new(person_id, 10, &network));
+            let end = rng.gen_range(0..config.network.n_stations);
+            people.push(Person::new(person_id, 10, &network, 0, end)); // TODO: implement logic for person to travel
         }
 
         let people_box = PeopleBox { people: people };
@@ -198,10 +199,7 @@ pub fn _get_dummy_state() -> State {
         connections: vec![conn01, conn12],
     }];
 
-    let network = Network {
-        stations: vec![one, two, three],
-        lines: lines.clone(),
-    };
+    let network = Network::new(vec![one, two, three], lines.clone());
 
     let line_state = LineState {
         line: lines[0].clone(),
@@ -212,7 +210,7 @@ pub fn _get_dummy_state() -> State {
 
     let pod = Pod::new(0, 10, 10, line_state);
 
-    let person = Person::new(0, 10, &network);
+    let person = Person::new(0, 10, &network, 0, 4);
 
     let people_box = PeopleBox {
         people: vec![person],

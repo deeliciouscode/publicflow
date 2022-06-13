@@ -10,3 +10,7 @@ Here is where the Code for my BA will live
 
 ## Gerneral
 ggez: for drawing use sprite batch (especially for people)
+
+## TODO:
+
+TODO: make routinh more robust

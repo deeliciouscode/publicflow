@@ -19,9 +19,10 @@ pub const OFFSET: f32 = 100.0;
 pub const SIDELEN_STATION: f32 = 50.0;
 pub const SIDELEN_POD: f32 = 20.0;
 pub const WIDTH_LINE: f32 = 5.0;
-pub const DESIRED_FPS: u32 = 200; // TODO: decouple game speed from draw rate
+pub const DESIRED_FPS: u32 = 30; // TODO: decouple game speed from draw rate
 pub const TRAVEL_TIME: i32 = 120;
 pub const POD_CAPACITY: i32 = 10;
+pub const VSYNC: bool = true;
 
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {
@@ -153,6 +154,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                     circular: circular,
                                     connections: connections,
                                 };
+                                println!("{:?}", line);
                                 lines.push(line);
                             }
                         }
