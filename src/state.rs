@@ -1,5 +1,4 @@
 use crate::config::{Config, DESIRED_FPS, POD_CAPACITY};
-use crate::connection::Connection;
 use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
@@ -46,9 +45,11 @@ impl State {
         let mut stations: Vec<Station> = vec![];
         for station_id in 0..config.network.n_stations {
             // unwrap can panic, maybe do pattern matching instead??
-            let (coords_x, coords_y) = config.network.coordinates_map.get(&station_id).unwrap();
+            let (name, (coords_x, coords_y)) =
+                config.network.coordinates_map.get(&station_id).unwrap();
             stations.push(Station {
                 id: station_id,
+                name: name.clone(),
                 since_last_pod: 0,
                 edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
                 pods_in_station: HashSet::from([]), // The pods will register themselves later

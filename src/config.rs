@@ -12,18 +12,18 @@ pub const _SIMULATION_DURATION: u64 = 1000;
 
 // pub const CONFIG_PATH: &str = "./config/network_simple.yaml";
 // pub const MAX_XY: (f32, f32) = (3.0, 2.0);
-pub const CONFIG_PATH: &str = "./config/network.yaml";
-pub const MAX_XY: (f32, f32) = (3.0, 4.0);
-pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1000.0);
+pub const CONFIG_PATH: &str = "./config/ubahn.yaml";
+pub const MAX_XY: (f32, f32) = (70., 40.);
+pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1200.0);
 pub const OFFSET: f32 = 100.0;
 pub const SIDELEN_STATION: f32 = 50.0;
 pub const WIDTH_POD: f32 = 20.0;
 pub const LENGTH_POD: f32 = 60.0;
 pub const WIDTH_LINE: f32 = 5.0;
-pub const DESIRED_FPS: u32 = 60; // TODO: decouple game speed from draw rate
+pub const DESIRED_FPS: u32 = 240; // TODO: decouple game speed from draw rate
 pub const TRAVEL_TIME: i32 = 120;
 pub const POD_CAPACITY: i32 = 30;
-pub const VSYNC: bool = true;
+pub const VSYNC: bool = false;
 
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {
@@ -40,7 +40,7 @@ pub fn load_file(file: &str) -> Yaml {
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
-    pub coordinates_map: HashMap<i32, (i32, i32)>,
+    pub coordinates_map: HashMap<i32, (String, (i32, i32))>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
     pub pods: PodsConfig,
@@ -64,7 +64,7 @@ pub struct Config {
 
 pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     let mut n_stations: i64 = 0;
-    let mut coordinates_map: HashMap<i32, (i32, i32)> = HashMap::new();
+    let mut coordinates_map: HashMap<i32, (String, (i32, i32))> = HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut n_pods: i64 = 0;
     let mut n_people: i64 = 0;
@@ -95,32 +95,47 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                         for entry in coordinate_entries {
                             let key_yaml = entry.key();
                             let values_yaml = entry.get();
-                            let mut key_i32: i32 = -1;
+                            let mut name: String = String::from("");
+                            let mut id_i32: i32 = -1;
                             let mut x_i32: i32 = -1;
                             let mut y_i32: i32 = -1;
 
-                            if let Yaml::Integer(key_int) = key_yaml {
-                                key_i32 = *key_int as i32
+                            if let Yaml::String(key_str) = key_yaml {
+                                name = key_str.clone()
                             }
 
                             if let Yaml::Hash(values_hash) = values_yaml {
-                                if let Some(x_yaml) =
-                                    values_hash.get(&Yaml::String(String::from("x")))
+                                if let Some(id_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("id")))
                                 {
-                                    if let Yaml::Integer(x_int) = x_yaml {
-                                        x_i32 = *x_int as i32
+                                    if let Yaml::Integer(station_id) = id_yaml {
+                                        id_i32 = *station_id as i32;
                                     }
                                 }
-                                if let Some(y_yaml) =
-                                    values_hash.get(&Yaml::String(String::from("y")))
+                                if let Some(coords_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("coords")))
                                 {
-                                    if let Yaml::Integer(y_int) = y_yaml {
-                                        y_i32 = *y_int as i32
+                                    if let Yaml::Hash(coords_hash) = coords_yaml {
+                                        println!("{:?}", coords_hash);
+                                        if let Some(x_yaml) =
+                                            coords_hash.get(&Yaml::String(String::from("x")))
+                                        {
+                                            if let Yaml::Integer(x_int) = x_yaml {
+                                                x_i32 = *x_int as i32
+                                            }
+                                        }
+                                        if let Some(y_yaml) =
+                                            coords_hash.get(&Yaml::String(String::from("y")))
+                                        {
+                                            if let Yaml::Integer(y_int) = y_yaml {
+                                                y_i32 = *y_int as i32
+                                            }
+                                        }
                                     }
                                 }
                             }
 
-                            coordinates_map.insert(key_i32, (x_i32, y_i32));
+                            coordinates_map.insert(id_i32, (name, (x_i32, y_i32)));
                         }
                     }
                 }

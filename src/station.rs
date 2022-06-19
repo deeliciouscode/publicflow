@@ -7,6 +7,7 @@ use std::collections::HashSet;
 #[derive(Clone, Debug)]
 pub struct Station {
     pub id: i32,
+    pub name: String,
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,
@@ -52,6 +53,7 @@ impl Station {
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+        let mut res;
         let color = [0.5, 0.5, 0.5, 1.0].into();
 
         let real_coordinates = self.get_real_coordinates();
@@ -66,11 +68,11 @@ impl Station {
         let rectangle =
             graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
 
-        graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
         let text = Text::new(String::from(self.id.to_string()));
 
-        graphics::draw(
+        res = graphics::draw(
             ctx,
             &text,
             (ggez::mint::Point2 {

@@ -1,5 +1,5 @@
 use crate::config::{
-    LENGTH_POD, MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD,
+    LENGTH_POD, MAX_XY, OFFSET, POD_CAPACITY, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD,
 };
 use crate::line::LineState;
 use crate::network::Network;
@@ -80,7 +80,11 @@ impl Pod {
     }
 
     fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
-        let color = [0.2, 0.2, 0.2, 1.0].into();
+        let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
+        let green = 1. - red;
+
+        let color = [red - 0.2, green - 0.2, 0., 1.0].into();
+
         let mut res: GameResult<()> = std::result::Result::Ok(());
 
         match &self.state {

@@ -22,7 +22,7 @@ fn main() {
     // println!("{:?}\n", yaml);
 
     let config = parse_yaml(&yaml);
-    // println!("config: {:?}\n", config);
+    println!("config: {:?}\n", config);
 
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")
