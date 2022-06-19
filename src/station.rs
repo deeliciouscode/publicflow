@@ -1,5 +1,5 @@
 use crate::config::{Config, MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION};
-use ggez::graphics::{Rect, Text};
+use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -78,6 +78,16 @@ impl Station {
             (ggez::mint::Point2 {
                 x: real_coordinates.0,
                 y: real_coordinates.1,
+            },),
+        );
+
+        let count = Text::new(String::from(self.people_in_station.len().to_string()));
+        res = graphics::draw(
+            ctx,
+            &count,
+            (ggez::mint::Point2 {
+                x: real_coordinates.0 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
+                y: real_coordinates.1 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
             },),
         );
 
