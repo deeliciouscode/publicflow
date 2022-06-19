@@ -17,6 +17,7 @@ pub struct State {
     pub pods_box: PodsBox,
     pub people_box: PeopleBox,
     pub time_passed: u32,
+    pub config: Config,
 }
 
 impl State {
@@ -51,11 +52,13 @@ impl State {
                 since_last_pod: 0,
                 edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
                 pods_in_station: HashSet::from([]), // The pods will register themselves later
+                people_in_station: HashSet::from([]),
                 coordinates: (*coords_x as f32, *coords_y as f32),
+                config: config.clone(),
             })
         }
 
-        let network = Network::new(stations, config.network.lines.clone());
+        let mut network = Network::new(stations, config);
 
         // let mut stations_occupied: Vec<i32> = vec![];
         let calc_line_state = |pod_id: &i32| -> LineState {
@@ -105,8 +108,16 @@ impl State {
 
         let mut people: Vec<Person> = vec![];
         for person_id in 0..config.people.n_people {
+            let start = rng.gen_range(0..config.network.n_stations);
             let end = rng.gen_range(0..config.network.n_stations);
-            people.push(Person::new(person_id, 10, &network, 0, end)); // TODO: implement logic for person to travel
+            people.push(Person::new(person_id, 10, &network, start, end)); // TODO: implement logic for person to travel
+        }
+
+        for person in &people {
+            let station = network
+                .try_get_station_by_id(person.path_state.get_current_station_id().unwrap() as i32)
+                .unwrap();
+            station.register_person(person.id);
         }
 
         let people_box = PeopleBox { people: people };
@@ -123,6 +134,7 @@ impl State {
             people_box: people_box,
             pods_box: pods_box,
             time_passed: 0,
+            config: config.clone(),
         };
 
         // println!("{:?}", state);
@@ -153,77 +165,8 @@ impl EventHandler for State {
 
         self.network.draw(ctx);
         self.pods_box.draw(ctx, &self.network);
-        self.people_box.draw(ctx, &self.network);
+        // self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)
     }
-}
-
-// simplest possible dummy state - for debugging purposes
-pub fn _get_dummy_state() -> State {
-    let one = Station {
-        id: 0,
-        since_last_pod: 0,
-        edges_to: HashSet::from([1]),
-        pods_in_station: HashSet::from([0]),
-        coordinates: (1., 1.),
-    };
-    let two = Station {
-        id: 1,
-        since_last_pod: 0,
-        edges_to: HashSet::from([0, 2]),
-        pods_in_station: HashSet::new(),
-        coordinates: (2.0, 1.),
-    };
-    let three = Station {
-        id: 2,
-        since_last_pod: 0,
-        edges_to: HashSet::from([1]),
-        pods_in_station: HashSet::new(),
-        coordinates: (3., 1.),
-    };
-
-    let conn01 = Connection {
-        station_ids: HashSet::from([0, 1]),
-        travel_time: 20,
-    };
-
-    let conn12 = Connection {
-        station_ids: HashSet::from([1, 2]),
-        travel_time: 20,
-    };
-
-    let lines = vec![Line {
-        stations: vec![0, 1, 2],
-        circular: true,
-        connections: vec![conn01, conn12],
-    }];
-
-    let network = Network::new(vec![one, two, three], lines.clone());
-
-    let line_state = LineState {
-        line: lines[0].clone(),
-        line_ix: 0,
-        next_ix: 1,
-        direction: 1,
-    };
-
-    let pod = Pod::new(0, 10, 10, line_state);
-
-    let person = Person::new(0, 10, &network, 0, 4);
-
-    let people_box = PeopleBox {
-        people: vec![person],
-    };
-
-    let pods_box = PodsBox { pods: vec![pod] };
-
-    let state = State {
-        network: network,
-        people_box: people_box,
-        pods_box: pods_box,
-        time_passed: 0,
-    };
-
-    state.clone()
 }

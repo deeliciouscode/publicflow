@@ -1,5 +1,5 @@
-use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION};
-use ggez::graphics::Rect;
+use crate::config::{Config, MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION};
+use ggez::graphics::{Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -10,7 +10,9 @@ pub struct Station {
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,
+    pub people_in_station: HashSet<i32>,
     pub coordinates: (f32, f32),
+    pub config: Config,
 }
 
 impl Station {
@@ -20,6 +22,15 @@ impl Station {
 
     pub fn deregister_pod(&mut self, pod_id: i32) {
         self.pods_in_station.remove(&pod_id);
+    }
+
+    pub fn register_person(&mut self, person_id: i32) {
+        // println!("register person {} in station {}.", person_id, self.id);
+        self.people_in_station.insert(person_id);
+    }
+
+    pub fn deregister_person(&mut self, person_id: i32) {
+        self.people_in_station.remove(&person_id);
     }
 
     pub fn get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
@@ -51,8 +62,50 @@ impl Station {
             w: SIDELEN_STATION,
             h: SIDELEN_STATION,
         };
+
         let rectangle =
             graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
-        graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))
+
+        graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
+        let text = Text::new(String::from(self.id.to_string()));
+
+        graphics::draw(
+            ctx,
+            &text,
+            (ggez::mint::Point2 {
+                x: real_coordinates.0,
+                y: real_coordinates.1,
+            },),
+        );
+
+        // let radius = self.people_in_station.len() as f32 / 10.;
+        let radius = self.people_in_station.len() as f32;
+
+        let red =
+            radius / (self.config.people.n_people as f32 / self.config.network.n_stations as f32);
+        let green = 1. - red;
+
+        let color_circle = [red, green, 0., 0.5].into();
+
+        // println!("--------------------");
+        // println!("people in station {}: {}", self.id, radius);
+        // println!("real coordinates: {}, {}", real_coordinates.0, real_coordinates.1);
+        // println!("radius: {}", radius);
+
+        let circle = graphics::Mesh::new_circle(
+            ctx,
+            // graphics::DrawMode::stroke(2.),
+            graphics::DrawMode::fill(),
+            ggez::mint::Point2 {
+                x: real_coordinates.0 + SIDELEN_STATION / 2.,
+                y: real_coordinates.1 + SIDELEN_STATION / 2.,
+            },
+            radius,
+            1.,
+            color_circle,
+        )?;
+
+        graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))
     }
 }

@@ -1,4 +1,4 @@
-use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION, WIDTH_LINE};
+use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD};
 use crate::line::LineState;
 use crate::network::Network;
 use crate::pathstate::PathState;
@@ -50,7 +50,7 @@ pub struct Person {
     transition_time: i32,
     real_coordinates: (f32, f32),
     state: PersonState,
-    path_state: PathState,
+    pub path_state: PathState,
 }
 
 impl Person {
@@ -64,16 +64,16 @@ impl Person {
                 previous_pod_id: -1,
                 time_in_station: transition_time - 1,
             },
-            path_state: PathState::new(&network.graph, start as u32, 12), // finish as u32),
+            path_state: PathState::new(&network.graph, start as u32, finish as u32),
         };
         person.set_real_coordinates(0, network);
-        println!("{:?}", person.path_state);
+        // println!("{:?}", person.path_state);
         person
     }
 
     pub fn new_path(&mut self, graph: &UnGraph<u32, ()>, start: u32, finish: u32) {
         self.path_state = PathState::new(graph, start, finish);
-        println!("{:?}", self.path_state);
+        // println!("{:?}", self.path_state);
     }
 
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
@@ -141,7 +141,7 @@ impl Person {
             } => {
                 // println!("person in arrived state");
                 let pod_id_deref = *pod_id;
-                self.decide_on_arrival(pods_box, pod_id_deref);
+                self.decide_on_arrival(pods_box, network, pod_id_deref);
                 let maybe_station_id = self.try_get_station_id();
 
                 match maybe_station_id {
@@ -187,24 +187,28 @@ impl Person {
                 // println!("maybe_pod_ids: {:?}", maybe_pod_ids);
                 match maybe_pod_ids {
                     Some(pod_ids) => {
-                        println!(
-                            "{}, {}",
-                            station_id,
-                            self.path_state.get_current_station_id().unwrap()
-                        );
+                        // println!(
+                        //     "{}, {}",
+                        //     station_id,
+                        //     self.path_state.get_current_station_id().unwrap()
+                        // );
 
                         for pod_id in pod_ids {
                             let pod = pods_box.get_pod_by_id(pod_id).unwrap();
-                            println!(
-                                "next_station ids: {}, {}",
-                                pod.line_state.get_next_station_id(),
-                                next_station_id
-                            );
+                            // println!(
+                            //     "next_station ids: {}, {}",
+                            //     pod.line_state.get_next_station_id(),
+                            //     next_station_id
+                            // );
                             if pod.line_state.get_next_station_id() == next_station_id as i32 {
                                 let got_in = pod.try_register_person(self.id);
+                                // println!("got_in: {}", got_in);
                                 if got_in {
-                                    println!("Getting into pod with id: {} now", pod_id);
+                                    // println!("Getting into pod with id: {} now", pod_id);
                                     self.state = self.state.to_riding(pod_id);
+                                    let station =
+                                        network.try_get_station_by_id(station_id).unwrap();
+                                    station.deregister_person(self.id);
                                     break;
                                 }
                             }
@@ -216,6 +220,13 @@ impl Person {
             None => {
                 let finish = rng.gen_range(0..network.stations.len());
                 self.new_path(&network.graph, station_id as u32, finish as u32);
+                // println!(
+                //     "person {} is at {} and will go to {} next, taking path {:?}.",
+                //     self.id,
+                //     self.state.try_get_station_id().unwrap(),
+                //     finish,
+                //     self.path_state
+                // );
                 return; // TODO: remove the 1 second delay that is happening when the new_path = old_path
             }
         }
@@ -242,6 +253,8 @@ impl Person {
                         if got_in {
                             // println!("Getting into pod with id: {} now", pod_id_to_take);
                             self.state = self.state.to_riding(pod_id_to_take);
+                            let station = network.try_get_station_by_id(station_id).unwrap();
+                            station.deregister_person(self.id);
                         } else {
                             // println!(
                             //     "Couldn't get into pod with id: {} - it's full.",
@@ -268,26 +281,39 @@ impl Person {
         }
     }
 
-    fn decide_on_arrival(&mut self, pods_box: &mut PodsBox, pod_id: i32) {
+    fn decide_on_arrival(&mut self, pods_box: &mut PodsBox, network: &mut Network, pod_id: i32) {
         self.path_state.arrive();
-        println!("self.path_state: {:?}", self.path_state);
+        // println!("self.path_state: {:?}", self.path_state);
         let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+        let line_next_station_id = pod.line_state.get_next_station_id();
         let maybe_next_station_id = self.path_state.get_next_station_id();
         match maybe_next_station_id {
-            Some(next_station_id) => {
-                if pod.line_state.get_next_station_id() != next_station_id as i32 {
+            Some(desired_next_station_id) => {
+                if line_next_station_id != desired_next_station_id as i32 {
                     self.state = self.state.to_transitioning();
+                    let station = network
+                        .try_get_station_by_id(pod.line_state.get_station_id())
+                        .unwrap();
+                    station.register_person(self.id);
+                    let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+                    pod.deregister_person(&self.id);
                 } else {
                     self.state = self.state.to_riding(pod_id);
                 }
             }
             None => {
-                println!(
-                    "self.path_state.finished_journey(): {}",
-                    self.path_state.finished_journey()
-                );
+                // println!(
+                //     "self.path_state.finished_journey(): {}",
+                //     self.path_state.finished_journey()
+                // );
                 if self.path_state.finished_journey() {
                     self.state = self.state.to_transitioning();
+                    let station = network
+                        .try_get_station_by_id(pod.line_state.get_station_id())
+                        .unwrap();
+                    station.register_person(self.id);
+                    let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+                    pod.deregister_person(&self.id);
                 }
             }
         }
@@ -319,8 +345,8 @@ impl Person {
         let mut rng = rand::thread_rng();
         let x_rnd: f32 = rng.gen();
         let y_rnd: f32 = rng.gen();
-        let x_shift: f32 = x_rnd * SIDELEN_POD * 2.;
-        let y_shift: f32 = y_rnd * SIDELEN_POD * 2.;
+        let x_shift: f32 = x_rnd * WIDTH_POD * 2.;
+        let y_shift: f32 = y_rnd * WIDTH_POD * 2.;
 
         self.real_coordinates = (coords_station.0 + x_shift, coords_station.1 + y_shift)
     }

@@ -17,11 +17,12 @@ pub const MAX_XY: (f32, f32) = (3.0, 4.0);
 pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1000.0);
 pub const OFFSET: f32 = 100.0;
 pub const SIDELEN_STATION: f32 = 50.0;
-pub const SIDELEN_POD: f32 = 20.0;
+pub const WIDTH_POD: f32 = 20.0;
+pub const LENGTH_POD: f32 = 60.0;
 pub const WIDTH_LINE: f32 = 5.0;
-pub const DESIRED_FPS: u32 = 30; // TODO: decouple game speed from draw rate
+pub const DESIRED_FPS: u32 = 60; // TODO: decouple game speed from draw rate
 pub const TRAVEL_TIME: i32 = 120;
-pub const POD_CAPACITY: i32 = 10;
+pub const POD_CAPACITY: i32 = 30;
 pub const VSYNC: bool = true;
 
 // EXTERNAL CONFIG
@@ -36,7 +37,7 @@ pub fn load_file(file: &str) -> Yaml {
     return docs[0].clone();
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
     pub coordinates_map: HashMap<i32, (i32, i32)>,
@@ -45,17 +46,17 @@ pub struct NetworkConfig {
     pub pods: PodsConfig,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PodsConfig {
     pub n_pods: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PeopleConfig {
     pub n_people: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub network: NetworkConfig,
     pub people: PeopleConfig,

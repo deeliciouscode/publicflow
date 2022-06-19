@@ -1,3 +1,4 @@
+use crate::config::Config as SimConfig;
 use crate::connection::{Connection, YieldTuple};
 use crate::line::Line;
 use crate::station::Station;
@@ -8,8 +9,9 @@ use petgraph::graph::{DiGraph, UnGraph};
 #[derive(Clone, Debug)]
 pub struct Network {
     pub stations: Vec<Station>,
-    pub lines: Vec<Line>,
     pub graph: UnGraph<u32, ()>,
+    pub lines: Vec<Line>,
+    pub config: SimConfig,
 }
 
 fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, ()> {
@@ -25,11 +27,13 @@ fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, ()> {
 }
 
 impl Network {
-    pub fn new(stations: Vec<Station>, lines: Vec<Line>) -> Self {
+    pub fn new(stations: Vec<Station>, config: &SimConfig) -> Self {
+        let lines = config.network.lines.clone();
         let mut network = Network {
             stations: stations,
-            lines: lines.clone(),
             graph: calc_graph(&lines),
+            lines: lines,
+            config: config.clone(),
         };
         network.print_state();
         network

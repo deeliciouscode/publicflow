@@ -1,4 +1,6 @@
-use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION, WIDTH_LINE};
+use crate::config::{
+    LENGTH_POD, MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD,
+};
 use crate::line::LineState;
 use crate::network::Network;
 use ggez::graphics::{Rect, Text};
@@ -124,11 +126,11 @@ impl Pod {
                 let y_shift: f32;
 
                 if same_on_x && driving_up {
-                    x_shift = SIDELEN_STATION - SIDELEN_POD;
+                    x_shift = SIDELEN_STATION - WIDTH_POD;
                     y_shift = 0.;
                 } else if same_on_y && driving_right {
                     x_shift = 0.;
-                    y_shift = SIDELEN_STATION - SIDELEN_POD;
+                    y_shift = SIDELEN_STATION - WIDTH_POD;
                 } else {
                     x_shift = 0.;
                     y_shift = 0.;
@@ -138,11 +140,11 @@ impl Pod {
                 let height: f32;
 
                 if same_on_x {
-                    width = 20.;
-                    height = 60.;
+                    width = WIDTH_POD;
+                    height = LENGTH_POD;
                 } else {
-                    width = 60.;
-                    height = 20.;
+                    width = LENGTH_POD;
+                    height = WIDTH_POD;
                 }
 
                 // if self.id == 7 {
@@ -165,14 +167,34 @@ impl Pod {
                     color,
                 )?;
                 // let text = Text::new(String::from("1"));
-                let text = Text::new(String::from(self.id.to_string()));
+                let id_text = Text::new(String::from(self.id.to_string()));
+                let people_inside_text =
+                    Text::new(String::from(self.people_in_pod.len().to_string()));
                 res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
                 res = graphics::draw(
                     ctx,
-                    &text,
+                    &id_text,
                     (ggez::mint::Point2 {
                         x: real_x,
                         y: real_y,
+                    },),
+                );
+
+                let people_inside_text_x;
+                let people_inside_text_y;
+                if same_on_x {
+                    people_inside_text_x = real_x;
+                    people_inside_text_y = real_y + LENGTH_POD / 2.;
+                } else {
+                    people_inside_text_x = real_x + LENGTH_POD / 2.;
+                    people_inside_text_y = real_y;
+                }
+                res = graphics::draw(
+                    ctx,
+                    &people_inside_text,
+                    (ggez::mint::Point2 {
+                        x: people_inside_text_x,
+                        y: people_inside_text_y,
                     },),
                 );
             }
@@ -256,6 +278,9 @@ impl Pod {
     }
 
     pub fn try_register_person(&mut self, person_id: i32) -> bool {
+        // println!("------------------------------------------------------");
+        // println!("self.people_in_pod.len(): {}", self.people_in_pod.len());
+        // println!("self.capacity: {}", self.capacity);
         if self.people_in_pod.len() >= self.capacity as usize {
             return false;
         }
