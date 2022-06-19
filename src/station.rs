@@ -54,7 +54,7 @@ impl Station {
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let mut res;
-        let color = [0.5, 0.5, 0.5, 1.0].into();
+        let color = [0.5, 0.5, 0.5, 0.5].into();
 
         let real_coordinates = self.get_real_coordinates();
 
@@ -70,7 +70,7 @@ impl Station {
 
         res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
-        let text = Text::new(String::from(self.id.to_string()));
+        let text = Text::new(String::from(self.name.clone()));
 
         res = graphics::draw(
             ctx,

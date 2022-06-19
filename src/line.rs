@@ -23,88 +23,121 @@ impl Line {
             let from = network.try_get_station_by_id_unmut(station_ids.0).unwrap();
             let to = network.try_get_station_by_id_unmut(station_ids.1).unwrap();
 
-            let x_left: f32;
-            let x_right: f32;
-            let y_up: f32;
-            let y_down: f32;
+            let x1: f32;
+            let x2: f32;
+            let y1: f32;
+            let y2: f32;
 
-            if to.coordinates.0 > from.coordinates.0 {
-                x_left = from.coordinates.0;
-                x_right = to.coordinates.0;
+            if (to.coordinates.0 == from.coordinates.0 && to.coordinates.1 > from.coordinates.1)
+                || to.coordinates.0 > from.coordinates.0
+            {
+                x1 = from.coordinates.0;
+                y1 = from.coordinates.1;
+                x2 = to.coordinates.0;
+                y2 = to.coordinates.1;
             } else {
-                x_left = to.coordinates.0;
-                x_right = from.coordinates.0;
+                x1 = to.coordinates.0;
+                y1 = to.coordinates.1;
+                x2 = from.coordinates.0;
+                y2 = from.coordinates.1;
             }
 
-            if to.coordinates.1 > from.coordinates.1 {
-                y_up = from.coordinates.1;
-                y_down = to.coordinates.1;
-            } else {
-                y_up = to.coordinates.1;
-                y_down = from.coordinates.1;
-            }
-
-            let x = OFFSET
-                + (x_left / MAX_XY.0 * SCREEN_SIZE.0)
+            let x1_real = OFFSET
+                + (x1 / MAX_XY.0 * SCREEN_SIZE.0)
                     * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
 
-            let y = OFFSET
-                + (y_up / MAX_XY.1 * SCREEN_SIZE.1)
+            let y1_real = OFFSET
+                + (y1 / MAX_XY.1 * SCREEN_SIZE.1)
                     * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
 
-            let w = OFFSET
-                + (x_right / MAX_XY.0 * SCREEN_SIZE.0)
-                    * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32
-                - x
-                + WIDTH_LINE;
+            let x2_real = OFFSET
+                + (x2 / MAX_XY.0 * SCREEN_SIZE.0)
+                    * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
 
-            let h = OFFSET
-                + (y_down / MAX_XY.1 * SCREEN_SIZE.1)
-                    * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32
-                - y
-                + WIDTH_LINE;
+            let y2_real = OFFSET
+                + (y2 / MAX_XY.1 * SCREEN_SIZE.1)
+                    * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
 
-            let line_left_rect = Rect {
-                x: x,
-                y: y,
-                w: w,
-                h: h,
-            };
+            let mut x1_left_offset: f32 = 0.;
+            let mut y1_left_offset: f32 = 0.;
+            let mut x2_left_offset: f32 = 0.;
+            let mut y2_left_offset: f32 = 0.;
+            let mut x1_right_offset: f32 = 0.;
+            let mut y1_right_offset: f32 = 0.;
+            let mut x2_right_offset: f32 = 0.;
+            let mut y2_right_offset: f32 = 0.;
 
-            let left_rect = graphics::Mesh::new_rectangle(
-                ctx,
-                graphics::DrawMode::fill(),
-                line_left_rect,
-                color,
-            )?;
-
-            let x_right: f32;
-            let y_right: f32;
-
-            if h > w {
-                x_right = x + SIDELEN_STATION - WIDTH_LINE;
-                y_right = y;
+            let mx = (y1_real - y2_real) / (x2_real - x1_real);
+            // println!("ids: {:?} | mx: {}", station_ids, mx);
+            if mx == std::f32::INFINITY || mx == std::f32::NEG_INFINITY {
+                x1_left_offset = WIDTH_LINE / 2.;
+                y1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_left_offset = WIDTH_LINE / 2.;
+                y2_left_offset = WIDTH_LINE / 2.;
+                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y2_right_offset = WIDTH_LINE / 2.;
+            } else if mx == 0. {
+                x1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_left_offset = WIDTH_LINE / 2.;
+                x2_left_offset = WIDTH_LINE / 2.;
+                y2_left_offset = WIDTH_LINE / 2.;
+                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_right_offset = WIDTH_LINE / 2.;
+                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+            } else if mx > 1. {
+                x1_left_offset = WIDTH_LINE / 2.;
+                y1_left_offset = WIDTH_LINE / 2.;
+                x2_left_offset = WIDTH_LINE / 2.;
+                y2_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_right_offset = WIDTH_LINE / 2.;
+                x2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+            } else if mx < -1. {
+                x1_left_offset = WIDTH_LINE / 2.;
+                y1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_left_offset = WIDTH_LINE / 2.;
+                y2_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_right_offset = WIDTH_LINE / 2.;
+                y2_right_offset = WIDTH_LINE / 2.;
             } else {
-                x_right = x;
-                y_right = y + SIDELEN_STATION - WIDTH_LINE;
+                x1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_left_offset = WIDTH_LINE / 2.;
+                x2_left_offset = WIDTH_LINE / 2.;
+                y2_left_offset = WIDTH_LINE / 2.;
+                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
+                x2_right_offset = WIDTH_LINE / 2.;
+                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
             }
 
-            let line_right_rect = Rect {
-                x: x_right,
-                y: y_right,
-                w: w,
-                h: h,
-            };
-
-            let right_rect = graphics::Mesh::new_rectangle(
+            let left_line = graphics::Mesh::new_line(
                 ctx,
-                graphics::DrawMode::fill(),
-                line_right_rect,
+                &[
+                    [x1_real + x1_left_offset, y1_real + y1_left_offset],
+                    [x2_real + x2_left_offset, y2_real + y2_left_offset],
+                ],
+                WIDTH_LINE,
                 color,
             )?;
 
-            res = graphics::draw(ctx, &left_rect, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-            res = graphics::draw(ctx, &right_rect, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            let right_line = graphics::Mesh::new_line(
+                ctx,
+                &[
+                    [x1_real + x1_right_offset, y1_real + y1_right_offset],
+                    [x2_real + x2_right_offset, y2_real + y2_right_offset],
+                ],
+                WIDTH_LINE,
+                color,
+            )?;
+
+            res = graphics::draw(ctx, &left_line, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            res = graphics::draw(ctx, &right_line, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
         }
         res
     }

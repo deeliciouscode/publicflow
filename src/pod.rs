@@ -171,18 +171,18 @@ impl Pod {
                     color,
                 )?;
                 // let text = Text::new(String::from("1"));
-                let id_text = Text::new(String::from(self.id.to_string()));
+                // let id_text = Text::new(String::from(self.id.to_string()));
                 let people_inside_text =
                     Text::new(String::from(self.people_in_pod.len().to_string()));
                 res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-                res = graphics::draw(
-                    ctx,
-                    &id_text,
-                    (ggez::mint::Point2 {
-                        x: real_x,
-                        y: real_y,
-                    },),
-                );
+                // res = graphics::draw(
+                //     ctx,
+                //     &id_text,
+                //     (ggez::mint::Point2 {
+                //         x: real_x,
+                //         y: real_y,
+                //     },),
+                // );
 
                 let people_inside_text_x;
                 let people_inside_text_y;

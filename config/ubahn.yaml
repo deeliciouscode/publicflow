@@ -44,7 +44,7 @@ network:
       coords: {x: 30, y: 35}
     SendlT:
       id: 13
-      coords: {x: 35, y: 25}
+      coords: {x: 35, y: 27}
     MucFr:
       id: 14
       coords: {x: 40, y: 10}
