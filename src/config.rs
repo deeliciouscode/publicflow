@@ -186,7 +186,8 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                     }
                                 }
                                 update_edge_map(&stations, circular, &mut edge_map);
-                                let connections = calc_connections(&stations, circular);
+                                let connections =
+                                    calc_connections(&name, &stations, circular, &distances);
                                 let line = Line {
                                     name: name,
                                     stations: stations,
@@ -248,22 +249,36 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     }
 }
 
-fn calc_connections(station_ids: &Vec<i32>, circular: bool) -> Vec<Connection> {
+fn calc_connections(
+    name: &String,
+    station_ids: &Vec<i32>,
+    circular: bool,
+    distances: &Vec<i32>,
+) -> Vec<Connection> {
     let mut connections: Vec<Connection> = vec![];
+
+    // first some verifications
+    if circular && station_ids.len() != distances.len() {
+        panic!("A circular line must have as many distances as it has stations. Ascertain that this is the case for line {}", name);
+    } else if station_ids.len() != distances.len() + 1 {
+        panic!("A non circular line must have exactly n-1 distances if it has n stations. Ascertain that this is the case for line {}", name);
+    }
 
     for i in 0..station_ids.len() {
         if i == station_ids.len() - 1 && circular {
+            let travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[0]]),
-                travel_time: TRAVEL_TIME,
+                travel_time: travel_time,
             });
             break;
         } else if i == station_ids.len() - 1 {
             break;
         } else {
+            let travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
-                travel_time: TRAVEL_TIME,
+                travel_time: travel_time,
             });
         }
     }

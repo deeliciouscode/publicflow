@@ -15,7 +15,7 @@ impl PathState {
             graph,
             NodeIndex::new(start as usize),
             |finish| finish == NodeIndex::new(end as usize),
-            |_| 1,
+            |_| 1, // |e| *e.weight()
             |_| 0,
         );
 
