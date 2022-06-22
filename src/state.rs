@@ -67,7 +67,9 @@ impl State {
             let mut n_stations_skipped = 0;
             // default, needed so Line can never be nothing
             let mut line: Line = Line {
+                name: "placeholder".to_string(),
                 stations: vec![],
+                distances: vec![],
                 circular: true,
                 connections: vec![],
             };

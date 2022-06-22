@@ -144,7 +144,18 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                         for line_yaml in lines_array {
                             if let Yaml::Hash(line_hash) = line_yaml {
                                 let mut stations: Vec<i32> = vec![];
+                                let mut distances: Vec<i32> = vec![];
                                 let mut circular: bool = false;
+                                let mut name: String = String::from("placeholder");
+
+                                if let Some(name_yaml) =
+                                    line_hash.get(&Yaml::String(String::from("name")))
+                                {
+                                    // TODO finish this
+                                    if let Yaml::String(name_string) = name_yaml {
+                                        name = name_string.clone();
+                                    }
+                                }
                                 if let Some(stations_yaml) =
                                     line_hash.get(&Yaml::String(String::from("stations")))
                                 {
@@ -152,6 +163,17 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                         for station_yaml in stations_array {
                                             if let Yaml::Integer(station_id) = station_yaml {
                                                 stations.push(*station_id as i32);
+                                            }
+                                        }
+                                    }
+                                }
+                                if let Some(distances_yaml) =
+                                    line_hash.get(&Yaml::String(String::from("distances")))
+                                {
+                                    if let Yaml::Array(distances_array) = distances_yaml {
+                                        for distance_yaml in distances_array {
+                                            if let Yaml::Integer(distance) = distance_yaml {
+                                                distances.push(*distance as i32);
                                             }
                                         }
                                     }
@@ -166,7 +188,9 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                 update_edge_map(&stations, circular, &mut edge_map);
                                 let connections = calc_connections(&stations, circular);
                                 let line = Line {
+                                    name: name,
                                     stations: stations,
+                                    distances: distances,
                                     circular: circular,
                                     connections: connections,
                                 };

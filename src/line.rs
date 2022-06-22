@@ -7,7 +7,9 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct Line {
+    pub name: String,
     pub stations: Vec<i32>,
+    pub distances: Vec<i32>,
     pub circular: bool,
     pub connections: Vec<Connection>,
 }
