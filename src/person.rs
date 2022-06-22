@@ -71,7 +71,7 @@ impl Person {
         person
     }
 
-    pub fn new_path(&mut self, graph: &UnGraph<u32, ()>, start: u32, finish: u32) {
+    pub fn new_path(&mut self, graph: &UnGraph<u32, u32>, start: u32, finish: u32) {
         self.path_state = PathState::new(graph, start, finish);
         // println!("{:?}", self.path_state);
     }

@@ -22,7 +22,7 @@ pub const LENGTH_POD: f32 = 60.0;
 pub const WIDTH_LINE: f32 = 5.0;
 pub const DESIRED_FPS: u32 = 120; // TODO: decouple game speed from draw rate
 pub const TRAVEL_TIME: i32 = 120;
-pub const POD_CAPACITY: i32 = 30;
+pub const POD_CAPACITY: i32 = 50;
 pub const VSYNC: bool = false;
 
 // EXTERNAL CONFIG

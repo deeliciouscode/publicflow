@@ -10,12 +10,13 @@ pub struct PathState {
 
 // TODO: implement weights using the time to travel between stations
 impl PathState {
-    pub fn new(graph: &UnGraph<u32, ()>, start: u32, end: u32) -> Self {
+    pub fn new(graph: &UnGraph<u32, u32>, start: u32, end: u32) -> Self {
+        // println!("{:?}", graph);
         let maybe_path = astar(
             graph,
             NodeIndex::new(start as usize),
             |finish| finish == NodeIndex::new(end as usize),
-            |_| 1, // |e| *e.weight()
+            |e| *e.weight(),
             |_| 0,
         );
 

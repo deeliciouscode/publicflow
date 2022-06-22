@@ -409,11 +409,14 @@ impl PodState {
                 station_id_from,
                 station_id_to,
                 time_to_next_station,
-            } => PodState::BetweenStations {
-                station_id_from: *station_id_from,
-                station_id_to: *station_id_to,
-                time_to_next_station: time_to_next_station - 1,
-            },
+            } => {
+                // TODO:PRIO implement updating the coordinates here instead of in the draw function
+                PodState::BetweenStations {
+                    station_id_from: *station_id_from,
+                    station_id_to: *station_id_to,
+                    time_to_next_station: time_to_next_station - 1,
+                }
+            }
             _ => PodState::InvalidState {
                 reason: String::from("Pod can only drive if in BetweenStations state"),
             },

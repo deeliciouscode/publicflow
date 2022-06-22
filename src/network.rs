@@ -1,5 +1,5 @@
 use crate::config::Config as SimConfig;
-use crate::connection::{Connection, YieldTuple};
+use crate::connection::{Connection, YieldTriple, YieldTuple};
 use crate::line::Line;
 use crate::station::Station;
 use ggez::Context;
@@ -9,17 +9,17 @@ use petgraph::graph::{DiGraph, UnGraph};
 #[derive(Clone, Debug)]
 pub struct Network {
     pub stations: Vec<Station>,
-    pub graph: UnGraph<u32, ()>,
+    pub graph: UnGraph<u32, u32>,
     pub lines: Vec<Line>,
     pub config: SimConfig,
 }
 
-fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, ()> {
-    let mut edges: Vec<(u32, u32)> = vec![];
+fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
+    let mut edges: Vec<(u32, u32, u32)> = vec![];
 
     for line in lines {
         for connection in &line.connections {
-            edges.push(connection.yield_tuple())
+            edges.push(connection.yield_triple())
         }
     }
     let graph = UnGraph::from_edges(edges);
