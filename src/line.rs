@@ -60,86 +60,20 @@ impl Line {
                 + (y2 / MAX_XY.1 * SCREEN_SIZE.1)
                     * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
 
-            let mut x1_left_offset: f32 = 0.;
-            let mut y1_left_offset: f32 = 0.;
-            let mut x2_left_offset: f32 = 0.;
-            let mut y2_left_offset: f32 = 0.;
-            let mut x1_right_offset: f32 = 0.;
-            let mut y1_right_offset: f32 = 0.;
-            let mut x2_right_offset: f32 = 0.;
-            let mut y2_right_offset: f32 = 0.;
+            let x_offset: f32 = SIDELEN_STATION / 2. - WIDTH_LINE / 2.;
+            let y_offset: f32 = x_offset;
 
-            let mx = (y1_real - y2_real) / (x2_real - x1_real);
-            // println!("ids: {:?} | mx: {}", station_ids, mx);
-            if mx == std::f32::INFINITY || mx == std::f32::NEG_INFINITY {
-                x1_left_offset = WIDTH_LINE / 2.;
-                y1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_left_offset = WIDTH_LINE / 2.;
-                y2_left_offset = WIDTH_LINE / 2.;
-                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y2_right_offset = WIDTH_LINE / 2.;
-            } else if mx == 0. {
-                x1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_left_offset = WIDTH_LINE / 2.;
-                x2_left_offset = WIDTH_LINE / 2.;
-                y2_left_offset = WIDTH_LINE / 2.;
-                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_right_offset = WIDTH_LINE / 2.;
-                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-            } else if mx > 1. {
-                x1_left_offset = WIDTH_LINE / 2.;
-                y1_left_offset = WIDTH_LINE / 2.;
-                x2_left_offset = WIDTH_LINE / 2.;
-                y2_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_right_offset = WIDTH_LINE / 2.;
-                x2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-            } else if mx < -1. {
-                x1_left_offset = WIDTH_LINE / 2.;
-                y1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_left_offset = WIDTH_LINE / 2.;
-                y2_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_right_offset = WIDTH_LINE / 2.;
-                y2_right_offset = WIDTH_LINE / 2.;
-            } else {
-                x1_left_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_left_offset = WIDTH_LINE / 2.;
-                x2_left_offset = WIDTH_LINE / 2.;
-                y2_left_offset = WIDTH_LINE / 2.;
-                x1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                y1_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-                x2_right_offset = WIDTH_LINE / 2.;
-                y2_right_offset = SIDELEN_STATION - WIDTH_LINE / 2.;
-            }
-
-            let left_line = graphics::Mesh::new_line(
+            let line = graphics::Mesh::new_line(
                 ctx,
                 &[
-                    [x1_real + x1_left_offset, y1_real + y1_left_offset],
-                    [x2_real + x2_left_offset, y2_real + y2_left_offset],
+                    [x1_real + x_offset, y1_real + y_offset],
+                    [x2_real + x_offset, y2_real + y_offset],
                 ],
                 WIDTH_LINE,
                 color,
             )?;
 
-            let right_line = graphics::Mesh::new_line(
-                ctx,
-                &[
-                    [x1_real + x1_right_offset, y1_real + y1_right_offset],
-                    [x2_real + x2_right_offset, y2_real + y2_right_offset],
-                ],
-                WIDTH_LINE,
-                color,
-            )?;
-
-            res = graphics::draw(ctx, &left_line, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-            res = graphics::draw(ctx, &right_line, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            res = graphics::draw(ctx, &line, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
         }
         res
     }

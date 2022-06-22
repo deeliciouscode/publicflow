@@ -54,7 +54,7 @@ impl Station {
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let mut res;
-        let color = [0.5, 0.5, 0.5, 0.5].into();
+        let color = [0.5, 0.5, 0.5, 1.0].into();
 
         let real_coordinates = self.get_real_coordinates();
 
