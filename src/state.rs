@@ -27,17 +27,10 @@ impl State {
     }
 
     pub fn update(&mut self) {
-        for station in &mut self.network.stations {
-            station.since_last_pod += 1;
-        }
-
-        for pod in &mut self.pods_box.pods {
-            pod.update_state(&mut self.network)
-        }
-
-        for person in &mut self.people_box.people {
-            person.update_state(&mut self.pods_box, &mut self.network);
-        }
+        self.network.update();
+        self.pods_box.update(&mut self.network);
+        self.people_box
+            .update(&mut self.pods_box, &mut self.network);
     }
 
     pub fn new(config: &Config) -> Self {

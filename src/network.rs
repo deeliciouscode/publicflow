@@ -39,6 +39,12 @@ impl Network {
         network
     }
 
+    pub fn update(&mut self) {
+        for station in &mut self.stations {
+            station.since_last_pod += 1;
+        }
+    }
+
     // fn calc_graph
 
     pub fn try_get_station_by_id(&mut self, id: i32) -> Option<&mut Station> {

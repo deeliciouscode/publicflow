@@ -277,6 +277,11 @@ fn calc_connections(
             break;
         } else {
             let travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
+            println!(
+                "Connection: {:?} | travel_time: {}",
+                (station_ids[i], station_ids[i + 1]),
+                travel_time
+            );
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
                 travel_time: travel_time,

@@ -52,6 +52,12 @@ impl PodsBox {
             let _res = pod.draw(ctx, network);
         }
     }
+
+    pub fn update(&mut self, network: &mut Network) {
+        for pod in &mut self.pods {
+            pod.update_state(network)
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -141,7 +147,7 @@ impl Pod {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station,
-                coords,
+                coords: _,
             } => {
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
@@ -160,7 +166,7 @@ impl Pod {
             PodState::InStation {
                 station_id: _,
                 time_in_station,
-                coords,
+                coords: _,
             } => {
                 // println!("Pod in InStation state");
                 if self.in_station_for > *time_in_station {
@@ -353,7 +359,7 @@ impl PodState {
                 station_id_from,
                 station_id_to,
                 time_to_next_station,
-                coords,
+                coords: _,
             } => {
                 let travel_time = pod
                     .line_state
@@ -417,12 +423,12 @@ impl PodState {
         match self {
             PodState::JustArrived {
                 station_id,
-                coords
+                coords: _
             } => *station_id,
             PodState::InStation {
                 time_in_station: _,
                 station_id,
-                coords
+                coords: _
             } => *station_id,
             _ => panic!("Can only get id of station in which pod arrives if in JustArrived or InStation state")
         }
@@ -430,11 +436,14 @@ impl PodState {
 
     fn try_get_station_id(&self) -> Option<i32> {
         match self {
-            PodState::JustArrived { station_id, coords } => Some(*station_id),
+            PodState::JustArrived {
+                station_id,
+                coords: _,
+            } => Some(*station_id),
             PodState::InStation {
                 time_in_station: _,
                 station_id,
-                coords,
+                coords: _,
             } => Some(*station_id),
             _ => None,
         }
@@ -442,10 +451,13 @@ impl PodState {
 
     fn try_get_coords(&self) -> Option<(f32, f32)> {
         match self {
-            PodState::JustArrived { station_id, coords } => Some(*coords),
+            PodState::JustArrived {
+                station_id: _,
+                coords,
+            } => Some(*coords),
             PodState::InStation {
                 time_in_station: _,
-                station_id,
+                station_id: _,
                 coords,
             } => Some(*coords),
             PodState::BetweenStations {

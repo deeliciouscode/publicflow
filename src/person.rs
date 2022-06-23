@@ -16,6 +16,7 @@ pub struct PeopleBox {
 
 impl PeopleBox {
     pub fn print_state(&self) {
+        // Get people who need to get out first
         for person in &self.people {
             let maybe_station_id = person.try_get_station_id();
             let station_id;
@@ -40,6 +41,15 @@ impl PeopleBox {
     pub fn draw(&self, ctx: &mut Context, network: &Network) {
         for pod in &self.people {
             let _res = pod.draw(ctx);
+        }
+    }
+
+    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
+        // for person in &mut self.people {
+        //     person.get_out_if_needed(pods_box, network);
+        // }
+        for person in &mut self.people {
+            person.update_state(pods_box, network);
         }
     }
 }
@@ -122,6 +132,57 @@ impl Person {
     // TODO: move logic of people from main to this function
     pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
         // println!("person state: {:?}", self.state);
+        match &self.state {
+            PersonState::ReadyToTakePod { station_id } => {
+                // println!("person in ready state");
+                // Assign first instead of using directly because:
+                // https://github.com/rust-lang/rust/issues/59159
+                let station_id_deref = *station_id;
+                self.try_to_take_next_pod(pods_box, network, station_id_deref);
+            }
+            PersonState::RidingPod { pod_id } => {
+                // println!("person in riding state");
+                let pod_id_deref = *pod_id;
+                self.ride_pod(pods_box, pod_id_deref);
+            }
+            PersonState::JustArrived {
+                pod_id,
+                station_id: _,
+            } => {
+                // println!("person in arrived state");
+                let pod_id_deref = *pod_id;
+                self.decide_on_arrival(pods_box, network, pod_id_deref);
+                let maybe_station_id = self.try_get_station_id();
+
+                match maybe_station_id {
+                    Some(station_id) => {
+                        self.set_real_coordinates(station_id, network);
+                    }
+                    None => {
+                        // println!("none")
+                    }
+                }
+            }
+            PersonState::Transitioning {
+                station_id: _,
+                previous_pod_id: _,
+                time_in_station,
+            } => {
+                if *time_in_station < self.transition_time {
+                    // println!("person in transitioning state and not ready.");
+                    self.state = self.state.wait_a_sec();
+                } else {
+                    // println!("person in transitioning state and going to ready state.");
+                    self.state = self.state.to_ready();
+                }
+            }
+            PersonState::InvalidState { reason } => {
+                panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
+            }
+        }
+    }
+
+    pub fn get_out_if_needed(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
                 // println!("person in ready state");
