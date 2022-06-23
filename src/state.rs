@@ -1,4 +1,4 @@
-use crate::config::{Config, DESIRED_FPS, POD_CAPACITY};
+use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
 use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
@@ -106,7 +106,13 @@ impl State {
         for person_id in 0..config.people.n_people {
             let start = rng.gen_range(0..config.network.n_stations);
             let end = rng.gen_range(0..config.network.n_stations);
-            people.push(Person::new(person_id, 10, &network, start, end)); // TODO: implement logic for person to travel
+            people.push(Person::new(
+                person_id,
+                TRANSITION_TIME,
+                &network,
+                start,
+                end,
+            )); // TODO: implement logic for person to travel
         }
 
         for person in &people {

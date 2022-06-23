@@ -21,10 +21,11 @@ pub const SIDELEN_POD: f32 = 30.0;
 pub const WIDTH_POD: f32 = 30.0;
 pub const LENGTH_POD: f32 = 30.0;
 pub const WIDTH_LINE: f32 = 5.0;
-pub const DESIRED_FPS: u32 = 120; // TODO: decouple game speed from draw rate
-pub const TRAVEL_TIME: i32 = 120;
-pub const POD_CAPACITY: i32 = 50;
-pub const VSYNC: bool = false;
+pub const DESIRED_FPS: u32 = 60; // TODO: decouple game speed from draw rate
+pub const POD_CAPACITY: i32 = 20;
+pub const TRANSITION_TIME: i32 = 30;
+pub const POD_SPAWN_RATE: i32 = 30; // every so many seconds a pod is spawned till enough are there
+pub const VSYNC: bool = true;
 
 // EXTERNAL CONFIG
 pub fn load_file(file: &str) -> Yaml {

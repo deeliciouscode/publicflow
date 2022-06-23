@@ -38,16 +38,18 @@ impl PeopleBox {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, network: &Network) {
-        for pod in &self.people {
-            let _res = pod.draw(ctx);
-        }
-    }
+    // people are not drawn explicitely but only as numbers and circles with colors
+    // on pods and in stations.
+    // pub fn draw(&self, ctx: &mut Context, network: &Network) {
+    //     for pod in &self.people {
+    //         let _res = pod.draw(ctx);
+    //     }
+    // }
 
     pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
-        // for person in &mut self.people {
-        //     person.get_out_if_needed(pods_box, network);
-        // }
+        for person in &mut self.people {
+            person.get_out_if_needed(pods_box, network);
+        }
         for person in &mut self.people {
             person.update_state(pods_box, network);
         }
@@ -86,48 +88,48 @@ impl Person {
         // println!("{:?}", self.path_state);
     }
 
-    fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        let color = [1.0, 0.2, 0.2, 1.0].into();
-        let mut res: GameResult<()> = std::result::Result::Ok(());
-        let mut draw_in_station = || -> GameResult<()> {
-            // println!("real: {:?}", self.real_coordinates);
-            let station_rect = Rect {
-                x: self.real_coordinates.0,
-                y: self.real_coordinates.1,
-                w: 5.,
-                h: 5.,
-            };
-            let rectangle = graphics::Mesh::new_rectangle(
-                ctx,
-                graphics::DrawMode::fill(),
-                station_rect,
-                color,
-            )?;
-            let rez = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-            return rez;
-        };
+    // fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+    //     let color = [1.0, 0.2, 0.2, 1.0].into();
+    //     let mut res: GameResult<()> = std::result::Result::Ok(());
+    //     let mut draw_in_station = || -> GameResult<()> {
+    //         // println!("real: {:?}", self.real_coordinates);
+    //         let station_rect = Rect {
+    //             x: self.real_coordinates.0,
+    //             y: self.real_coordinates.1,
+    //             w: 5.,
+    //             h: 5.,
+    //         };
+    //         let rectangle = graphics::Mesh::new_rectangle(
+    //             ctx,
+    //             graphics::DrawMode::fill(),
+    //             station_rect,
+    //             color,
+    //         )?;
+    //         let rez = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+    //         return rez;
+    //     };
 
-        match &self.state {
-            PersonState::ReadyToTakePod { station_id: _ } => {
-                res = draw_in_station();
-            }
-            PersonState::RidingPod { pod_id: _ } => {}
-            PersonState::JustArrived {
-                pod_id: _,
-                station_id: _,
-            } => {}
-            PersonState::Transitioning {
-                station_id: _,
-                previous_pod_id: _,
-                time_in_station: _,
-            } => {
-                res = draw_in_station();
-            }
-            PersonState::InvalidState { reason: _ } => {}
-        }
+    //     match &self.state {
+    //         PersonState::ReadyToTakePod { station_id: _ } => {
+    //             res = draw_in_station();
+    //         }
+    //         PersonState::RidingPod { pod_id: _ } => {}
+    //         PersonState::JustArrived {
+    //             pod_id: _,
+    //             station_id: _,
+    //         } => {}
+    //         PersonState::Transitioning {
+    //             station_id: _,
+    //             previous_pod_id: _,
+    //             time_in_station: _,
+    //         } => {
+    //             res = draw_in_station();
+    //         }
+    //         PersonState::InvalidState { reason: _ } => {}
+    //     }
 
-        res
-    }
+    //     res
+    // }
 
     // TODO: move logic of people from main to this function
     pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
@@ -148,21 +150,7 @@ impl Person {
             PersonState::JustArrived {
                 pod_id,
                 station_id: _,
-            } => {
-                // println!("person in arrived state");
-                let pod_id_deref = *pod_id;
-                self.decide_on_arrival(pods_box, network, pod_id_deref);
-                let maybe_station_id = self.try_get_station_id();
-
-                match maybe_station_id {
-                    Some(station_id) => {
-                        self.set_real_coordinates(station_id, network);
-                    }
-                    None => {
-                        // println!("none")
-                    }
-                }
-            }
+            } => {} // This case is handled in get out if needed
             PersonState::Transitioning {
                 station_id: _,
                 previous_pod_id: _,
@@ -184,52 +172,24 @@ impl Person {
 
     pub fn get_out_if_needed(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
         match &self.state {
-            PersonState::ReadyToTakePod { station_id } => {
-                // println!("person in ready state");
-                // Assign first instead of using directly because:
-                // https://github.com/rust-lang/rust/issues/59159
-                let station_id_deref = *station_id;
-                self.try_to_take_next_pod(pods_box, network, station_id_deref);
-            }
-            PersonState::RidingPod { pod_id } => {
-                // println!("person in riding state");
-                let pod_id_deref = *pod_id;
-                self.ride_pod(pods_box, pod_id_deref);
-            }
             PersonState::JustArrived {
                 pod_id,
                 station_id: _,
             } => {
-                // println!("person in arrived state");
                 let pod_id_deref = *pod_id;
                 self.decide_on_arrival(pods_box, network, pod_id_deref);
                 let maybe_station_id = self.try_get_station_id();
-
                 match maybe_station_id {
                     Some(station_id) => {
                         self.set_real_coordinates(station_id, network);
                     }
-                    None => {
-                        // println!("none")
-                    }
-                }
-            }
-            PersonState::Transitioning {
-                station_id: _,
-                previous_pod_id: _,
-                time_in_station,
-            } => {
-                if *time_in_station < self.transition_time {
-                    // println!("person in transitioning state and not ready.");
-                    self.state = self.state.wait_a_sec();
-                } else {
-                    // println!("person in transitioning state and going to ready state.");
-                    self.state = self.state.to_ready();
+                    None => {}
                 }
             }
             PersonState::InvalidState { reason } => {
                 panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
             }
+            _ => {}
         }
     }
 
