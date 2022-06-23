@@ -33,16 +33,20 @@ impl State {
             .update(&mut self.pods_box, &mut self.network);
     }
 
+    // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
+    // as a next step spawn / divert pods dynamically
     pub fn new(config: &Config) -> Self {
         let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
         for station_id in 0..config.network.n_stations {
             // unwrap can panic, maybe do pattern matching instead??
-            let (name, (coords_x, coords_y)) =
+            let (name, is_node, can_spawn, (coords_x, coords_y)) =
                 config.network.coordinates_map.get(&station_id).unwrap();
             stations.push(Station {
                 id: station_id,
                 name: name.clone(),
+                is_node: *is_node,
+                can_spawn: *can_spawn,
                 since_last_pod: 0,
                 edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
                 pods_in_station: HashSet::from([]), // The pods will register themselves later

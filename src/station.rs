@@ -8,6 +8,8 @@ use std::collections::HashSet;
 pub struct Station {
     pub id: i32,
     pub name: String,
+    pub is_node: bool,
+    pub can_spawn: bool,
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,

@@ -42,7 +42,7 @@ pub fn load_file(file: &str) -> Yaml {
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
-    pub coordinates_map: HashMap<i32, (String, (i32, i32))>,
+    pub coordinates_map: HashMap<i32, (String, bool, bool, (i32, i32))>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
     pub pods: PodsConfig,
@@ -66,7 +66,7 @@ pub struct Config {
 
 pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     let mut n_stations: i64 = 0;
-    let mut coordinates_map: HashMap<i32, (String, (i32, i32))> = HashMap::new();
+    let mut coordinates_map: HashMap<i32, (String, bool, bool, (i32, i32))> = HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut n_pods: i64 = 0;
     let mut n_people: i64 = 0;
@@ -99,6 +99,8 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                             let values_yaml = entry.get();
                             let mut name: String = String::from("");
                             let mut id_i32: i32 = -1;
+                            let mut is_node_bool: bool = false;
+                            let mut can_spawn_bool: bool = false;
                             let mut x_i32: i32 = -1;
                             let mut y_i32: i32 = -1;
 
@@ -112,6 +114,20 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                 {
                                     if let Yaml::Integer(station_id) = id_yaml {
                                         id_i32 = *station_id as i32;
+                                    }
+                                }
+                                if let Some(is_node_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("is_node")))
+                                {
+                                    if let Yaml::Boolean(is_node) = is_node_yaml {
+                                        is_node_bool = *is_node;
+                                    }
+                                }
+                                if let Some(can_spawn_yaml) =
+                                    values_hash.get(&Yaml::String(String::from("can_spawn")))
+                                {
+                                    if let Yaml::Boolean(can_spawn) = can_spawn_yaml {
+                                        can_spawn_bool = *can_spawn;
                                     }
                                 }
                                 if let Some(coords_yaml) =
@@ -137,7 +153,10 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
                                 }
                             }
 
-                            coordinates_map.insert(id_i32, (name, (x_i32, y_i32)));
+                            coordinates_map.insert(
+                                id_i32,
+                                (name, is_node_bool, can_spawn_bool, (x_i32, y_i32)),
+                            );
                         }
                     }
                 }
