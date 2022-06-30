@@ -91,7 +91,10 @@ impl Pod {
         let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
         let green = 1. - red;
 
-        let color = [red - 0.2, green - 0.2, 0., 1.0].into();
+        // let test = [red - 0.2, green - 0.2, 0., 1.0, 2.0];
+        // let color = test.into();
+
+        let color = self.get_rgba().into();
 
         let mut res: GameResult<()> = std::result::Result::Ok(());
 
@@ -138,6 +141,20 @@ impl Pod {
         );
 
         res
+    }
+
+    fn get_rgba(&self) -> [f32; 4] {
+        match self.line_state.line.name.as_str() {
+            "u1" => return [0.0, 1.0, 0.0, 1.0],
+            "u2" => return [1.0, 0.0, 0.0, 1.0],
+            "u3" => return [0.99, 0.63, 0.01, 1.0],
+            "u4" => return [0.13, 0.74, 0.69, 1.0],
+            "u5" => return [0.82, 0.73, 0.06, 1.0],
+            "u6" => return [0.0, 0.0, 1.0, 1.0],
+            "u7" => return [0.77, 0.75, 0.43, 1.0],
+            "u8" => return [0.68, 0.67, 0.55, 1.0],
+            any => panic!("The line: {} is not defined.", any),
+        };
     }
 
     // TODO: remove unused stuff
