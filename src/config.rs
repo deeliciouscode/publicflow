@@ -270,21 +270,21 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml) -> Config {
                 if let Some(id_yaml) = station_hash.get(&Yaml::String(String::from("id"))) {
                     // TODO finish this
                     if let Yaml::Integer(id_int) = id_yaml {
-                        id = id_int.clone() as i32;
+                        id = *id_int as i32;
                     }
                 }
 
                 if let Some(lat_yaml) = station_hash.get(&Yaml::String(String::from("lat"))) {
                     // TODO finish this
                     if let Some(lat_float) = lat_yaml.as_f64() {
-                        lat = lat_float.clone() as f32;
+                        lat = lat_float as f32;
                     }
                 }
 
                 if let Some(lon_yaml) = station_hash.get(&Yaml::String(String::from("lon"))) {
                     // TODO finish this
                     if let Some(lon_float) = lon_yaml.as_f64() {
-                        lon = lon_float.clone() as f32;
+                        lon = lon_float as f32;
                     }
                 }
 
