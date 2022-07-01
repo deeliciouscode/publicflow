@@ -38,20 +38,19 @@ impl State {
     pub fn new(config: &Config) -> Self {
         let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
-        for station_id in 0..config.network.n_stations {
-            // unwrap can panic, maybe do pattern matching instead??
-            let (name, is_node, can_spawn, (coords_x, coords_y)) =
-                config.network.coordinates_map.get(&station_id).unwrap();
+        for abstract_station in config.network.coordinates_map.iter() {
+            let station_id = abstract_station.0;
+            let (name, city, (lat, lon)) = abstract_station.1;
+
             stations.push(Station {
-                id: station_id,
+                id: *station_id,
                 name: name.clone(),
-                is_node: *is_node,
-                can_spawn: *can_spawn,
+                city: city.clone(),
                 since_last_pod: 0,
-                edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
+                edges_to: HashSet::new(), // config.network.edge_map.get(&station_id).unwrap().clone(),
                 pods_in_station: HashSet::from([]), // The pods will register themselves later
                 people_in_station: HashSet::from([]),
-                coordinates: (*coords_x as f32, *coords_y as f32),
+                coordinates: (*lat as f32, *lon as f32),
                 config: config.clone(),
             })
         }
@@ -110,13 +109,13 @@ impl State {
         for person_id in 0..config.people.n_people {
             let start = rng.gen_range(0..config.network.n_stations);
             let end = rng.gen_range(0..config.network.n_stations);
-            people.push(Person::new(
-                person_id,
-                TRANSITION_TIME,
-                &network,
-                start,
-                end,
-            )); // TODO: implement logic for person to travel
+            // people.push(Person::new(
+            //     person_id,
+            //     TRANSITION_TIME,
+            //     &network,
+            //     start,
+            //     end,
+            // )); // TODO: implement logic for person to travel
         }
 
         for person in &people {
@@ -155,7 +154,7 @@ impl EventHandler for State {
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
             self.time_passed += 1;
-            self.update();
+            // self.update();
 
             if self.time_passed % 25 == 0 {
                 // println!("-------------------------------");
@@ -170,7 +169,7 @@ impl EventHandler for State {
         graphics::clear(ctx, Color::WHITE);
 
         self.network.draw(ctx);
-        self.pods_box.draw(ctx, &self.network);
+        // self.pods_box.draw(ctx, &self.network);
         // self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)

@@ -1,4 +1,4 @@
-use crate::config::{Config, MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION};
+use crate::config::{Config, MAX_XY, OFFSET, RADIUS_STATION, SCREEN_SIZE, SIDELEN_STATION};
 use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
@@ -8,8 +8,7 @@ use std::collections::HashSet;
 pub struct Station {
     pub id: i32,
     pub name: String,
-    pub is_node: bool,
-    pub can_spawn: bool,
+    pub city: String,
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
     pub pods_in_station: HashSet<i32>,
@@ -44,12 +43,23 @@ impl Station {
     }
 
     pub fn get_real_coordinates(&self) -> (f32, f32) {
+        let lat_min: f32 = 11.3906;
+        let lat_max: f32 = 11.7153;
+        let lat_delta: f32 = lat_max - lat_min;
+
+        let lon_min: f32 = 48.0691;
+        let lon_max: f32 = 48.2200;
+        let lon_delta: f32 = lon_max - lon_min;
+
+        let x_percentage = (self.coordinates.0 - lat_min) / lat_delta;
+        let y_percentage = (self.coordinates.1 - lon_min) / lon_delta;
+
         let x = OFFSET
-            + (self.coordinates.0 / MAX_XY.0 * SCREEN_SIZE.0)
+            + (x_percentage * SCREEN_SIZE.0)
                 * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
 
         let y = OFFSET
-            + (self.coordinates.1 / MAX_XY.1 * SCREEN_SIZE.1)
+            + (y_percentage * SCREEN_SIZE.1)
                 * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
         (x, y)
     }
@@ -60,28 +70,59 @@ impl Station {
 
         let real_coordinates = self.get_real_coordinates();
 
-        let station_rect = Rect {
-            x: real_coordinates.0,
-            y: real_coordinates.1,
-            w: SIDELEN_STATION,
-            h: SIDELEN_STATION,
-        };
+        // println!("real_coordinates: {:?}", real_coordinates);
 
-        let rectangle =
-            graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
+        // let station_rect = Rect {
+        //     x: real_coordinates.0,
+        //     y: real_coordinates.1,
+        //     w: SIDELEN_STATION,
+        //     h: SIDELEN_STATION,
+        // };
 
-        res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        // let rectangle =
+        //     graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
 
-        let text = Text::new(String::from(self.name.clone()));
+        // res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
-        res = graphics::draw(
+        let circle = graphics::Mesh::new_circle(
             ctx,
-            &text,
-            (ggez::mint::Point2 {
+            // graphics::DrawMode::stroke(2.),
+            graphics::DrawMode::fill(),
+            ggez::mint::Point2 {
                 x: real_coordinates.0,
                 y: real_coordinates.1,
-            },),
-        );
+            },
+            RADIUS_STATION,
+            1.,
+            color,
+        )?;
+
+        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
+        match res {
+            Err(err) => panic!("Error 0: {}", err),
+            Ok(m) => {
+                // println!("No error at 0: {:?}", m),
+            }
+        }
+
+        // let text = Text::new(String::from(self.name.clone()));
+
+        // res = graphics::draw(
+        //     ctx,
+        //     &text,
+        //     (ggez::mint::Point2 {
+        //         x: real_coordinates.0,
+        //         y: real_coordinates.1,
+        //     },),
+        // );
+
+        // match res {
+        //     Err(err) => panic!("Error 1: {}", err),
+        //     Ok(m) => {
+        //         // println!("No error at 1: {:?}", m),
+        //     }
+        // }
 
         let count = Text::new(String::from(self.people_in_station.len().to_string()));
         res = graphics::draw(
@@ -92,6 +133,13 @@ impl Station {
                 y: real_coordinates.1 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
             },),
         );
+
+        match res {
+            Err(err) => panic!("Error 2: {}", err),
+            Ok(m) => {
+                // println!("No error at 2: {:?}", m),
+            }
+        }
 
         // let radius = self.people_in_station.len() as f32 / 10.;
         let radius = self.people_in_station.len() as f32;
@@ -120,6 +168,13 @@ impl Station {
             color_circle,
         )?;
 
-        graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))
+        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        match res {
+            Err(err) => panic!("Error 3: {}", err),
+            Ok(m) => {
+                // println!("No error at 3: {:?}", m);
+                return res;
+            }
+        }
     }
 }

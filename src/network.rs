@@ -12,6 +12,7 @@ pub struct Network {
     pub graph: UnGraph<u32, u32>,
     pub lines: Vec<Line>,
     pub config: SimConfig,
+    // pub mesh
 }
 
 fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
@@ -79,9 +80,9 @@ impl Network {
     }
 
     pub fn draw(&self, ctx: &mut Context) {
-        for line in &self.lines {
-            let _res = line.draw(ctx, self);
-        }
+        // for line in &self.lines {
+        //     let _res = line.draw(ctx, self);
+        // }
 
         for station in &self.stations {
             let _res = station.draw(ctx); // TODO: handle result error case

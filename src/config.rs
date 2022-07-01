@@ -13,11 +13,12 @@ pub const _SIMULATION_DURATION: u64 = 1000;
 // pub const CONFIG_PATH: &str = "./config/network_simple.yaml";
 // pub const MAX_XY: (f32, f32) = (3.0, 2.0);
 pub const CONFIG_PATH: &str = "./config/ubahn.yaml";
-pub const STATIONS_PATH: &str = "./config/stations.yaml";
+pub const STATIONS_PATH: &str = "./config/stations_in_lines.yaml";
 pub const MAX_XY: (f32, f32) = (70., 40.);
 pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1150.0);
 pub const OFFSET: f32 = 100.0;
-pub const SIDELEN_STATION: f32 = 50.0;
+pub const SIDELEN_STATION: f32 = 50.;
+pub const RADIUS_STATION: f32 = 5.;
 pub const SIDELEN_POD: f32 = 30.0;
 pub const WIDTH_POD: f32 = 30.0;
 pub const LENGTH_POD: f32 = 30.0;
@@ -43,7 +44,7 @@ pub fn load_yaml(file: &str) -> Yaml {
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
-    pub coordinates_map: HashMap<i32, (String, bool, bool, (i32, i32))>,
+    pub coordinates_map: HashMap<i32, (String, String, (f32, f32))>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
     pub pods: PodsConfig,
@@ -80,13 +81,6 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml) -> Config {
     if let Yaml::Hash(config_hash) = raw_config {
         if let Some(network_yaml) = config_hash.get(&Yaml::String(String::from("network"))) {
             if let Yaml::Hash(network_hash) = network_yaml {
-                if let Some(n_stations_yaml) =
-                    network_hash.get(&Yaml::String(String::from("n_stations")))
-                {
-                    if let Yaml::Integer(value) = n_stations_yaml {
-                        n_stations = *value;
-                    }
-                }
                 if let Some(coordinates_yaml) =
                     network_hash.get(&Yaml::String(String::from("station_coordinates")))
                 {
@@ -252,6 +246,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml) -> Config {
     let mut coordinates_map_new: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
 
     if let Yaml::Array(stations_array) = raw_stations {
+        n_stations = stations_array.len() as i64;
         for station_yaml in stations_array {
             if let Yaml::Hash(station_hash) = station_yaml {
                 let mut city: String = String::from("placeholder");
@@ -312,7 +307,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml) -> Config {
 
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
-        coordinates_map: coordinates_map,
+        coordinates_map: coordinates_map_new,
         edge_map: edge_map,
         lines: lines,
         pods: pods_config,
