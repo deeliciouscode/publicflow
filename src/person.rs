@@ -1,4 +1,5 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD};
+use crate::helper::get_real_coordinates;
 use crate::line::LineState;
 use crate::network::Network;
 use crate::pathstate::PathState;
@@ -362,7 +363,7 @@ impl Person {
     fn set_real_coordinates(&mut self, station_id: i32, network: &Network) {
         // println!("set real coords");
         let station = network.try_get_station_by_id_unmut(station_id).unwrap();
-        let coords_station = station.get_real_coordinates();
+        let coords_station = get_real_coordinates(station.coordinates);
         let mut rng = rand::thread_rng();
         let x_rnd: f32 = rng.gen();
         let y_rnd: f32 = rng.gen();

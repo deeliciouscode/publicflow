@@ -68,21 +68,21 @@ impl Network {
 
     pub fn print_state(&self) {
         for station in &self.stations {
-            println!(
-                "Station: {} | Pods: {:?}",
-                station.id, station.pods_in_station
-            )
+            // println!(
+            //     "Station: {} | Pods: {:?}",
+            //     station.id, station.pods_in_station
+            // )
         }
-        println!(
-            "{:?}",
-            Dot::with_config(&self.graph, &[Config::NodeIndexLabel])
-        );
+        // println!(
+        //     "{:?}",
+        //     Dot::with_config(&self.graph, &[Config::NodeIndexLabel])
+        // );
     }
 
     pub fn draw(&self, ctx: &mut Context) {
-        // for line in &self.lines {
-        //     let _res = line.draw(ctx, self);
-        // }
+        for line in &self.lines {
+            let _res = line.draw(ctx, self);
+        }
 
         for station in &self.stations {
             let _res = station.draw(ctx); // TODO: handle result error case

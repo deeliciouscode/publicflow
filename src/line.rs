@@ -1,5 +1,6 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE};
 use crate::connection::{Connection, YieldTuple};
+use crate::helper::get_real_coordinates;
 use crate::network::Network;
 use ggez::graphics::Rect;
 use ggez::{graphics, Context, GameResult};
@@ -22,6 +23,7 @@ impl Line {
 
         for connection in &self.connections {
             let station_ids = &connection.yield_tuple();
+            // println!("MARKER: {:?}", station_ids);
             let from = network.try_get_station_by_id_unmut(station_ids.0).unwrap();
             let to = network.try_get_station_by_id_unmut(station_ids.1).unwrap();
 
@@ -44,31 +46,12 @@ impl Line {
                 y2 = from.coordinates.1;
             }
 
-            let x1_real = OFFSET
-                + (x1 / MAX_XY.0 * SCREEN_SIZE.0)
-                    * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
-
-            let y1_real = OFFSET
-                + (y1 / MAX_XY.1 * SCREEN_SIZE.1)
-                    * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
-
-            let x2_real = OFFSET
-                + (x2 / MAX_XY.0 * SCREEN_SIZE.0)
-                    * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
-
-            let y2_real = OFFSET
-                + (y2 / MAX_XY.1 * SCREEN_SIZE.1)
-                    * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
-
-            let x_offset: f32 = SIDELEN_STATION / 2. - WIDTH_LINE / 2.;
-            let y_offset: f32 = x_offset;
+            let (x1_real, y1_real) = get_real_coordinates((x1, y1));
+            let (x2_real, y2_real) = get_real_coordinates((x2, y2));
 
             let line = graphics::Mesh::new_line(
                 ctx,
-                &[
-                    [x1_real + x_offset, y1_real + y_offset],
-                    [x2_real + x_offset, y2_real + y_offset],
-                ],
+                &[[x1_real, y1_real], [x2_real, y2_real]],
                 WIDTH_LINE,
                 color,
             )?;

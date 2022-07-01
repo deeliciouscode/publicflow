@@ -16,3 +16,5 @@ Cargo.lock
 /target/*
 /analysis/venv/
 /analysis/venv/*
+/config_dev
+/config_dev/*

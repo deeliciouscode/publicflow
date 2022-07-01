@@ -2,6 +2,7 @@ use crate::config::{
     LENGTH_POD, MAX_XY, OFFSET, POD_CAPACITY, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION,
     WIDTH_LINE, WIDTH_POD,
 };
+use crate::helper::get_real_coordinates;
 use crate::line::LineState;
 use crate::network::Network;
 use ggez::graphics::{Font, Rect, Text};
@@ -389,8 +390,8 @@ impl PodState {
                     .unwrap();
                 let station_to = network.try_get_station_by_id_unmut(*station_id_to).unwrap();
 
-                let coords_from = station_from.get_real_coordinates();
-                let coords_to = station_to.get_real_coordinates();
+                let coords_from = get_real_coordinates(station_from.coordinates);
+                let coords_to = get_real_coordinates(station_to.coordinates);
                 let x = coords_from.0
                     + (coords_to.0 - coords_from.0)
                         * ((travel_time as f32 - *time_to_next_station as f32)

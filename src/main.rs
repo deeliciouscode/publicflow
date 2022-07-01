@@ -1,5 +1,6 @@
 mod config;
 mod connection;
+mod helper;
 mod line;
 mod network;
 mod pathstate;
@@ -8,7 +9,9 @@ mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_yaml, parse_raw_config, CONFIG_PATH, SCREEN_SIZE, STATIONS_PATH, VSYNC};
+use crate::config::{
+    load_yaml, parse_raw_config, CONFIG_PATH, LINES_PATH, SCREEN_SIZE, STATIONS_PATH, VSYNC,
+};
 use crate::state::State;
 // use crate::state::{gen_state, State};
 // use crate::state::{get_state, State};
@@ -21,9 +24,10 @@ fn main() {
     let raw_config = load_yaml(CONFIG_PATH);
     // println!("{:?}\n", yaml);
     let raw_stations = load_yaml(STATIONS_PATH);
+    let raw_lines = load_yaml(LINES_PATH);
 
-    let config = parse_raw_config(&raw_config, &raw_stations);
-    println!("config: {:?}\n", config);
+    let config = parse_raw_config(&raw_config, &raw_stations, &raw_lines);
+    // println!("config: {:?}\n", config);
 
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")

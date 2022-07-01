@@ -19,8 +19,7 @@ impl YieldTuple<i32> for Connection {
         let mut tuple = (0, 0);
         for (i, x) in self.station_ids.iter().enumerate() {
             if i > 1 {
-                println!("Connection contains more than 2 elements");
-                break;
+                panic!("Connection contains more than 2 elements");
             }
             if i == 0 {
                 tuple.0 = *x;
@@ -38,8 +37,7 @@ impl YieldTuple<u32> for Connection {
         let mut tuple = (0, 0);
         for (i, x) in self.station_ids.iter().enumerate() {
             if i > 1 {
-                println!("Connection contains more than 2 elements");
-                break;
+                panic!("Connection contains more than 2 elements");
             }
             if i == 0 {
                 tuple.0 = *x as u32;
@@ -57,8 +55,7 @@ impl YieldTriple<i32> for Connection {
         let mut tuple = (0, 0, 0);
         for (i, x) in self.station_ids.iter().enumerate() {
             if i > 2 {
-                println!("Connection contains more than 2 elements");
-                break;
+                panic!("Connection contains more than 2 elements");
             }
             if i == 0 {
                 tuple.0 = *x;
@@ -77,8 +74,7 @@ impl YieldTriple<u32> for Connection {
         let mut tuple = (0, 0, 0);
         for (i, x) in self.station_ids.iter().enumerate() {
             if i > 2 {
-                println!("Connection contains more than 2 elements");
-                break;
+                panic!("Connection contains more than 2 elements");
             }
             if i == 0 {
                 tuple.0 = *x as u32;

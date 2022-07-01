@@ -1,4 +1,5 @@
 use crate::config::{Config, MAX_XY, OFFSET, RADIUS_STATION, SCREEN_SIZE, SIDELEN_STATION};
+use crate::helper::get_real_coordinates;
 use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
@@ -42,33 +43,11 @@ impl Station {
         Some(self.pods_in_station.clone().into_iter().collect())
     }
 
-    pub fn get_real_coordinates(&self) -> (f32, f32) {
-        let lat_min: f32 = 11.3906;
-        let lat_max: f32 = 11.7153;
-        let lat_delta: f32 = lat_max - lat_min;
-
-        let lon_min: f32 = 48.0691;
-        let lon_max: f32 = 48.2200;
-        let lon_delta: f32 = lon_max - lon_min;
-
-        let x_percentage = (self.coordinates.0 - lat_min) / lat_delta;
-        let y_percentage = (self.coordinates.1 - lon_min) / lon_delta;
-
-        let x = OFFSET
-            + (x_percentage * SCREEN_SIZE.0)
-                * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
-
-        let y = OFFSET
-            + (y_percentage * SCREEN_SIZE.1)
-                * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
-        (x, y)
-    }
-
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let mut res;
         let color = [0.5, 0.5, 0.5, 1.0].into();
 
-        let real_coordinates = self.get_real_coordinates();
+        let real_coordinates = get_real_coordinates(self.coordinates);
 
         // println!("real_coordinates: {:?}", real_coordinates);
 
@@ -124,22 +103,22 @@ impl Station {
         //     }
         // }
 
-        let count = Text::new(String::from(self.people_in_station.len().to_string()));
-        res = graphics::draw(
-            ctx,
-            &count,
-            (ggez::mint::Point2 {
-                x: real_coordinates.0 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
-                y: real_coordinates.1 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
-            },),
-        );
+        // let count = Text::new(String::from(self.people_in_station.len().to_string()));
+        // res = graphics::draw(
+        //     ctx,
+        //     &count,
+        //     (ggez::mint::Point2 {
+        //         x: real_coordinates.0 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
+        //         y: real_coordinates.1 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
+        //     },),
+        // );
 
-        match res {
-            Err(err) => panic!("Error 2: {}", err),
-            Ok(m) => {
-                // println!("No error at 2: {:?}", m),
-            }
-        }
+        // match res {
+        //     Err(err) => panic!("Error 2: {}", err),
+        //     Ok(m) => {
+        //         // println!("No error at 2: {:?}", m),
+        //     }
+        // }
 
         // let radius = self.people_in_station.len() as f32 / 10.;
         let radius = self.people_in_station.len() as f32;
