@@ -240,8 +240,11 @@ impl Person {
                 }
             }
             None => {
-                let finish = rng.gen_range(0..network.stations.len());
-                self.new_path(&network.graph, station_id as u32, finish as u32);
+                let station_ids: Vec<&i32> =
+                    network.config.network.coordinates_map.keys().collect();
+                let end_ix = rng.gen_range(0..station_ids.len());
+                let finish = station_ids[end_ix];
+                self.new_path(&network.graph, station_id as u32, *finish as u32);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
                 //     self.id,

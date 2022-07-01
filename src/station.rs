@@ -103,15 +103,15 @@ impl Station {
         //     }
         // }
 
-        // let count = Text::new(String::from(self.people_in_station.len().to_string()));
-        // res = graphics::draw(
-        //     ctx,
-        //     &count,
-        //     (ggez::mint::Point2 {
-        //         x: real_coordinates.0 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
-        //         y: real_coordinates.1 + SIDELEN_STATION / 2. - Font::DEFAULT_FONT_SCALE / 2.,
-        //     },),
-        // );
+        let count = Text::new(String::from(self.people_in_station.len().to_string()));
+        res = graphics::draw(
+            ctx,
+            &count,
+            (ggez::mint::Point2 {
+                x: real_coordinates.0 - Font::DEFAULT_FONT_SCALE / 2.,
+                y: real_coordinates.1 - Font::DEFAULT_FONT_SCALE / 2.,
+            },),
+        );
 
         // match res {
         //     Err(err) => panic!("Error 2: {}", err),
@@ -139,8 +139,8 @@ impl Station {
             // graphics::DrawMode::stroke(2.),
             graphics::DrawMode::fill(),
             ggez::mint::Point2 {
-                x: real_coordinates.0 + SIDELEN_STATION / 2.,
-                y: real_coordinates.1 + SIDELEN_STATION / 2.,
+                x: real_coordinates.0,
+                y: real_coordinates.1,
             },
             radius,
             1.,
@@ -148,6 +148,7 @@ impl Station {
         )?;
 
         res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
         match res {
             Err(err) => panic!("Error 3: {}", err),
             Ok(m) => {

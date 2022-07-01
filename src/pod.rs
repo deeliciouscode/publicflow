@@ -1,6 +1,6 @@
 use crate::config::{
-    LENGTH_POD, MAX_XY, OFFSET, POD_CAPACITY, SCREEN_SIZE, SIDELEN_POD, SIDELEN_STATION,
-    WIDTH_LINE, WIDTH_POD,
+    LENGTH_POD, MAX_XY, OFFSET, POD_CAPACITY, RADIUS_POD, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE,
+    WIDTH_POD,
 };
 use crate::helper::get_real_coordinates;
 use crate::line::LineState;
@@ -108,18 +108,43 @@ impl Pod {
         //     println!("from: {}, to: {}, coords: {:?}", station_id_from, station_id_to, (x,y))
         // }
 
-        let station_rect = Rect {
-            x: real_x,
-            y: real_y,
-            w: SIDELEN_POD,
-            h: SIDELEN_POD,
-        };
-        let rectangle =
-            graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
+        let circle = graphics::Mesh::new_circle(
+            ctx,
+            // graphics::DrawMode::stroke(2.),
+            graphics::DrawMode::fill(),
+            ggez::mint::Point2 {
+                x: real_x,
+                y: real_y,
+            },
+            RADIUS_POD,
+            1.,
+            color,
+        )?;
+
+        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
+        match res {
+            Err(err) => panic!("Error 3: {}", err),
+            Ok(m) => {
+                // println!("No error at 3: {:?}", m);
+                return res;
+            }
+        }
+
+        // let station_rect = Rect {
+        //     x: real_x,
+        //     y: real_y,
+        //     w: SIDELEN_POD,
+        //     h: SIDELEN_POD,
+        // };
+        // let rectangle =
+        //     graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
+
+        // res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
         // let text = Text::new(String::from("1"));
         // let id_text = Text::new(String::from(self.id.to_string()));
-        let people_inside_text = Text::new(String::from(self.people_in_pod.len().to_string()));
-        res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        // let people_inside_text = Text::new(String::from(self.people_in_pod.len().to_string()));
         // res = graphics::draw(
         //     ctx,
         //     &id_text,
@@ -129,19 +154,17 @@ impl Pod {
         //     },),
         // );
 
-        let people_inside_text_x = real_x + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
-        let people_inside_text_y = real_y + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
+        // let people_inside_text_x = real_x + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
+        // let people_inside_text_y = real_y + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
 
-        res = graphics::draw(
-            ctx,
-            &people_inside_text,
-            (ggez::mint::Point2 {
-                x: people_inside_text_x,
-                y: people_inside_text_y,
-            },),
-        );
-
-        res
+        // res = graphics::draw(
+        //     ctx,
+        //     &people_inside_text,
+        //     (ggez::mint::Point2 {
+        //         x: people_inside_text_x,
+        //         y: people_inside_text_y,
+        //     },),
+        // );
     }
 
     fn get_rgba(&self) -> [f32; 4] {
@@ -402,27 +425,8 @@ impl PodState {
                         * ((travel_time as f32 - *time_to_next_station as f32)
                             / travel_time as f32);
 
-                let same_on_x = coords_from.0 == coords_to.0;
-                let same_on_y = coords_from.1 == coords_to.1;
-                let driving_right = coords_from.0 < coords_to.0;
-                let driving_up = coords_from.1 > coords_to.1;
-
-                let x_shift: f32;
-                let y_shift: f32;
-
-                if same_on_x && driving_up {
-                    x_shift = SIDELEN_STATION - WIDTH_POD;
-                    y_shift = 0.;
-                } else if same_on_y && driving_right {
-                    x_shift = 0.;
-                    y_shift = SIDELEN_STATION - WIDTH_POD;
-                } else {
-                    x_shift = 0.;
-                    y_shift = 0.;
-                }
-
-                let real_x = x + x_shift;
-                let real_y = y + y_shift;
+                let real_x = x;
+                let real_y = y;
 
                 PodState::BetweenStations {
                     station_id_from: *station_id_from,

@@ -1,0 +1,9 @@
+# TODO: implement connections to clearly define time between stations
+# TODO: implement a way to assign pods to lines
+# TODO: implement bus / sbahn / tram lines
+# TODO: add and implement non node stations
+network:
+  pods:
+    n_pods: 57 # one per station per line | could be infered if n_pods == sum(len(line.stations))
+people:
+  n_people: 1000

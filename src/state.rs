@@ -105,17 +105,22 @@ impl State {
             return line_state;
         };
 
+        let station_ids: Vec<&i32> = config.network.coordinates_map.keys().collect();
+        // println!("{:?}", station_ids);
+
         let mut people: Vec<Person> = vec![];
         for person_id in 0..config.people.n_people {
-            let start = rng.gen_range(0..config.network.n_stations);
-            let end = rng.gen_range(0..config.network.n_stations);
-            // people.push(Person::new(
-            //     person_id,
-            //     TRANSITION_TIME,
-            //     &network,
-            //     start,
-            //     end,
-            // )); // TODO: implement logic for person to travel
+            let start_ix = rng.gen_range(0..station_ids.len());
+            let end_ix = rng.gen_range(0..station_ids.len());
+            let start = station_ids[start_ix];
+            let end = station_ids[end_ix];
+            people.push(Person::new(
+                person_id,
+                TRANSITION_TIME,
+                &network,
+                *start,
+                *end,
+            ));
         }
 
         for person in &people {
@@ -154,7 +159,7 @@ impl EventHandler for State {
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
             self.time_passed += 1;
-            // self.update();
+            self.update();
 
             if self.time_passed % 25 == 0 {
                 // println!("-------------------------------");
@@ -169,7 +174,7 @@ impl EventHandler for State {
         graphics::clear(ctx, Color::WHITE);
 
         self.network.draw(ctx);
-        // self.pods_box.draw(ctx, &self.network);
+        self.pods_box.draw(ctx, &self.network);
         // self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)
