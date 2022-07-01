@@ -159,6 +159,8 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
         }
     }
 
+    let mut n_stations_line_separated: i64 = 0;
+
     if let Yaml::Array(lines_array) = raw_lines {
         for line_yaml in lines_array {
             if let Yaml::Hash(line_hash) = line_yaml {
@@ -176,6 +178,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
                 if let Some(stations_yaml) = line_hash.get(&Yaml::String(String::from("stations")))
                 {
                     if let Yaml::Array(stations_array) = stations_yaml {
+                        n_stations_line_separated += stations_array.len() as i64;
                         for station_yaml in stations_array {
                             if let Yaml::Integer(station_id) = station_yaml {
                                 stations.push(*station_id as i32);
@@ -216,7 +219,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
         }
     }
 
-    // println!("{:?}", coordinates_map_new);
+    n_pods = n_stations_line_separated;
 
     let pods_config = PodsConfig {
         n_pods: n_pods as i32,
