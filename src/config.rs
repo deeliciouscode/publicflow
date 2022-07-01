@@ -13,6 +13,7 @@ pub const _SIMULATION_DURATION: u64 = 1000;
 // pub const CONFIG_PATH: &str = "./config/network_simple.yaml";
 // pub const MAX_XY: (f32, f32) = (3.0, 2.0);
 pub const CONFIG_PATH: &str = "./config/ubahn.yaml";
+pub const STATIONS_PATH: &str = "./config/stations.yaml";
 pub const MAX_XY: (f32, f32) = (70., 40.);
 pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1150.0);
 pub const OFFSET: f32 = 100.0;
@@ -28,7 +29,7 @@ pub const POD_SPAWN_RATE: i32 = 30; // every so many seconds a pod is spawned ti
 pub const VSYNC: bool = true;
 
 // EXTERNAL CONFIG
-pub fn load_file(file: &str) -> Yaml {
+pub fn load_yaml(file: &str) -> Yaml {
     let mut file = File::open(file).expect("Unable to open file");
     let mut contents = String::new();
 
@@ -64,7 +65,7 @@ pub struct Config {
     pub people: PeopleConfig,
 }
 
-pub fn parse_yaml(config_yaml: &Yaml) -> Config {
+pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml) -> Config {
     let mut n_stations: i64 = 0;
     let mut coordinates_map: HashMap<i32, (String, bool, bool, (i32, i32))> = HashMap::new();
     let mut lines: Vec<Line> = vec![];
@@ -76,7 +77,7 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
     // usable Config structure from above.
     // It only respects correctly formatted yamls.
     // TODO: introduce a validator or something that panics if yaml is incorrectly formatted.
-    if let Yaml::Hash(config_hash) = config_yaml {
+    if let Yaml::Hash(config_hash) = raw_config {
         if let Some(network_yaml) = config_hash.get(&Yaml::String(String::from("network"))) {
             if let Yaml::Hash(network_hash) = network_yaml {
                 if let Some(n_stations_yaml) =
@@ -247,6 +248,59 @@ pub fn parse_yaml(config_yaml: &Yaml) -> Config {
             }
         }
     }
+
+    let mut coordinates_map_new: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
+
+    if let Yaml::Array(stations_array) = raw_stations {
+        for station_yaml in stations_array {
+            if let Yaml::Hash(station_hash) = station_yaml {
+                let mut city: String = String::from("placeholder");
+                let mut id: i32 = -1;
+                let mut lat: f32 = -1.0;
+                let mut lon: f32 = -1.0;
+                let mut name: String = String::from("placeholder");
+
+                if let Some(city_yaml) = station_hash.get(&Yaml::String(String::from("city"))) {
+                    // TODO finish this
+                    if let Yaml::String(city_string) = city_yaml {
+                        city = city_string.clone();
+                    }
+                }
+
+                if let Some(id_yaml) = station_hash.get(&Yaml::String(String::from("id"))) {
+                    // TODO finish this
+                    if let Yaml::Integer(id_int) = id_yaml {
+                        id = id_int.clone() as i32;
+                    }
+                }
+
+                if let Some(lat_yaml) = station_hash.get(&Yaml::String(String::from("lat"))) {
+                    // TODO finish this
+                    if let Yaml::Integer(lat_float) = lat_yaml {
+                        lat = lat_float.clone() as f32;
+                    }
+                }
+
+                if let Some(lon_yaml) = station_hash.get(&Yaml::String(String::from("lon"))) {
+                    // TODO finish this
+                    if let Yaml::Integer(lon_float) = lon_yaml {
+                        lon = lon_float.clone() as f32;
+                    }
+                }
+
+                if let Some(name_yaml) = station_hash.get(&Yaml::String(String::from("name"))) {
+                    // TODO finish this
+                    if let Yaml::String(name_string) = name_yaml {
+                        name = name_string.clone();
+                    }
+                }
+
+                coordinates_map_new.insert(id, (name, city, (lat, lon)));
+            }
+        }
+    }
+
+    println!("{:?}", coordinates_map_new);
 
     let pods_config = PodsConfig {
         n_pods: n_pods as i32,
