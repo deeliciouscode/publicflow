@@ -1,11 +1,11 @@
 use crate::config::{OFFSET, SCREEN_SIZE};
 
 pub fn get_real_coordinates(coordinates: (f32, f32)) -> (f32, f32) {
-    let lat_min: f32 = 11.4738;
+    let lat_min: f32 = 11.4606;
     let lat_max: f32 = 11.7036;
     let lat_delta: f32 = lat_max - lat_min;
 
-    let lon_min: f32 = 48.0886;
+    let lon_min: f32 = 48.0416;
     let lon_max: f32 = 48.2649;
     let lon_delta: f32 = lon_max - lon_min;
 

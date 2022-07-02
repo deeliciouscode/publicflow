@@ -9,6 +9,16 @@
   lon: 48.1364
   name: Marienplatz
 - city: München
+  id: 2
+  lat: 11.5828
+  lon: 48.1339
+  name: Isartor
+- city: München
+  id: 3
+  lat: 11.5939
+  lon: 48.1286
+  name: Rosenheimer Platz
+- city: München
   id: 4
   lat: 11.6041
   lon: 48.1281
@@ -19,30 +29,95 @@
   lon: 48.1403
   name: Hauptbahnhof
 - city: München
+  id: 6
+  lat: 11.5488
+  lon: 48.1435
+  name: Hackerbrücke
+- city: München
+  id: 9
+  lat: 11.4606
+  lon: 48.1488
+  name: Pasing
+- city: München
+  id: 10
+  lat: 11.5474
+  lon: 48.1595
+  name: Leonrodplatz
+- city: München
+  id: 17
+  lat: 11.5881
+  lon: 48.1376
+  name: Maxmonument
+- city: München
+  id: 19
+  lat: 11.5753
+  lon: 48.1395
+  name: Theatinerstraße
+- city: München
+  id: 20
+  lat: 11.596
+  lon: 48.1361
+  name: Maximilianeum
+- city: München
   id: 27
   lat: 11.5496
   lon: 48.1251
   name: Poccistraße
+- city: München
+  id: 29
+  lat: 11.5533
+  lon: 48.1554
+  name: Hochschule München
 - city: München
   id: 34
   lat: 11.5584
   lon: 48.1295
   name: Goetheplatz
 - city: München
+  id: 36
+  lat: 11.5811
+  lon: 48.1244
+  name: Mariahilfplatz
+- city: München
+  id: 37
+  lat: 11.575
+  lon: 48.1603
+  name: Kurfürstenplatz
+- city: München
   id: 44
   lat: 11.5664
   lon: 48.1333
   name: Sendlinger Tor
+- city: München
+  id: 46
+  lat: 11.5696
+  lon: 48.1454
+  name: Karolinenplatz
+- city: München
+  id: 48
+  lat: 11.5359
+  lon: 48.1463
+  name: Donnersbergerstraße
 - city: München
   id: 54
   lat: 11.5777
   lon: 48.1429
   name: Odeonsplatz
 - city: München
+  id: 59
+  lat: 11.5344
+  lon: 48.14
+  name: Trappentreustraße
+- city: München
   id: 64
   lat: 11.5805
   lon: 48.149
   name: Universität
+- city: München
+  id: 65
+  lat: 11.5916
+  lon: 48.1328
+  name: Am Gasteig
 - city: München
   id: 74
   lat: 11.5849
@@ -98,6 +173,16 @@
   lat: 11.5284
   lon: 48.1693
   name: Westfriedhof
+- city: München
+  id: 167
+  lat: 11.4932
+  lon: 48.1656
+  name: Amalienburgstraße
+- city: München
+  id: 172
+  lat: 11.5116
+  lon: 48.1556
+  name: Romanplatz
 - city: München
   id: 197
   lat: 11.5522
@@ -183,6 +268,21 @@
   lat: 11.6125
   lon: 48.2027
   name: Kieferngarten
+- city: München
+  id: 321
+  lat: 11.5859
+  lon: 48.1711
+  name: Parzivalplatz
+- city: München
+  id: 322
+  lat: 11.5862
+  lon: 48.1673
+  name: Potsdamer Straße
+- city: München
+  id: 346
+  lat: 11.5864
+  lon: 48.1727
+  name: Schwabinger Tor
 - city: Garching (b München)
   id: 347
   lat: 11.6712
@@ -208,6 +308,21 @@
   lat: 11.5863
   lon: 48.1619
   name: Münchner Freiheit
+- city: München
+  id: 355
+  lat: 11.5883
+  lon: 48.1761
+  name: Am Münchner Tor
+- city: München
+  id: 356
+  lat: 11.5904
+  lon: 48.1842
+  name: Domagkstraße
+- city: München
+  id: 357
+  lat: 11.5912
+  lon: 48.1875
+  name: Schwabing Nord
 - city: München
   id: 358
   lat: 11.5903
@@ -249,6 +364,21 @@
   lon: 48.1396
   name: Lehel
 - city: München
+  id: 388
+  lat: 11.6305
+  lon: 48.176
+  name: St. Emmeram
+- city: München
+  id: 434
+  lat: 11.6136
+  lon: 48.1522
+  name: Effnerplatz
+- city: München
+  id: 439
+  lat: 11.6232
+  lon: 48.1537
+  name: Arabellapark/Klinikum Bogenhausen
+- city: München
   id: 444
   lat: 11.6204
   lon: 48.1533
@@ -289,10 +419,25 @@
   lon: 48.2132
   name: Hasenbergl
 - city: München
+  id: 519
+  lat: 11.6421
+  lon: 48.1218
+  name: St.-Veit-Straße
+- city: München
+  id: 523
+  lat: 11.6337
+  lon: 48.1361
+  name: Berg am Laim
+- city: München
   id: 531
   lat: 11.6633
   lon: 48.1255
   name: Trudering
+- city: München
+  id: 591
+  lat: 11.5892
+  lon: 48.1798
+  name: Anni-Albers-Straße
 - city: München
   id: 593
   lat: 11.529
@@ -334,10 +479,25 @@
   lon: 48.1185
   name: Karl-Preis-Platz
 - city: München
+  id: 668
+  lat: 11.5836
+  lon: 48.1191
+  name: Ostfriedhof
+- city: München
+  id: 672
+  lat: 11.5971
+  lon: 48.1029
+  name: Schwanseestraße
+- city: München
   id: 673
   lat: 11.5946
   lon: 48.1108
   name: Giesing
+- city: München
+  id: 685
+  lat: 11.5502
+  lon: 48.0767
+  name: Großhesseloher Brücke
 - city: München
   id: 689
   lat: 11.5362
@@ -378,6 +538,11 @@
   lat: 11.5818
   lon: 48.104
   name: St.-Quirin-Platz
+- city: München
+  id: 744
+  lat: 11.5184
+  lon: 48.1401
+  name: Lautensackstraße
 - city: München
   id: 750
   lat: 11.581
@@ -478,3 +643,33 @@
   lat: 11.4738
   lon: 48.1089
   name: Klinikum Großhadern
+- city: München
+  id: 903
+  lat: 11.49
+  lon: 48.1246
+  name: Gondrellplatz
+- city: München
+  id: 908
+  lat: 11.5031
+  lon: 48.1397
+  name: Fürstenrieder Straße
+- city: München
+  id: 911
+  lat: 11.4888
+  lon: 48.1409
+  name: Willibaldplatz
+- city: Grünwald (Kr München)
+  id: 1153
+  lat: 11.5236
+  lon: 48.0416
+  name: Derbolfinger Platz
+- city: München
+  id: 1166
+  lat: 11.5592
+  lon: 48.1393
+  name: Hauptbahnhof Süd
+- city: München
+  id: 1167
+  lat: 11.5608
+  lon: 48.1412
+  name: Hauptbahnhof Nord

@@ -177,7 +177,8 @@ impl Pod {
             "u6" => return [0.0, 0.0, 1.0, 1.0],
             "u7" => return [0.77, 0.75, 0.43, 1.0],
             "u8" => return [0.68, 0.67, 0.55, 1.0],
-            any => panic!("The line: {} is not defined.", any),
+            _ => return [0.3, 0.3, 0.3, 1.0], // TODO: color for trams
+                                              // any => panic!("The line: {} is not defined.", any),
         };
     }
 

@@ -1,0 +1,48 @@
+- circular: false
+  distances: [1556, 2007, 1640, 2151]
+  name: t12
+  stations: [287, 131, 10, 156, 172]
+- circular: false
+  distances: [2707, 1311, 1276, 435, 887, 1589, 740, 293, 3027, 953, 3299]
+  name: t16
+  stations: [172, 48, 6, 5, 0, 44, 2, 17, 386, 434, 439, 388]
+- circular: false
+  distances: [2292, 2707, 1311, 1276, 435, 887, 1589, 866, 739, 2827, 953, 3299]
+  name: t17
+  stations: [167, 172, 48, 6, 5, 0, 44, 2, 65, 384, 434, 439, 388]
+- circular: false
+  distances: [3466, 923, 1548, 2401, 600, 887, 1917, 803, 1604, 1167]
+  name: t18
+  stations: [903, 200, 744, 59, 1166, 0, 44, 36, 668, 673, 672]
+- circular: false
+  distances: [2957, 1394, 1481, 1548, 2583, 435, 957, 1268, 794, 192, 3464]
+  name: t19
+  stations: [9, 911, 908, 744, 59, 5, 0, 19, 17, 20, 384, 523]
+- circular: false
+  distances: [2587, 2320, 2104, 1007, 435]
+  name: t20
+  stations: [212, 158, 10, 153, 5, 0]
+- circular: false
+  distances: [2320, 2104, 874, 515, 957, 1268, 794, 192, 1251, 3941, 643]
+  name: t21
+  stations: [158, 10, 153, 1167, 0, 19, 17, 20, 384, 4, 763, 519]
+- circular: false
+  distances: [780, 550, 236, 524, 541, 646, 483]
+  name: t23
+  stations: [354, 322, 321, 346, 355, 591, 356, 357]
+- circular: false
+  distances: [1096, 1696, 689, 983, 5262, 5690]
+  name: t25
+  stations: [384, 3, 668, 722, 740, 685, 1153]
+- circular: false
+  distances: [2071, 689, 2216, 957, 887]
+  name: t27
+  stations: [249, 131, 37, 46, 0, 44]
+- circular: false
+  distances: [1634, 2216, 957, 887]
+  name: t28
+  stations: [287, 37, 46, 0, 44]
+- circular: false
+  distances: [1394, 1481, 1548, 2583, 1007, 1312]
+  name: t29
+  stations: [911, 908, 744, 59, 5, 153, 29]
