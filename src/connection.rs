@@ -4,6 +4,13 @@ use std::collections::HashSet;
 pub struct Connection {
     pub station_ids: HashSet<i32>,
     pub travel_time: i32,
+    pub kind: ConnectionKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ConnectionKind {
+    Subway,
+    Tram,
 }
 
 pub trait YieldTuple<T> {

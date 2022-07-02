@@ -1,4 +1,4 @@
-use crate::connection::Connection;
+use crate::connection::{Connection, ConnectionKind};
 use crate::line::Line;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -322,26 +322,40 @@ fn calc_connections(
         panic!("A non circular line must have exactly n-1 distances if it has n stations. Ascertain that this is the case for line {}", name);
     }
 
+    let connection_kind;
+    match name.as_str().chars().nth(0).unwrap() {
+        'u' => connection_kind = ConnectionKind::Subway,
+        't' => connection_kind = ConnectionKind::Tram,
+        _ => panic!("Only Subway and Tram supported so far."),
+    }
+
     for i in 0..station_ids.len() {
         if i == station_ids.len() - 1 && circular {
-            let travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
+            let mut travel_time = Default::default();
+            if connection_kind == ConnectionKind::Subway {
+                travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
+            } else if connection_kind == ConnectionKind::Tram {
+                travel_time = distances[i] / 12; // 43 kmh ~= 12 m/s
+            }
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[0]]),
                 travel_time: travel_time,
+                kind: connection_kind,
             });
             break;
         } else if i == station_ids.len() - 1 {
             break;
         } else {
-            let travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
-                                                 // println!(
-                                                 //     "Connection: {:?} | travel_time: {}",
-                                                 //     (station_ids[i], station_ids[i + 1]),
-                                                 //     travel_time
-                                                 // );
+            let mut travel_time = Default::default();
+            if connection_kind == ConnectionKind::Subway {
+                travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
+            } else if connection_kind == ConnectionKind::Tram {
+                travel_time = distances[i] / 12; // 43 kmh ~= 12 m/s
+            }
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
                 travel_time: travel_time,
+                kind: connection_kind,
             });
         }
     }

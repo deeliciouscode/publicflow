@@ -5,7 +5,8 @@ use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
 use ggez::event::EventHandler;
-use ggez::graphics::{self, Color};
+use ggez::graphics::{self, Color, DrawParam};
+use ggez::graphics::{Font, Text};
 use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
@@ -31,6 +32,20 @@ impl State {
         self.pods_box.update(&mut self.network);
         self.people_box
             .update(&mut self.pods_box, &mut self.network);
+    }
+
+    // TODO:PRIO make this shit appear
+    pub fn draw(&mut self, ctx: &mut Context) {
+        let time_passed = Text::new(String::from(self.time_passed.to_string()));
+        // let color = [0.2, 0.2, 0.2, 1.0].into();
+        let draw_param = DrawParam::new();
+        draw_param.offset([-10., -10.]);
+        draw_param.color(Color::BLACK);
+        let res = graphics::draw(ctx, &time_passed, draw_param);
+        match res {
+            Ok(ok) => {}
+            Err(err) => panic!("{:?}", err),
+        }
     }
 
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
@@ -173,6 +188,7 @@ impl EventHandler for State {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::WHITE);
 
+        self.draw(ctx);
         self.network.draw(ctx);
         self.pods_box.draw(ctx, &self.network);
         // self.people_box.draw(ctx, &self.network);
