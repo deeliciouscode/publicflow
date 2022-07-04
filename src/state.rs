@@ -188,7 +188,7 @@ impl EventHandler for State {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::WHITE);
 
-        self.draw(ctx);
+        // self.draw(ctx);
         self.network.draw(ctx);
         self.pods_box.draw(ctx, &self.network);
         // self.people_box.draw(ctx, &self.network);
