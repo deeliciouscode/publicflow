@@ -10,8 +10,8 @@ mod state;
 mod station;
 
 use crate::config::{
-    load_yaml, parse_raw_config, CONFIG_PATH, SCREEN_SIZE, STATIONS_PATH, SUBWAY_LINES_PATH,
-    TRAM_LINES_PATH, VSYNC,
+    load_yaml, parse_raw_config, ALL_LINES_PATH, CONFIG_PATH, SCREEN_SIZE, STATIONS_PATH,
+    SUBWAY_LINES_PATH, TRAM_LINES_PATH, VSYNC,
 };
 use crate::state::State;
 // use crate::state::{gen_state, State};
@@ -25,15 +25,11 @@ fn main() {
     let raw_config = load_yaml(CONFIG_PATH);
     // println!("{:?}\n", yaml);
     let raw_stations = load_yaml(STATIONS_PATH);
-    let raw_subway_lines = load_yaml(SUBWAY_LINES_PATH);
-    let raw_tram_lines = load_yaml(TRAM_LINES_PATH);
+    // let raw_subway_lines = load_yaml(SUBWAY_LINES_PATH);
+    // let raw_tram_lines = load_yaml(TRAM_LINES_PATH);
+    let raw_lines = load_yaml(ALL_LINES_PATH);
 
-    let config = parse_raw_config(
-        &raw_config,
-        &raw_stations,
-        &raw_subway_lines,
-        &raw_tram_lines,
-    );
+    let config = parse_raw_config(&raw_config, &raw_stations, &raw_lines);
     // println!("config: {:?}\n", config);
 
     // Make a Context.

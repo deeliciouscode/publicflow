@@ -14,6 +14,7 @@ pub const _SIMULATION_DURATION: u64 = 1000;
 // pub const MAX_XY: (f32, f32) = (3.0, 2.0);
 pub const CONFIG_PATH: &str = "./config/general.yaml";
 pub const STATIONS_PATH: &str = "./config/stations_in_lines.yaml";
+pub const ALL_LINES_PATH: &str = "./config/all_lines.yaml";
 pub const SUBWAY_LINES_PATH: &str = "./config/subway_lines.yaml";
 pub const TRAM_LINES_PATH: &str = "./config/tram_lines.yaml";
 pub const MAX_XY: (f32, f32) = (70., 40.);
@@ -69,12 +70,7 @@ pub struct Config {
     pub people: PeopleConfig,
 }
 
-pub fn parse_raw_config(
-    raw_config: &Yaml,
-    raw_stations: &Yaml,
-    raw_subway_lines: &Yaml,
-    raw_tram_lines: &Yaml,
-) -> Config {
+pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml) -> Config {
     let mut n_stations: i64 = 0;
     let mut coordinates_map: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
     let mut lines: Vec<Line> = vec![];
@@ -167,65 +163,7 @@ pub fn parse_raw_config(
 
     let mut n_stations_line_separated: i64 = 0;
 
-    if let Yaml::Array(lines_array) = raw_subway_lines {
-        for line_yaml in lines_array {
-            if let Yaml::Hash(line_hash) = line_yaml {
-                let mut stations: Vec<i32> = vec![];
-                let mut distances: Vec<i32> = vec![];
-                let mut circular: bool = false;
-                let mut name: String = String::from("placeholder");
-
-                if let Some(name_yaml) = line_hash.get(&Yaml::String(String::from("name"))) {
-                    // TODO finish this
-                    if let Yaml::String(name_string) = name_yaml {
-                        name = name_string.clone();
-                    }
-                }
-                if let Some(stations_yaml) = line_hash.get(&Yaml::String(String::from("stations")))
-                {
-                    if let Yaml::Array(stations_array) = stations_yaml {
-                        n_stations_line_separated += stations_array.len() as i64;
-                        for station_yaml in stations_array {
-                            if let Yaml::Integer(station_id) = station_yaml {
-                                stations.push(*station_id as i32);
-                            }
-                        }
-                    }
-                }
-                if let Some(distances_yaml) =
-                    line_hash.get(&Yaml::String(String::from("distances")))
-                {
-                    if let Yaml::Array(distances_array) = distances_yaml {
-                        for distance_yaml in distances_array {
-                            if let Yaml::Integer(distance) = distance_yaml {
-                                distances.push(*distance as i32);
-                            }
-                        }
-                    }
-                }
-                if let Some(circular_yaml) = line_hash.get(&Yaml::String(String::from("circular")))
-                {
-                    if let Yaml::Boolean(circular_bool) = circular_yaml {
-                        circular = *circular_bool;
-                    }
-                }
-                update_edge_map(&stations, circular, &mut edge_map);
-                let connections = calc_connections(&name, &stations, circular, &distances);
-                // println!("{}, {:?}", name, connections);
-                let line = Line {
-                    name: name,
-                    stations: stations,
-                    distances: distances,
-                    circular: circular,
-                    connections: connections,
-                };
-                // println!("{:?}", line);
-                lines.push(line);
-            }
-        }
-    }
-
-    if let Yaml::Array(lines_array) = raw_tram_lines {
+    if let Yaml::Array(lines_array) = raw_lines {
         for line_yaml in lines_array {
             if let Yaml::Hash(line_hash) = line_yaml {
                 let mut stations: Vec<i32> = vec![];
