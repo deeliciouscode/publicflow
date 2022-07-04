@@ -1,12 +1,12 @@
 use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
+use crate::helper::format_seconds;
 use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
 use crate::station::Station;
-use ggez::event::EventHandler;
-use ggez::graphics::{self, Color, DrawParam};
-use ggez::graphics::{Font, Text};
+use ggez::event::{EventHandler, KeyCode, KeyMods, MouseButton};
+use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
@@ -18,6 +18,8 @@ pub struct State {
     pub people_box: PeopleBox,
     pub time_passed: u32,
     pub config: Config,
+    pub on_pause: bool,
+    pub last_mouse_left: (f32, f32),
 }
 
 impl State {
@@ -36,15 +38,40 @@ impl State {
 
     // TODO:PRIO make this shit appear
     pub fn draw(&mut self, ctx: &mut Context) {
-        let time_passed = Text::new(String::from(self.time_passed.to_string()));
+        // println!("Draw State");
+        let mut time_passed = Text::new(String::from(format!(
+            "Time passed: {}",
+            format_seconds(self.time_passed)
+        )));
+        time_passed.set_font(Font::default(), PxScale::from(40.));
+        // println!("Time Passed: {}", self.time_passed);
         // let color = [0.2, 0.2, 0.2, 1.0].into();
-        let draw_param = DrawParam::new();
-        draw_param.offset([-10., -10.]);
-        draw_param.color(Color::BLACK);
+        let draw_param = DrawParam::new().offset([-10., -10.]).color(Color::BLACK);
         let res = graphics::draw(ctx, &time_passed, draw_param);
         match res {
-            Ok(ok) => {}
+            Ok(ok) => {
+                // println!("{:?}", ok)
+            }
             Err(err) => panic!("{:?}", err),
+        }
+
+        if self.on_pause {
+            let maybe_station = self.network.try_retrieve_station(self.last_mouse_left);
+            match maybe_station {
+                Some(station) => {
+                    let mut name = Text::new(String::from(format!("Name: {}", station.name)));
+                    name.set_font(Font::default(), PxScale::from(24.));
+                    // println!("Time Passed: {}", self.time_passed);
+                    // let color = [0.2, 0.2, 0.2, 1.0].into();
+                    let draw_param = DrawParam::new()
+                        .offset([-self.last_mouse_left.0, -self.last_mouse_left.1])
+                        .color(Color::BLACK);
+                    let res = graphics::draw(ctx, &name, draw_param);
+
+                    // println!("station: {:?}", station);
+                }
+                None => {}
+            }
         }
     }
 
@@ -160,6 +187,8 @@ impl State {
             pods_box: pods_box,
             time_passed: 0,
             config: config.clone(),
+            on_pause: false,
+            last_mouse_left: (0., 0.),
         };
 
         // println!("{:?}", state);
@@ -169,12 +198,30 @@ impl State {
 }
 
 impl EventHandler for State {
+    // fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, repeat: bool) {
+
+    // }
+
+    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
+        if button == MouseButton::Left {
+            self.last_mouse_left = (x, y)
+        }
+    }
+
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods) {
+        if keycode == KeyCode::Space {
+            self.on_pause = !self.on_pause;
+        }
+    }
+
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Update code here...
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
-            self.time_passed += 1;
-            self.update();
+            if !self.on_pause {
+                self.time_passed += 1;
+                self.update();
+            }
 
             if self.time_passed % 25 == 0 {
                 // println!("-------------------------------");
@@ -188,9 +235,9 @@ impl EventHandler for State {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::WHITE);
 
-        // self.draw(ctx);
         self.network.draw(ctx);
         self.pods_box.draw(ctx, &self.network);
+        self.draw(ctx);
         // self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)

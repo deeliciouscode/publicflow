@@ -20,3 +20,14 @@ pub fn get_real_coordinates(coordinates: (f32, f32)) -> (f32, f32) {
             * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
     (x, y)
 }
+
+pub fn format_seconds(seconds: u32) -> String {
+    let mut remaining = seconds;
+    let hours = remaining / 3600;
+    let remaining = remaining % 3600;
+    let minutes = remaining / 60;
+    let remaining = remaining % 60;
+    let seconds = remaining;
+
+    return format!("{}:{}:{}", hours, minutes, seconds);
+}

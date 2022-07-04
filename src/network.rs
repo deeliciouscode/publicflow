@@ -1,10 +1,12 @@
 use crate::config::Config as SimConfig;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
+use crate::helper::get_real_coordinates;
 use crate::line::Line;
 use crate::station::Station;
 use ggez::Context;
 use petgraph::dot::{Config, Dot};
 use petgraph::graph::{DiGraph, UnGraph};
+// use std::;
 
 #[derive(Clone, Debug)]
 pub struct Network {
@@ -64,6 +66,26 @@ impl Network {
             }
         }
         None
+    }
+
+    pub fn try_retrieve_station(&self, (x, y): (f32, f32)) -> Option<&Station> {
+        // println!("{}, {}", x, y);
+        let mut closest_distance = 10000.;
+        let mut closest_station = &self.stations[0];
+        for station in &self.stations {
+            let station_coords = get_real_coordinates(station.coordinates);
+            let distance = ((station_coords.0 - x).powi(2) + (station_coords.1 - y).powi(2)).sqrt();
+
+            if distance < closest_distance && distance < 10. {
+                closest_distance = distance;
+                closest_station = station
+            }
+        }
+        if closest_distance == 10000. {
+            None
+        } else {
+            Some(closest_station)
+        }
     }
 
     pub fn print_state(&self) {
