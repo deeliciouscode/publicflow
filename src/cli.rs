@@ -16,7 +16,7 @@ fn prompt(name: &str) -> String {
     return line.trim().to_string();
 }
 
-pub fn run_cli(tx: mpsc::Sender<String>) {
+pub fn run_cli(tx: mpsc::Sender<(Vec<GetAction>, Vec<SetAction>)>) {
     loop {
         let input = prompt("> ");
 
@@ -24,36 +24,60 @@ pub fn run_cli(tx: mpsc::Sender<String>) {
             break;
         };
 
-        let _res = tx.send(input);
+        let input_list: Vec<&str> = input.split(" ").collect();
+
+        let mut get_actions: Vec<GetAction> = vec![];
+        let mut set_actions: Vec<SetAction> = vec![];
+
+        if input_list[0] == "get" {
+            if input_list.len() < 2 {
+                println!("Get what??");
+                continue;
+            }
+
+            match input_list[1] {
+                "station" => {
+                    if input_list.len() < 3 {
+                        println!("Get which stations??");
+                        continue;
+                    }
+                    for id in &input_list[2..] {
+                        let maybe_station_id = FromStr::from_str(id);
+                        match maybe_station_id {
+                            Ok(station_id) => get_actions.push(GetAction::GetStation {
+                                station_id: station_id,
+                            }),
+                            Err(_) => println!("Couldn't parse \'{}\' into a station_id", id),
+                        }
+                    }
+                }
+                _ => {
+                    println!("Can't get: {}, not implemented.", input_list[1])
+                }
+            }
+        }
+
+        if input_list[0] == "set" {
+            println!("set me if ya can")
+        }
+
+        let _res = tx.send((get_actions, set_actions));
     }
 }
 
-pub fn handle_queries(
+pub fn recv_queries(
     state: &State,
-    rx: &mpsc::Receiver<String>,
+    rx: &mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>,
 ) -> (Vec<GetAction>, Vec<SetAction>) {
+    let mut actions = (vec![], vec![]);
+
     let maybe_received = rx.try_recv();
-    let mut get_actions = vec![];
-    let mut set_actions = vec![];
 
     match maybe_received {
         Ok(received) => {
-            let input_list: Vec<&str> = received.split(" ").collect();
-
-            if input_list[0] == "get" {
-                if input_list[1] == "station" {
-                    println!("get station: {}", input_list[2]);
-                    get_actions.push(GetAction::GetStation {
-                        station_id: FromStr::from_str(input_list[2]).unwrap(),
-                    })
-                }
-            }
-
-            if input_list[0] == "set" {
-                println!("set me if ya can")
-            }
+            return received;
         }
         Err(_) => {}
     }
-    return (get_actions, set_actions);
+    return actions;
 }

@@ -8,7 +8,6 @@ pub struct PathState {
     pub current: NodeIndex<u32>,
 }
 
-// TODO: implement weights using the time to travel between stations
 impl PathState {
     pub fn new(graph: &UnGraph<u32, u32>, start: u32, end: u32) -> Self {
         // println!("{:?}", graph);

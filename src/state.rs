@@ -1,5 +1,5 @@
 use crate::action::{GetAction, SetAction};
-use crate::cli::handle_queries;
+use crate::cli::recv_queries;
 use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
 use crate::helper::format_seconds;
 use crate::line::{Line, LineState};
@@ -23,7 +23,7 @@ pub struct State {
     pub config: Config,
     pub on_pause: bool,
     pub last_mouse_left: (f32, f32),
-    rx: mpsc::Receiver<String>,
+    rx: mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>,
 }
 
 impl State {
@@ -145,7 +145,7 @@ impl State {
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
     // as a next step spawn / divert pods dynamically
 
-    pub fn new(config: &Config, rx: mpsc::Receiver<String>) -> Self {
+    pub fn new(config: &Config, rx: mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>) -> Self {
         let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
         for abstract_station in config.network.coordinates_map.iter() {
@@ -287,7 +287,7 @@ impl EventHandler for State {
         // Update code here...
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
-            let (get_actions, set_actions) = handle_queries(&self, &self.rx);
+            let (get_actions, set_actions) = recv_queries(&self, &self.rx);
 
             if get_actions.len() != 0 {
                 println!("get_actions: {:?}", get_actions);

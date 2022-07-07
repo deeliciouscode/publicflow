@@ -24,7 +24,7 @@ use std::thread;
 
 fn main() {
     println!("start simulation...");
-    let (tx, rx) = mpsc::channel::<String>();
+    let (tx, rx) = mpsc::channel();
 
     thread::spawn(|| {
         run_cli(tx);
