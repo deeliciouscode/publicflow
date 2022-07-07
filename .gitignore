@@ -18,3 +18,5 @@ Cargo.lock
 /analysis/venv/*
 /config_dev
 /config_dev/*
+/.vscode/*
+/.vscode/
