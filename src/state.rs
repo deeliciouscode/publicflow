@@ -1,3 +1,5 @@
+use crate::action::{GetAction, SetAction};
+use crate::cli::handle_queries;
 use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
 use crate::helper::format_seconds;
 use crate::line::{Line, LineState};
@@ -10,8 +12,9 @@ use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
+use std::sync::mpsc;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct State {
     pub network: Network,
     pub pods_box: PodsBox,
@@ -20,6 +23,7 @@ pub struct State {
     pub config: Config,
     pub on_pause: bool,
     pub last_mouse_left: (f32, f32),
+    rx: mpsc::Receiver<String>,
 }
 
 impl State {
@@ -29,7 +33,11 @@ impl State {
         self.people_box.print_state();
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, set_actions: Vec<SetAction>) {
+        if set_actions.len() != 0 {
+            println!("set_actions: {:?}", set_actions);
+        }
+
         self.network.update();
         self.pods_box.update(&mut self.network);
         self.people_box
@@ -136,7 +144,8 @@ impl State {
 
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
     // as a next step spawn / divert pods dynamically
-    pub fn new(config: &Config) -> Self {
+
+    pub fn new(config: &Config, rx: mpsc::Receiver<String>) -> Self {
         let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
         for abstract_station in config.network.coordinates_map.iter() {
@@ -248,6 +257,7 @@ impl State {
             config: config.clone(),
             on_pause: false,
             last_mouse_left: (0., 0.),
+            rx: rx,
         };
 
         // println!("{:?}", state);
@@ -277,9 +287,31 @@ impl EventHandler for State {
         // Update code here...
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
+            let (get_actions, set_actions) = handle_queries(&self, &self.rx);
+
+            if get_actions.len() != 0 {
+                println!("get_actions: {:?}", get_actions);
+            }
+
+            for get_action in get_actions {
+                match get_action {
+                    GetAction::GetStation { station_id } => {
+                        let maybe_station = self.network.try_get_station_by_id(station_id);
+                        match maybe_station {
+                            Some(station) => {
+                                println!("The station you are looking for: {:?}", station.name)
+                            }
+                            None => {
+                                println!("No station with id {} exists", station_id)
+                            }
+                        }
+                    }
+                }
+            }
+
             if !self.on_pause {
                 self.time_passed += 1;
-                self.update();
+                self.update(set_actions);
             }
 
             if self.time_passed % 25 == 0 {

@@ -1,3 +1,5 @@
+mod action;
+mod cli;
 mod config;
 mod connection;
 mod helper;
@@ -9,18 +11,24 @@ mod pod;
 mod state;
 mod station;
 
+use crate::cli::run_cli;
 use crate::config::{
     load_yaml, parse_raw_config, ALL_LINES_PATH, CONFIG_PATH, SCREEN_SIZE, STATIONS_PATH,
     SUBWAY_LINES_PATH, TRAM_LINES_PATH, VSYNC,
 };
 use crate::state::State;
-// use crate::state::{gen_state, State};
-// use crate::state::{get_state, State};
 use ggez::event::{self};
 use ggez::ContextBuilder;
-// TODO: first implement something where people are just moving mindlessly, without destination
+use std::sync::mpsc;
+use std::thread;
 
 fn main() {
+    println!("start simulation...");
+    let (tx, rx) = mpsc::channel::<String>();
+
+    thread::spawn(|| {
+        run_cli(tx);
+    });
     // let yaml = load_file("./config/network.yaml");
     let raw_config = load_yaml(CONFIG_PATH);
     // println!("{:?}\n", yaml);
@@ -40,7 +48,6 @@ fn main() {
         .build()
         .expect("aieee, could not create ggez context!");
 
-    let state = State::new(&config);
-    println!("start simulation...");
+    let state = State::new(&config, rx);
     event::run(ctx, event_loop, state);
 }
