@@ -44,6 +44,47 @@ impl State {
             .update(&mut self.pods_box, &mut self.network);
     }
 
+    fn handle_get_actions(&self, get_actions: Vec<GetAction>) {
+        // if get_actions.len() != 0 {
+        //     println!("get_actions: {:?}", get_actions);
+        // }
+
+        for get_action in get_actions {
+            match get_action {
+                GetAction::GetStation { station_id } => {
+                    let maybe_station = self.network.try_get_station_by_id_unmut(station_id);
+                    match maybe_station {
+                        Some(station) => {
+                            println!("----------------------");
+                            println!("Id: {}", station.id);
+                            println!("Name: {}", station.name);
+                            println!("City: {}", station.city);
+                            println!("Since Last Pod: {}", station.since_last_pod);
+                            println!("Edges To: {:?}", station.edges_to);
+                            println!("Pods in Station: {:?}", station.pods_in_station);
+                            println!("People in Station: {}", station.people_in_station.len());
+                            println!("Coordinates: {:?}", station.coordinates);
+                            println!("----------------------");
+                        }
+                        None => {
+                            println!("No station with id {} exists", station_id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // pub id: i32,
+    // pub name: String,
+    // pub city: String,
+    // pub since_last_pod: i32,
+    // pub edges_to: HashSet<i32>,
+    // pub pods_in_station: HashSet<i32>,
+    // pub people_in_station: HashSet<i32>,
+    // pub coordinates: (f32, f32),
+    // pub config: Config,
+
     // TODO:PRIO make this shit appear
     pub fn draw(&mut self, ctx: &mut Context) {
         // println!("Draw State");
@@ -289,25 +330,7 @@ impl EventHandler for State {
             // println!("fps: {}", timer::fps(ctx));
             let (get_actions, set_actions) = recv_queries(&self, &self.rx);
 
-            if get_actions.len() != 0 {
-                println!("get_actions: {:?}", get_actions);
-            }
-
-            for get_action in get_actions {
-                match get_action {
-                    GetAction::GetStation { station_id } => {
-                        let maybe_station = self.network.try_get_station_by_id(station_id);
-                        match maybe_station {
-                            Some(station) => {
-                                println!("The station you are looking for: {:?}", station.name)
-                            }
-                            None => {
-                                println!("No station with id {} exists", station_id)
-                            }
-                        }
-                    }
-                }
-            }
+            self.handle_get_actions(get_actions);
 
             if !self.on_pause {
                 self.time_passed += 1;
