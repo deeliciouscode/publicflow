@@ -33,6 +33,27 @@ impl PodsBox {
         return None;
     }
 
+    pub fn try_retrieve_pod(&self, (x, y): (f32, f32)) -> Option<&Pod> {
+        // println!("{}, {}", x, y);
+        let mut closest_distance = 10000.;
+        let mut closest_pod = &self.pods[0];
+        for pod in &self.pods {
+            let pod_coordinates = pod.get_coordinates();
+            let distance =
+                ((pod_coordinates.0 - x).powi(2) + (pod_coordinates.1 - y).powi(2)).sqrt();
+
+            if distance < closest_distance && distance < 10. {
+                closest_distance = distance;
+                closest_pod = pod
+            }
+        }
+        if closest_distance == 10000. {
+            None
+        } else {
+            Some(closest_pod)
+        }
+    }
+
     pub fn print_state(&self) {
         for pod in &self.pods {
             let maybe_station_id = pod.try_get_station_id();
@@ -83,7 +104,7 @@ impl Pod {
             state: PodState::InStation {
                 station_id: station_id,
                 time_in_station: 0,
-                coords: (0., 0.),
+                coordinates: (0., 0.),
             },
         }
     }
@@ -92,9 +113,6 @@ impl Pod {
         let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
         let green = 1. - red;
 
-        // let test = [red - 0.2, green - 0.2, 0., 1.0, 2.0];
-        // let color = test.into();
-
         let color = self.get_rgba().into();
 
         let mut res: GameResult<()> = std::result::Result::Ok(());
@@ -102,11 +120,7 @@ impl Pod {
         let x_shift: f32;
         let y_shift: f32;
 
-        let (real_x, real_y) = self.state.try_get_coords().unwrap();
-
-        // if self.id == 7 {
-        //     println!("from: {}, to: {}, coords: {:?}", station_id_from, station_id_to, (x,y))
-        // }
+        let (real_x, real_y) = self.get_coordinates();
 
         let circle = graphics::Mesh::new_circle(
             ctx,
@@ -130,41 +144,6 @@ impl Pod {
                 return res;
             }
         }
-
-        // let station_rect = Rect {
-        //     x: real_x,
-        //     y: real_y,
-        //     w: SIDELEN_POD,
-        //     h: SIDELEN_POD,
-        // };
-        // let rectangle =
-        //     graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
-
-        // res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-
-        // let text = Text::new(String::from("1"));
-        // let id_text = Text::new(String::from(self.id.to_string()));
-        // let people_inside_text = Text::new(String::from(self.people_in_pod.len().to_string()));
-        // res = graphics::draw(
-        //     ctx,
-        //     &id_text,
-        //     (ggez::mint::Point2 {
-        //         x: real_x,
-        //         y: real_y,
-        //     },),
-        // );
-
-        // let people_inside_text_x = real_x + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
-        // let people_inside_text_y = real_y + LENGTH_POD / 2. - Font::DEFAULT_FONT_SCALE / 2.;
-
-        // res = graphics::draw(
-        //     ctx,
-        //     &people_inside_text,
-        //     (ggez::mint::Point2 {
-        //         x: people_inside_text_x,
-        //         y: people_inside_text_y,
-        //     },),
-        // );
     }
 
     fn get_rgba(&self) -> [f32; 4] {
@@ -189,7 +168,7 @@ impl Pod {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station,
-                coords: _,
+                coordinates: _,
             } => {
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
@@ -200,7 +179,7 @@ impl Pod {
             }
             PodState::JustArrived {
                 station_id: _,
-                coords: _,
+                coordinates: _,
             } => {
                 // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
@@ -208,7 +187,7 @@ impl Pod {
             PodState::InStation {
                 station_id: _,
                 time_in_station,
-                coords: _,
+                coordinates: _,
             } => {
                 // println!("Pod in InStation state");
                 if self.in_station_for > *time_in_station {
@@ -271,6 +250,11 @@ impl Pod {
         return true;
     }
 
+    pub fn get_coordinates(&self) -> (f32, f32) {
+        let coordinates = self.state.try_get_coordinates().unwrap();
+        return coordinates;
+    }
+
     pub fn deregister_person(&mut self, person_id: &i32) {
         self.people_in_pod.remove(person_id);
     }
@@ -279,7 +263,7 @@ impl Pod {
         match self.state {
             PodState::JustArrived {
                 station_id: _,
-                coords: _,
+                coordinates: _,
             } => true,
             _ => false,
         }
@@ -310,16 +294,16 @@ pub enum PodState {
         station_id_from: i32,
         station_id_to: i32,
         time_to_next_station: i32,
-        coords: (f32, f32),
+        coordinates: (f32, f32),
     },
     JustArrived {
         station_id: i32,
-        coords: (f32, f32),
+        coordinates: (f32, f32),
     },
     InStation {
         station_id: i32,
         time_in_station: i32,
-        coords: (f32, f32),
+        coordinates: (f32, f32),
     },
     InvalidState {
         reason: String,
@@ -333,13 +317,13 @@ impl PodState {
             PodState::InStation {
                 station_id,
                 time_in_station: _,
-                coords,
+                coordinates,
             } => {
                 PodState::BetweenStations {
                     station_id_from: *station_id,
                     station_id_to: to_pod_id,
                     time_to_next_station: time_to_next_station,
-                    coords: *coords,
+                    coordinates: *coordinates,
                 } // TODO to
             }
             _ => PodState::InvalidState {
@@ -354,10 +338,10 @@ impl PodState {
                 station_id_from: _,
                 station_id_to,
                 time_to_next_station: _,
-                coords,
+                coordinates,
             } => PodState::JustArrived {
                 station_id: *station_id_to,
-                coords: *coords,
+                coordinates: *coordinates,
             },
             _ => PodState::InvalidState {
                 reason: String::from("Pod can only arrive if in BetweenStations state."),
@@ -367,10 +351,13 @@ impl PodState {
 
     fn to_in_station(&self) -> PodState {
         match self {
-            PodState::JustArrived { station_id, coords } => PodState::InStation {
+            PodState::JustArrived {
+                station_id,
+                coordinates,
+            } => PodState::InStation {
                 station_id: *station_id,
                 time_in_station: 0,
-                coords: *coords,
+                coordinates: *coordinates,
             },
             _ => PodState::InvalidState {
                 reason: String::from("Pod can only get to InStation if in JustArrived state."),
@@ -383,11 +370,11 @@ impl PodState {
             PodState::InStation {
                 station_id,
                 time_in_station,
-                coords,
+                coordinates,
             } => PodState::InStation {
                 station_id: *station_id,
                 time_in_station: time_in_station + 1,
-                coords: *coords,
+                coordinates: *coordinates,
             },
             _ => PodState::InvalidState {
                 reason: String::from("Pod can only wait if in InStation state"),
@@ -401,7 +388,7 @@ impl PodState {
                 station_id_from,
                 station_id_to,
                 time_to_next_station,
-                coords: _,
+                coordinates: _,
             } => {
                 let travel_time = pod
                     .line_state
@@ -414,15 +401,15 @@ impl PodState {
                     .unwrap();
                 let station_to = network.try_get_station_by_id_unmut(*station_id_to).unwrap();
 
-                let coords_from = get_real_coordinates(station_from.coordinates);
-                let coords_to = get_real_coordinates(station_to.coordinates);
-                let x = coords_from.0
-                    + (coords_to.0 - coords_from.0)
+                let coordinates_from = get_real_coordinates(station_from.coordinates);
+                let coordinates_to = get_real_coordinates(station_to.coordinates);
+                let x = coordinates_from.0
+                    + (coordinates_to.0 - coordinates_from.0)
                         * ((travel_time as f32 - *time_to_next_station as f32)
                             / travel_time as f32);
 
-                let y = coords_from.1
-                    + (coords_to.1 - coords_from.1)
+                let y = coordinates_from.1
+                    + (coordinates_to.1 - coordinates_from.1)
                         * ((travel_time as f32 - *time_to_next_station as f32)
                             / travel_time as f32);
 
@@ -433,7 +420,7 @@ impl PodState {
                     station_id_from: *station_id_from,
                     station_id_to: *station_id_to,
                     time_to_next_station: time_to_next_station - 1,
-                    coords: (real_x, real_y),
+                    coordinates: (real_x, real_y),
                 }
             }
             _ => PodState::InvalidState {
@@ -446,12 +433,12 @@ impl PodState {
         match self {
             PodState::JustArrived {
                 station_id,
-                coords: _
+                coordinates: _
             } => *station_id,
             PodState::InStation {
                 time_in_station: _,
                 station_id,
-                coords: _
+                coordinates: _
             } => *station_id,
             _ => panic!("Can only get id of station in which pod arrives if in JustArrived or InStation state")
         }
@@ -461,34 +448,34 @@ impl PodState {
         match self {
             PodState::JustArrived {
                 station_id,
-                coords: _,
+                coordinates: _,
             } => Some(*station_id),
             PodState::InStation {
                 time_in_station: _,
                 station_id,
-                coords: _,
+                coordinates: _,
             } => Some(*station_id),
             _ => None,
         }
     }
 
-    fn try_get_coords(&self) -> Option<(f32, f32)> {
+    fn try_get_coordinates(&self) -> Option<(f32, f32)> {
         match self {
             PodState::JustArrived {
                 station_id: _,
-                coords,
-            } => Some(*coords),
+                coordinates,
+            } => Some(*coordinates),
             PodState::InStation {
                 time_in_station: _,
                 station_id: _,
-                coords,
-            } => Some(*coords),
+                coordinates,
+            } => Some(*coordinates),
             PodState::BetweenStations {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station: _,
-                coords,
-            } => Some(*coords),
+                coordinates,
+            } => Some(*coordinates),
             _ => None,
         }
     }

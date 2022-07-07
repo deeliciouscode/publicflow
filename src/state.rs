@@ -60,17 +60,76 @@ impl State {
             match maybe_station {
                 Some(station) => {
                     let mut name = Text::new(String::from(format!("Name: {}", station.name)));
-                    name.set_font(Font::default(), PxScale::from(24.));
+                    name.set_font(Font::default(), PxScale::from(18.));
+                    let mut count = Text::new(String::from(format!(
+                        "People Count: {}",
+                        station.people_in_station.len()
+                    )));
+                    count.set_font(Font::default(), PxScale::from(18.));
+                    let mut pods =
+                        Text::new(String::from(format!("Pods: {:?}", station.pods_in_station)));
+                    pods.set_font(Font::default(), PxScale::from(18.));
+
                     // println!("Time Passed: {}", self.time_passed);
                     // let color = [0.2, 0.2, 0.2, 1.0].into();
-                    let draw_param = DrawParam::new()
-                        .offset([-self.last_mouse_left.0, -self.last_mouse_left.1])
+                    let draw_param_name = DrawParam::new()
+                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 10.])
                         .color(Color::BLACK);
-                    let res = graphics::draw(ctx, &name, draw_param);
+                    let res = graphics::draw(ctx, &name, draw_param_name);
+                    let draw_param_count = DrawParam::new()
+                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 30.])
+                        .color(Color::BLACK);
+                    let res = graphics::draw(ctx, &count, draw_param_count);
+                    let draw_param_pods = DrawParam::new()
+                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 50.])
+                        .color(Color::BLACK);
+                    let res = graphics::draw(ctx, &pods, draw_param_pods);
 
                     // println!("station: {:?}", station);
                 }
-                None => {}
+                None => {
+                    let maybe_pod = self.pods_box.try_retrieve_pod(self.last_mouse_left);
+                    match maybe_pod {
+                        Some(pod) => {
+                            let mut id = Text::new(String::from(format!("ID: {}", pod.id)));
+                            id.set_font(Font::default(), PxScale::from(18.));
+                            let mut count = Text::new(String::from(format!(
+                                "Passengers: {}",
+                                pod.people_in_pod.len()
+                            )));
+                            count.set_font(Font::default(), PxScale::from(18.));
+                            let mut capacity =
+                                Text::new(String::from(format!("Capacity: {}", pod.capacity)));
+                            capacity.set_font(Font::default(), PxScale::from(18.));
+
+                            // println!("Time Passed: {}", self.time_passed);
+                            // let color = [0.2, 0.2, 0.2, 1.0].into();
+                            let draw_param_name = DrawParam::new()
+                                .offset([
+                                    -self.last_mouse_left.0 - 10.,
+                                    -self.last_mouse_left.1 - 10.,
+                                ])
+                                .color(Color::BLACK);
+                            let res = graphics::draw(ctx, &id, draw_param_name);
+                            let draw_param_count = DrawParam::new()
+                                .offset([
+                                    -self.last_mouse_left.0 - 10.,
+                                    -self.last_mouse_left.1 - 30.,
+                                ])
+                                .color(Color::BLACK);
+                            let res = graphics::draw(ctx, &count, draw_param_count);
+                            let draw_param_count = DrawParam::new()
+                                .offset([
+                                    -self.last_mouse_left.0 - 10.,
+                                    -self.last_mouse_left.1 - 50.,
+                                ])
+                                .color(Color::BLACK);
+                            let res = graphics::draw(ctx, &capacity, draw_param_count);
+                            // println!("pod: {:?}", pod);
+                        }
+                        None => {}
+                    }
+                }
             }
         }
     }
