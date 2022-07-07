@@ -75,32 +75,16 @@ impl State {
         }
     }
 
-    // pub id: i32,
-    // pub name: String,
-    // pub city: String,
-    // pub since_last_pod: i32,
-    // pub edges_to: HashSet<i32>,
-    // pub pods_in_station: HashSet<i32>,
-    // pub people_in_station: HashSet<i32>,
-    // pub coordinates: (f32, f32),
-    // pub config: Config,
-
-    // TODO:PRIO make this shit appear
     pub fn draw(&mut self, ctx: &mut Context) {
-        // println!("Draw State");
         let mut time_passed = Text::new(String::from(format!(
             "Time passed: {}",
             format_seconds(self.time_passed)
         )));
         time_passed.set_font(Font::default(), PxScale::from(40.));
-        // println!("Time Passed: {}", self.time_passed);
-        // let color = [0.2, 0.2, 0.2, 1.0].into();
         let draw_param = DrawParam::new().offset([-10., -10.]).color(Color::BLACK);
         let res = graphics::draw(ctx, &time_passed, draw_param);
         match res {
-            Ok(ok) => {
-                // println!("{:?}", ok)
-            }
+            Ok(_) => {}
             Err(err) => panic!("{:?}", err),
         }
 

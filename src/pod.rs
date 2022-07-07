@@ -1,11 +1,7 @@
-use crate::config::{
-    LENGTH_POD, MAX_XY, OFFSET, POD_CAPACITY, RADIUS_POD, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE,
-    WIDTH_POD,
-};
+use crate::config::{POD_CAPACITY, RADIUS_POD};
 use crate::helper::get_real_coordinates;
 use crate::line::LineState;
 use crate::network::Network;
-use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -110,15 +106,12 @@ impl Pod {
     }
 
     fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
-        let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
-        let green = 1. - red;
+        // let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
+        // let green = 1. - red;
 
         let color = self.get_rgba().into();
 
         let mut res: GameResult<()> = std::result::Result::Ok(());
-
-        let x_shift: f32;
-        let y_shift: f32;
 
         let (real_x, real_y) = self.get_coordinates();
 

@@ -1,11 +1,8 @@
-use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE, WIDTH_POD};
+use crate::config::WIDTH_POD;
 use crate::helper::get_real_coordinates;
-use crate::line::LineState;
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::pod::PodsBox;
-use ggez::graphics::Rect;
-use ggez::{graphics, Context, GameResult};
 use petgraph::graph::UnGraph;
 use rand::Rng;
 
@@ -89,50 +86,6 @@ impl Person {
         // println!("{:?}", self.path_state);
     }
 
-    // fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-    //     let color = [1.0, 0.2, 0.2, 1.0].into();
-    //     let mut res: GameResult<()> = std::result::Result::Ok(());
-    //     let mut draw_in_station = || -> GameResult<()> {
-    //         // println!("real: {:?}", self.real_coordinates);
-    //         let station_rect = Rect {
-    //             x: self.real_coordinates.0,
-    //             y: self.real_coordinates.1,
-    //             w: 5.,
-    //             h: 5.,
-    //         };
-    //         let rectangle = graphics::Mesh::new_rectangle(
-    //             ctx,
-    //             graphics::DrawMode::fill(),
-    //             station_rect,
-    //             color,
-    //         )?;
-    //         let rez = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-    //         return rez;
-    //     };
-
-    //     match &self.state {
-    //         PersonState::ReadyToTakePod { station_id: _ } => {
-    //             res = draw_in_station();
-    //         }
-    //         PersonState::RidingPod { pod_id: _ } => {}
-    //         PersonState::JustArrived {
-    //             pod_id: _,
-    //             station_id: _,
-    //         } => {}
-    //         PersonState::Transitioning {
-    //             station_id: _,
-    //             previous_pod_id: _,
-    //             time_in_station: _,
-    //         } => {
-    //             res = draw_in_station();
-    //         }
-    //         PersonState::InvalidState { reason: _ } => {}
-    //     }
-
-    //     res
-    // }
-
-    // TODO: move logic of people from main to this function
     pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
         // println!("person state: {:?}", self.state);
         match &self.state {
