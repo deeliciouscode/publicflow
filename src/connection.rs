@@ -5,6 +5,7 @@ pub struct Connection {
     pub station_ids: HashSet<i32>,
     pub travel_time: i32,
     pub kind: ConnectionKind,
+    pub is_blocked: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -220,7 +220,12 @@ impl Pod {
         let maybe_connection = self.line_state.get_connection(current, next);
         match maybe_connection {
             Some(connection) => {
-                self.state = self.state.to_between_stations(next, connection.travel_time);
+                if connection.station_ids == HashSet::from([641, 650]) {
+                    println!("is blocked: {}", connection.is_blocked)
+                }
+                if !connection.is_blocked {
+                    self.state = self.state.to_between_stations(next, connection.travel_time);
+                }
             }
             None => panic!("There is no connection between: {} and {}", current, next),
         }

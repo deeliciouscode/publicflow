@@ -1,4 +1,4 @@
-use crate::action::{GetAction, SetAction};
+use crate::action::{Actions, GetAction, SetAction};
 use crate::state::State;
 use std::collections::HashSet;
 use std::io::Write;
@@ -16,7 +16,7 @@ fn prompt(name: &str) -> String {
     return line.trim().to_string();
 }
 
-pub fn run_cli(tx: mpsc::Sender<(Vec<GetAction>, Vec<SetAction>)>) {
+pub fn run_cli(tx: mpsc::Sender<Actions>) {
     loop {
         let input = prompt("> ");
 
@@ -25,15 +25,15 @@ pub fn run_cli(tx: mpsc::Sender<(Vec<GetAction>, Vec<SetAction>)>) {
         };
 
         let input_list: Vec<&str> = input.split(" ").collect();
-        let mut get_actions: Vec<GetAction> = Vec::default();
-        let mut set_actions: Vec<SetAction> = vec![];
+
+        let mut actions = Actions::new();
 
         match input_list[0] {
             "get" => {
-                get_actions = parse_get(&input_list);
+                actions.get_actions = parse_get(&input_list);
             }
             "block" => {
-                set_actions = parse_block(&input_list);
+                actions.set_actions = parse_block(&input_list);
             }
             _ => {}
         }
@@ -42,7 +42,7 @@ pub fn run_cli(tx: mpsc::Sender<(Vec<GetAction>, Vec<SetAction>)>) {
             println!("set me if ya can")
         }
 
-        let _res = tx.send((get_actions, set_actions));
+        let _res = tx.send(actions);
     }
 }
 
@@ -130,11 +130,8 @@ fn parse_block(input_list: &Vec<&str>) -> Vec<SetAction> {
     return set_actions;
 }
 
-pub fn recv_queries(
-    state: &State,
-    rx: &mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>,
-) -> (Vec<GetAction>, Vec<SetAction>) {
-    let mut actions = (vec![], vec![]);
+pub fn recv_queries(state: &State, rx: &mpsc::Receiver<Actions>) -> Actions {
+    let mut actions = Actions::new();
 
     let maybe_received = rx.try_recv();
 

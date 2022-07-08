@@ -1,3 +1,4 @@
+use crate::action::SetAction;
 use crate::config::Config as SimConfig;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
 use crate::helper::get_real_coordinates;
@@ -22,7 +23,9 @@ fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
 
     for line in lines {
         for connection in &line.connections {
-            edges.push(connection.yield_triple())
+            if !connection.is_blocked {
+                edges.push(connection.yield_triple())
+            }
         }
     }
     let graph = UnGraph::from_edges(edges);
@@ -38,11 +41,21 @@ impl Network {
             lines: lines,
             config: config.clone(),
         };
-        network.print_state();
+        // network.print_state();
         network
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, set_actions: Vec<SetAction>) {
+        for action in set_actions {
+            match action {
+                SetAction::BlockConnection { ids } => {
+                    let ids_ref = &ids;
+                    for line in &mut self.lines {
+                        line.block_connection(ids_ref);
+                    }
+                }
+            }
+        }
         for station in &mut self.stations {
             station.since_last_pod += 1;
         }
@@ -90,15 +103,15 @@ impl Network {
 
     pub fn print_state(&self) {
         for station in &self.stations {
-            // println!(
-            //     "Station: {} | Pods: {:?}",
-            //     station.id, station.pods_in_station
-            // )
+            println!(
+                "Station: {} | Pods: {:?}",
+                station.id, station.pods_in_station
+            )
         }
-        // println!(
-        //     "{:?}",
-        //     Dot::with_config(&self.graph, &[Config::NodeIndexLabel])
-        // );
+        println!(
+            "{:?}",
+            Dot::with_config(&self.graph, &[Config::NodeIndexLabel])
+        );
     }
 
     pub fn draw(&self, ctx: &mut Context) {

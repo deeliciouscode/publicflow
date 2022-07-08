@@ -279,6 +279,7 @@ fn calc_connections(
                 station_ids: HashSet::from([station_ids[i], station_ids[0]]),
                 travel_time: travel_time,
                 kind: connection_kind,
+                is_blocked: false,
             });
             break;
         } else if i == station_ids.len() - 1 {
@@ -294,6 +295,7 @@ fn calc_connections(
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
                 travel_time: travel_time,
                 kind: connection_kind,
+                is_blocked: false,
             });
         }
     }

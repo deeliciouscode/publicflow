@@ -60,7 +60,19 @@ impl Line {
         }
         res
     }
+
+    pub fn block_connection(&mut self, ids: &HashSet<i32>) {
+        for connection in &mut self.connections {
+            if &connection.station_ids == ids {
+                println!("{:?} | {:?} - blocked", ids, connection.station_ids);
+                connection.is_blocked = true;
+                println!("connection: {:?}", connection);
+            }
+        }
+    }
 }
+
+// block connection 650-641-631-611
 
 #[derive(Clone, Debug)]
 pub struct LineState {

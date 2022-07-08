@@ -16,18 +16,27 @@ impl PathState {
             NodeIndex::new(start as usize),
             |finish| finish == NodeIndex::new(end as usize),
             |e| *e.weight(),
-            |_| 0,
+            |_| 0, // use air distance as heuristik
         );
 
         match maybe_path {
             Some((_, path)) => {
+                // println!("There is a connection between {} and {}", start, end);
                 let path_state = PathState {
                     path: VecDeque::from(path),
                     current: NodeIndex::new(start as usize),
                 };
                 return path_state;
             }
-            None => panic!("No connection between {} and {}", start, end),
+            None => {
+                // TODO: make this more robust, define clearly what happens if no path can be found
+                // println!("No connection between {} and {}", start, end);
+                let path_state = PathState {
+                    path: VecDeque::from([NodeIndex::new(start as usize)]),
+                    current: NodeIndex::new(start as usize),
+                };
+                return path_state;
+            }
         }
     }
 

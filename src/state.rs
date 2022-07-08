@@ -1,4 +1,4 @@
-use crate::action::{GetAction, SetAction};
+use crate::action::{Actions, GetAction, SetAction};
 use crate::cli::recv_queries;
 use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
 use crate::helper::format_seconds;
@@ -23,7 +23,7 @@ pub struct State {
     pub config: Config,
     pub on_pause: bool,
     pub last_mouse_left: (f32, f32),
-    rx: mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>,
+    rx: mpsc::Receiver<Actions>,
 }
 
 impl State {
@@ -38,7 +38,7 @@ impl State {
             println!("set_actions: {:?}", set_actions);
         }
 
-        self.network.update();
+        self.network.update(set_actions);
         self.pods_box.update(&mut self.network);
         self.people_box
             .update(&mut self.pods_box, &mut self.network);
@@ -94,6 +94,8 @@ impl State {
                 Some(station) => {
                     let mut name = Text::new(String::from(format!("Name: {}", station.name)));
                     name.set_font(Font::default(), PxScale::from(18.));
+                    let mut id = Text::new(String::from(format!("ID: {}", station.id)));
+                    id.set_font(Font::default(), PxScale::from(18.));
                     let mut count = Text::new(String::from(format!(
                         "People Count: {}",
                         station.people_in_station.len()
@@ -103,22 +105,22 @@ impl State {
                         Text::new(String::from(format!("Pods: {:?}", station.pods_in_station)));
                     pods.set_font(Font::default(), PxScale::from(18.));
 
-                    // println!("Time Passed: {}", self.time_passed);
-                    // let color = [0.2, 0.2, 0.2, 1.0].into();
                     let draw_param_name = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 10.])
                         .color(Color::BLACK);
                     let res = graphics::draw(ctx, &name, draw_param_name);
-                    let draw_param_count = DrawParam::new()
+                    let draw_param_name = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 30.])
+                        .color(Color::BLACK);
+                    let res = graphics::draw(ctx, &id, draw_param_name);
+                    let draw_param_count = DrawParam::new()
+                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 50.])
                         .color(Color::BLACK);
                     let res = graphics::draw(ctx, &count, draw_param_count);
                     let draw_param_pods = DrawParam::new()
-                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 50.])
+                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 70.])
                         .color(Color::BLACK);
                     let res = graphics::draw(ctx, &pods, draw_param_pods);
-
-                    // println!("station: {:?}", station);
                 }
                 None => {
                     let maybe_pod = self.pods_box.try_retrieve_pod(self.last_mouse_left);
@@ -135,8 +137,6 @@ impl State {
                                 Text::new(String::from(format!("Capacity: {}", pod.capacity)));
                             capacity.set_font(Font::default(), PxScale::from(18.));
 
-                            // println!("Time Passed: {}", self.time_passed);
-                            // let color = [0.2, 0.2, 0.2, 1.0].into();
                             let draw_param_name = DrawParam::new()
                                 .offset([
                                     -self.last_mouse_left.0 - 10.,
@@ -158,7 +158,6 @@ impl State {
                                 ])
                                 .color(Color::BLACK);
                             let res = graphics::draw(ctx, &capacity, draw_param_count);
-                            // println!("pod: {:?}", pod);
                         }
                         None => {}
                     }
@@ -170,7 +169,7 @@ impl State {
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
     // as a next step spawn / divert pods dynamically
 
-    pub fn new(config: &Config, rx: mpsc::Receiver<(Vec<GetAction>, Vec<SetAction>)>) -> Self {
+    pub fn new(config: &Config, rx: mpsc::Receiver<Actions>) -> Self {
         let mut rng = rand::thread_rng();
         let mut stations: Vec<Station> = vec![];
         for abstract_station in config.network.coordinates_map.iter() {
@@ -312,13 +311,13 @@ impl EventHandler for State {
         // Update code here...
         while timer::check_update_time(ctx, DESIRED_FPS) {
             // println!("fps: {}", timer::fps(ctx));
-            let (get_actions, set_actions) = recv_queries(&self, &self.rx);
+            let actions = recv_queries(&self, &self.rx);
 
-            self.handle_get_actions(get_actions);
+            self.handle_get_actions(actions.get_actions);
 
             if !self.on_pause {
                 self.time_passed += 1;
-                self.update(set_actions);
+                self.update(actions.set_actions);
             }
 
             if self.time_passed % 25 == 0 {
