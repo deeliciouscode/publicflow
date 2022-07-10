@@ -38,8 +38,8 @@ impl State {
             println!("set_actions: {:?}", set_actions);
         }
 
-        self.network.update(set_actions);
-        self.pods_box.update(&mut self.network);
+        self.network.update(&set_actions);
+        self.pods_box.update(&mut self.network, &set_actions);
         self.people_box
             .update(&mut self.pods_box, &mut self.network);
     }

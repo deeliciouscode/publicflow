@@ -45,7 +45,7 @@ impl Network {
         network
     }
 
-    pub fn update(&mut self, set_actions: Vec<SetAction>) {
+    pub fn update(&mut self, set_actions: &Vec<SetAction>) {
         for action in set_actions {
             match action {
                 SetAction::BlockConnection { ids } => {
@@ -60,8 +60,6 @@ impl Network {
             station.since_last_pod += 1;
         }
     }
-
-    // fn calc_graph
 
     pub fn try_get_station_by_id(&mut self, id: i32) -> Option<&mut Station> {
         for station in &mut self.stations {

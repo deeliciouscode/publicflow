@@ -18,10 +18,13 @@ pub struct Line {
 impl Line {
     // TODO: handle result better
     pub fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
-        let color = [0.8, 0.8, 0.8, 1.0].into();
         let mut res: GameResult<()> = std::result::Result::Ok(());
 
         for connection in &self.connections {
+            let mut color = [0.8, 0.8, 0.8, 1.0].into();
+            if connection.is_blocked {
+                color = [1.0, 0.5, 0.5, 1.0].into();
+            }
             let station_ids = &connection.yield_tuple();
             // println!("MARKER: {:?}", station_ids);
             let from = network.try_get_station_by_id_unmut(station_ids.0).unwrap();
@@ -64,15 +67,16 @@ impl Line {
     pub fn block_connection(&mut self, ids: &HashSet<i32>) {
         for connection in &mut self.connections {
             if &connection.station_ids == ids {
-                println!("{:?} | {:?} - blocked", ids, connection.station_ids);
+                // println!("{:?} | {:?} - blocked", ids, connection.station_ids);
                 connection.is_blocked = true;
-                println!("connection: {:?}", connection);
+                // println!("connection: {:?}", connection);
             }
         }
     }
 }
 
 // block connection 650-641-631-611
+// block connections 5-44 5-0
 
 #[derive(Clone, Debug)]
 pub struct LineState {

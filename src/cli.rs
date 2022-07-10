@@ -54,7 +54,7 @@ fn parse_get(input_list: &Vec<&str>) -> Vec<GetAction> {
     }
 
     match input_list[1] {
-        "station" => {
+        "station" | "stations" => {
             if input_list.len() < 3 {
                 println!("Get which stations??");
                 return get_actions;
@@ -85,7 +85,7 @@ fn parse_block(input_list: &Vec<&str>) -> Vec<SetAction> {
     }
 
     match input_list[1] {
-        "connection" => {
+        "connection" | "connections" => {
             if input_list.len() < 3 {
                 println!("Block which connections??");
                 return set_actions;

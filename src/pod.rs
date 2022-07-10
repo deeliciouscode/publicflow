@@ -1,3 +1,4 @@
+use crate::action::{Actions, GetAction, SetAction};
 use crate::config::{POD_CAPACITY, RADIUS_POD};
 use crate::helper::get_real_coordinates;
 use crate::line::LineState;
@@ -71,7 +72,17 @@ impl PodsBox {
         }
     }
 
-    pub fn update(&mut self, network: &mut Network) {
+    pub fn update(&mut self, network: &mut Network, set_actions: &Vec<SetAction>) {
+        for action in set_actions {
+            match action {
+                SetAction::BlockConnection { ids } => {
+                    let ids_ref = &ids;
+                    for pod in &mut self.pods {
+                        pod.line_state.line.block_connection(ids_ref);
+                    }
+                }
+            }
+        }
         for pod in &mut self.pods {
             pod.update_state(network)
         }
@@ -221,7 +232,7 @@ impl Pod {
         match maybe_connection {
             Some(connection) => {
                 if connection.station_ids == HashSet::from([641, 650]) {
-                    println!("is blocked: {}", connection.is_blocked)
+                    // println!("is blocked: {}", connection.is_blocked)
                 }
                 if !connection.is_blocked {
                     self.state = self.state.to_between_stations(next, connection.travel_time);
