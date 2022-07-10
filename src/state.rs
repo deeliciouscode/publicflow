@@ -41,7 +41,7 @@ impl State {
         self.network.update(&set_actions);
         self.pods_box.update(&mut self.network, &set_actions);
         self.people_box
-            .update(&mut self.pods_box, &mut self.network);
+            .update(&mut self.pods_box, &mut self.network, &set_actions);
     }
 
     fn handle_get_actions(&self, get_actions: Vec<GetAction>) {
@@ -51,8 +51,8 @@ impl State {
 
         for get_action in get_actions {
             match get_action {
-                GetAction::GetStation { station_id } => {
-                    let maybe_station = self.network.try_get_station_by_id_unmut(station_id);
+                GetAction::GetStation { id } => {
+                    let maybe_station = self.network.try_get_station_by_id_unmut(id);
                     match maybe_station {
                         Some(station) => {
                             println!("----------------------");
@@ -67,7 +67,22 @@ impl State {
                             println!("----------------------");
                         }
                         None => {
-                            println!("No station with id {} exists", station_id)
+                            println!("No station with id {} exists", id)
+                        }
+                    }
+                }
+                GetAction::GetPerson { id } => {
+                    let maybe_person = self.people_box.try_get_person_by_id_unmut(id);
+                    match maybe_person {
+                        Some(person) => {
+                            println!("----------------------");
+                            println!("Id: {}", person.id);
+                            println!("Coordinates: {:?}", person.real_coordinates);
+                            println!("Path: {:?}", person.path_state.path);
+                            println!("----------------------");
+                        }
+                        None => {
+                            println!("No station with id {} exists", id)
                         }
                     }
                 }
@@ -81,7 +96,7 @@ impl State {
             format_seconds(self.time_passed)
         )));
         time_passed.set_font(Font::default(), PxScale::from(40.));
-        let draw_param = DrawParam::new().offset([-10., -10.]).color(Color::BLACK);
+        let draw_param = DrawParam::new().offset([-10., -10.]).color(Color::WHITE);
         let res = graphics::draw(ctx, &time_passed, draw_param);
         match res {
             Ok(_) => {}
@@ -107,19 +122,19 @@ impl State {
 
                     let draw_param_name = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 10.])
-                        .color(Color::BLACK);
+                        .color(Color::WHITE);
                     let res = graphics::draw(ctx, &name, draw_param_name);
                     let draw_param_name = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 30.])
-                        .color(Color::BLACK);
+                        .color(Color::WHITE);
                     let res = graphics::draw(ctx, &id, draw_param_name);
                     let draw_param_count = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 50.])
-                        .color(Color::BLACK);
+                        .color(Color::WHITE);
                     let res = graphics::draw(ctx, &count, draw_param_count);
                     let draw_param_pods = DrawParam::new()
                         .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 70.])
-                        .color(Color::BLACK);
+                        .color(Color::WHITE);
                     let res = graphics::draw(ctx, &pods, draw_param_pods);
                 }
                 None => {
@@ -128,6 +143,11 @@ impl State {
                         Some(pod) => {
                             let mut id = Text::new(String::from(format!("ID: {}", pod.id)));
                             id.set_font(Font::default(), PxScale::from(18.));
+                            let mut line = Text::new(String::from(format!(
+                                "Line: {}",
+                                pod.line_state.line.name
+                            )));
+                            line.set_font(Font::default(), PxScale::from(18.));
                             let mut count = Text::new(String::from(format!(
                                 "Passengers: {}",
                                 pod.people_in_pod.len()
@@ -137,26 +157,33 @@ impl State {
                                 Text::new(String::from(format!("Capacity: {}", pod.capacity)));
                             capacity.set_font(Font::default(), PxScale::from(18.));
 
-                            let draw_param_name = DrawParam::new()
+                            let draw_param_id = DrawParam::new()
                                 .offset([
                                     -self.last_mouse_left.0 - 10.,
                                     -self.last_mouse_left.1 - 10.,
                                 ])
-                                .color(Color::BLACK);
-                            let res = graphics::draw(ctx, &id, draw_param_name);
-                            let draw_param_count = DrawParam::new()
+                                .color(Color::WHITE);
+                            let res = graphics::draw(ctx, &id, draw_param_id);
+                            let draw_param_line = DrawParam::new()
                                 .offset([
                                     -self.last_mouse_left.0 - 10.,
                                     -self.last_mouse_left.1 - 30.,
                                 ])
-                                .color(Color::BLACK);
-                            let res = graphics::draw(ctx, &count, draw_param_count);
+                                .color(Color::WHITE);
+                            let res = graphics::draw(ctx, &line, draw_param_line);
                             let draw_param_count = DrawParam::new()
                                 .offset([
                                     -self.last_mouse_left.0 - 10.,
                                     -self.last_mouse_left.1 - 50.,
                                 ])
-                                .color(Color::BLACK);
+                                .color(Color::WHITE);
+                            let res = graphics::draw(ctx, &count, draw_param_count);
+                            let draw_param_count = DrawParam::new()
+                                .offset([
+                                    -self.last_mouse_left.0 - 10.,
+                                    -self.last_mouse_left.1 - 70.,
+                                ])
+                                .color(Color::WHITE);
                             let res = graphics::draw(ctx, &capacity, draw_param_count);
                         }
                         None => {}
@@ -464,12 +491,13 @@ impl EventHandler for State {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::WHITE);
+        let bg_color = Color::new(0.15, 0.15, 0.15, 0.8);
+        graphics::clear(ctx, bg_color);
 
         self.network.draw(ctx);
         self.pods_box.draw(ctx, &self.network);
+        self.people_box.draw(ctx, &self.network);
         self.draw(ctx);
-        // self.people_box.draw(ctx, &self.network);
 
         graphics::present(ctx)
     }

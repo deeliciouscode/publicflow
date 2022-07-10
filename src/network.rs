@@ -55,6 +55,13 @@ impl Network {
                             line.block_connection(ids_ref);
                         }
                     }
+                    SetAction::UnblockConnection { ids } => {
+                        let ids_ref = &ids;
+                        for line in &mut self.lines {
+                            line.unblock_connection(ids_ref);
+                        }
+                    }
+                    _ => {}
                 }
             }
             self.graph = calc_graph(&self.lines);

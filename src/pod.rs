@@ -81,6 +81,13 @@ impl PodsBox {
                         pod.line_state.line.block_connection(ids_ref);
                     }
                 }
+                SetAction::UnblockConnection { ids } => {
+                    let ids_ref = &ids;
+                    for pod in &mut self.pods {
+                        pod.line_state.line.unblock_connection(ids_ref);
+                    }
+                }
+                _ => {}
             }
         }
         for pod in &mut self.pods {
@@ -160,7 +167,7 @@ impl Pod {
             "u6" => return [0.0, 0.0, 1.0, 1.0],
             "u7" => return [0.77, 0.75, 0.43, 1.0],
             "u8" => return [0.68, 0.67, 0.55, 1.0],
-            _ => return [0.3, 0.3, 0.3, 1.0], // TODO: color for trams
+            _ => return [0.6, 0.6, 0.6, 1.0], // TODO: color for trams
                                               // any => panic!("The line: {} is not defined.", any),
         };
     }

@@ -21,9 +21,9 @@ impl Line {
         let mut res: GameResult<()> = std::result::Result::Ok(());
 
         for connection in &self.connections {
-            let mut color = [0.8, 0.8, 0.8, 1.0].into();
+            let mut color = [0.5, 0.5, 0.5, 1.0].into();
             if connection.is_blocked {
-                color = [1.0, 0.5, 0.5, 1.0].into();
+                color = [1.0, 0.2, 0.2, 1.0].into();
             }
             let station_ids = &connection.yield_tuple();
             // println!("MARKER: {:?}", station_ids);
@@ -69,6 +69,16 @@ impl Line {
             if &connection.station_ids == ids {
                 // println!("{:?} | {:?} - blocked", ids, connection.station_ids);
                 connection.is_blocked = true;
+                // println!("connection: {:?}", connection);
+            }
+        }
+    }
+
+    pub fn unblock_connection(&mut self, ids: &HashSet<i32>) {
+        for connection in &mut self.connections {
+            if &connection.station_ids == ids {
+                // println!("{:?} | {:?} - blocked", ids, connection.station_ids);
+                connection.is_blocked = false;
                 // println!("connection: {:?}", connection);
             }
         }

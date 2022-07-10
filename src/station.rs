@@ -49,20 +49,6 @@ impl Station {
 
         let real_coordinates = get_real_coordinates(self.coordinates);
 
-        // println!("real_coordinates: {:?}", real_coordinates);
-
-        // let station_rect = Rect {
-        //     x: real_coordinates.0,
-        //     y: real_coordinates.1,
-        //     w: SIDELEN_STATION,
-        //     h: SIDELEN_STATION,
-        // };
-
-        // let rectangle =
-        //     graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), station_rect, color)?;
-
-        // res = graphics::draw(ctx, &rectangle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
-
         let circle = graphics::Mesh::new_circle(
             ctx,
             // graphics::DrawMode::stroke(2.),
@@ -80,28 +66,10 @@ impl Station {
 
         match res {
             Err(err) => panic!("Error 0: {}", err),
-            Ok(m) => {
+            Ok(_m) => {
                 // println!("No error at 0: {:?}", m),
             }
         }
-
-        // let text = Text::new(String::from(self.name.clone()));
-
-        // res = graphics::draw(
-        //     ctx,
-        //     &text,
-        //     (ggez::mint::Point2 {
-        //         x: real_coordinates.0,
-        //         y: real_coordinates.1,
-        //     },),
-        // );
-
-        // match res {
-        //     Err(err) => panic!("Error 1: {}", err),
-        //     Ok(m) => {
-        //         // println!("No error at 1: {:?}", m),
-        //     }
-        // }
 
         let count = Text::new(String::from(self.people_in_station.len().to_string()));
         res = graphics::draw(
@@ -127,7 +95,7 @@ impl Station {
             radius / (self.config.people.n_people as f32 / self.config.network.n_stations as f32);
         let green = 1. - red;
 
-        let color_circle = [red, green, 0., 0.5].into();
+        let color_circle = [red, green, 0., 0.2].into();
 
         // println!("--------------------");
         // println!("people in station {}: {}", self.id, radius);
