@@ -8,17 +8,31 @@ pub enum GetAction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SetAction {
-    BlockConnection { ids: HashSet<i32> },
-    UnblockConnection { ids: HashSet<i32> },
-    ShowPerson { id: i32, follow: bool },
-    HidePerson { id: i32 },
-    RoutePerson { id: i32, station_id: u32 },
+    BlockConnection {
+        ids: HashSet<i32>,
+    },
+    UnblockConnection {
+        ids: HashSet<i32>,
+    },
+    ShowPerson {
+        id: i32,
+        follow: bool,
+    },
+    HidePerson {
+        id: i32,
+    },
+    RoutePerson {
+        id: i32,
+        station_id: u32,
+        random_station: bool,
+    },
 }
 
 // #[derive(Debug, Clone, PartialEq)]
 // pub enum VisualAction {
 // }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Actions {
     pub get_actions: Vec<GetAction>,
     pub set_actions: Vec<SetAction>,

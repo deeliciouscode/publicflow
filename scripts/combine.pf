@@ -1,0 +1,2 @@
+run ./scripts/show.pf
+run ./scripts/hide.pf

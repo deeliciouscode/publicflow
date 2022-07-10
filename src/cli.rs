@@ -1,4 +1,5 @@
 use crate::action::{Actions, GetAction, SetAction};
+use crate::helper::read_lines;
 use crate::state::State;
 use std::collections::HashSet;
 use std::io::Write;
@@ -26,39 +27,59 @@ pub fn run_cli(tx: mpsc::Sender<Actions>) {
 
         let input_list: Vec<&str> = input.split(" ").collect();
 
-        let mut actions = Actions::new();
-
-        match input_list[0] {
-            "get" | "g" => {
-                actions.get_actions = parse_get(&input_list);
-            }
-            "block" | "b" => {
-                actions.set_actions = parse_block(&input_list);
-            }
-            "unblock" | "ub" | "u" => {
-                actions.set_actions = parse_unblock(&input_list);
-            }
-            "show" | "visualize" | "draw" | "v" | "s" => {
-                actions.set_actions = parse_visualize(&input_list);
-            }
-            "hide" | "h" => {
-                actions.set_actions = parse_hide(&input_list);
-            }
-            "route" | "r" => {
-                actions.set_actions = parse_route(&input_list);
-            }
-            _ => {}
-        }
-
-        if input_list[0] == "set" {
-            println!("set me if ya can")
-        }
+        let actions = parse_input(&input_list);
 
         let _res = tx.send(actions);
     }
 }
 
-// TODO:PRIO inverse route => route people randomly
+fn parse_input(input_list: &Vec<&str>) -> Actions {
+    let mut actions = Actions::new();
+    match input_list[0] {
+        "get" | "g" => {
+            actions.get_actions = parse_get(&input_list);
+        }
+        "block" | "b" => {
+            actions.set_actions = parse_block(&input_list);
+        }
+        "unblock" | "ub" | "u" => {
+            actions.set_actions = parse_unblock(&input_list);
+        }
+        "show" | "visualize" | "draw" | "v" | "s" => {
+            actions.set_actions = parse_visualize(&input_list);
+        }
+        "hide" | "h" => {
+            actions.set_actions = parse_hide(&input_list);
+        }
+        "route" | "r" => {
+            actions.set_actions = parse_route(&input_list);
+        }
+        "run" => actions = run_script(&input_list),
+        _ => {}
+    }
+    actions
+}
+
+fn run_script(input_list: &Vec<&str>) -> Actions {
+    let mut actions = Actions::new();
+    let lines_res = read_lines(input_list[1]);
+    match lines_res {
+        Ok(lines) => {
+            for line in lines {
+                if let Ok(command) = line {
+                    let input_list = command.split(" ").collect();
+                    let command_actions = parse_input(&input_list);
+                    actions.get_actions.extend(command_actions.get_actions);
+                    actions.set_actions.extend(command_actions.set_actions);
+                }
+            }
+        }
+        Err(e) => {
+            println!("Err: {:?}", e)
+        }
+    }
+    actions
+}
 
 fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
     let mut set_actions: Vec<SetAction> = vec![];
@@ -70,24 +91,43 @@ fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
     match input_list[1] {
         "person" | "people" | "p" => {
             if input_list[2..].len() < 2 {
-                println!("Route which person/people to where?? Syntax: route person [id id | lower..upper | id lower..upper] to_station");
+                println!("Route which person/people to where??");
+                println!("Syntax: route person [--random | -r] [id id | lower..upper | id lower..upper] to_station");
+                println!("If --random is used, no to_station is needed.");
                 return set_actions;
             }
-            let station_id = *parse_id_list_and_ranges(input_list[input_list.len() - 1])
-                .first()
-                .unwrap();
-            for arg in &input_list[2..input_list.len() - 1] {
+
+            let mut random_station = false;
+            let mut first_id_index = 2;
+            let mut last_id_index = input_list.len() - 1;
+            if let "--random" | "-r" = input_list[2] {
+                random_station = true;
+                first_id_index = 3;
+                last_id_index = input_list.len();
+            }
+
+            let station_id;
+            if !random_station {
+                station_id = *parse_id_list_and_ranges(input_list[input_list.len() - 1])
+                    .first()
+                    .unwrap() as u32;
+            } else {
+                station_id = u32::MAX;
+            }
+
+            for arg in &input_list[first_id_index..last_id_index] {
                 let ids = parse_id_list_and_ranges(arg);
                 for id in ids {
                     set_actions.push(SetAction::RoutePerson {
                         id: id,
-                        station_id: station_id as u32,
+                        station_id: station_id,
+                        random_station: random_station,
                     })
                 }
             }
         }
         _ => {
-            println!("Can't visualize: {}, not implemented.", input_list[1])
+            println!("Can't route: {}, not implemented.", input_list[1])
         }
     }
 

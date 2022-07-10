@@ -6,4 +6,4 @@ network:
   pods:
     n_pods: 57 # one per station per line | could be infered if n_pods == sum(len(line.stations)) || NOT IN USE, IS OVERRIDDEN
 people:
-  n_people: 2000
+  n_people: 1000

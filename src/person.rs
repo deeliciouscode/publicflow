@@ -1,6 +1,6 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::config::WIDTH_POD;
-use crate::helper::get_real_coordinates;
+use crate::helper::{get_random_station_id, get_real_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::pod::{Pod, PodsBox};
@@ -73,7 +73,11 @@ impl PeopleBox {
                         }
                     }
                 }
-                SetAction::RoutePerson { id, station_id } => {
+                SetAction::RoutePerson {
+                    id,
+                    station_id,
+                    random_station,
+                } => {
                     for person in &mut self.people {
                         if person.id == *id {
                             person.action_on_arrival = Some(action.clone())
@@ -140,9 +144,6 @@ impl Person {
     }
 
     fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
-        // let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
-        // let green = 1. - red;
-
         let color = [0.0, 1.0, 1.0, 1.0].into();
 
         let mut res: GameResult<()> = std::result::Result::Ok(());
@@ -214,8 +215,18 @@ impl Person {
     fn process_action_on_arrival(&mut self, current_station_id: u32, network: &mut Network) {
         match &self.action_on_arrival {
             Some(action) => match action {
-                SetAction::RoutePerson { id, station_id } => {
-                    self.new_path(&network.graph, current_station_id, *station_id)
+                SetAction::RoutePerson {
+                    id: _,
+                    station_id,
+                    random_station,
+                } => {
+                    if *random_station {
+                        let random_station_id = get_random_station_id(network);
+                        self.new_path(&network.graph, current_station_id, random_station_id)
+                    } else {
+                        let station_id_finish = *station_id;
+                        self.new_path(&network.graph, current_station_id, station_id_finish)
+                    }
                 }
                 _ => {}
             },
@@ -292,11 +303,8 @@ impl Person {
                 }
             }
             None => {
-                let station_ids: Vec<&i32> =
-                    network.config.network.coordinates_map.keys().collect();
-                let end_ix = rng.gen_range(0..station_ids.len());
-                let finish = station_ids[end_ix];
-                self.new_path(&network.graph, station_id as u32, *finish as u32);
+                let finish = get_random_station_id(network);
+                self.new_path(&network.graph, station_id as u32, finish);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
                 //     self.id,
