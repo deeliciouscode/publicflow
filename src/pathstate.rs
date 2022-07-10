@@ -30,7 +30,7 @@ impl PathState {
             }
             None => {
                 // TODO: make this more robust, define clearly what happens if no path can be found
-                // println!("No connection between {} and {}", start, end);
+                println!("No connection between {} and {}", start, end);
                 let path_state = PathState {
                     path: VecDeque::from([NodeIndex::new(start as usize)]),
                     current: NodeIndex::new(start as usize),

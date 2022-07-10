@@ -46,15 +46,18 @@ impl Network {
     }
 
     pub fn update(&mut self, set_actions: &Vec<SetAction>) {
-        for action in set_actions {
-            match action {
-                SetAction::BlockConnection { ids } => {
-                    let ids_ref = &ids;
-                    for line in &mut self.lines {
-                        line.block_connection(ids_ref);
+        if set_actions.len() != 0 {
+            for action in set_actions {
+                match action {
+                    SetAction::BlockConnection { ids } => {
+                        let ids_ref = &ids;
+                        for line in &mut self.lines {
+                            line.block_connection(ids_ref);
+                        }
                     }
                 }
             }
+            self.graph = calc_graph(&self.lines);
         }
         for station in &mut self.stations {
             station.since_last_pod += 1;
