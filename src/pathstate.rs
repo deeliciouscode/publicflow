@@ -1,3 +1,5 @@
+use crate::helper::get_air_travel_time;
+use crate::network::Network;
 use petgraph::algo::astar;
 use petgraph::graph::{NodeIndex, UnGraph};
 use std::collections::VecDeque;
@@ -9,14 +11,14 @@ pub struct PathState {
 }
 
 impl PathState {
-    pub fn new(graph: &UnGraph<u32, u32>, start: u32, end: u32) -> Self {
+    pub fn new(graph: &UnGraph<u32, u32>, start: u32, end: u32, network: &Network) -> Self {
         // println!("{:?}", graph);
         let maybe_path = astar(
             graph,
             NodeIndex::new(start as usize),
             |finish| finish == NodeIndex::new(end as usize),
             |e| *e.weight(),
-            |_| 0, // use air distance as heuristik
+            |_| get_air_travel_time(start, end, network), // use air distance as heuristik
         );
 
         match maybe_path {

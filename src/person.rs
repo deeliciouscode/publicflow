@@ -1,6 +1,6 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::config::WIDTH_POD;
-use crate::helper::{get_random_station_id, get_real_coordinates};
+use crate::helper::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::pod::{Pod, PodsBox};
@@ -127,7 +127,7 @@ impl Person {
                 previous_pod_id: -1,
                 time_in_station: transition_time - 1,
             },
-            path_state: PathState::new(&network.graph, start as u32, finish as u32),
+            path_state: PathState::new(&network.graph, start as u32, finish as u32, network),
             action_on_arrival: None,
         };
         person.set_coordinates_of_station(
@@ -138,8 +138,14 @@ impl Person {
         person
     }
 
-    pub fn new_path(&mut self, graph: &UnGraph<u32, u32>, start: u32, finish: u32) {
-        self.path_state = PathState::new(graph, start, finish);
+    pub fn new_path(
+        &mut self,
+        graph: &UnGraph<u32, u32>,
+        start: u32,
+        finish: u32,
+        network: &Network,
+    ) {
+        self.path_state = PathState::new(graph, start, finish, network);
         // println!("{:?}", self.path_state);
     }
 
@@ -222,10 +228,20 @@ impl Person {
                 } => {
                     if *random_station {
                         let random_station_id = get_random_station_id(network);
-                        self.new_path(&network.graph, current_station_id, random_station_id)
+                        self.new_path(
+                            &network.graph,
+                            current_station_id,
+                            random_station_id,
+                            network,
+                        )
                     } else {
                         let station_id_finish = *station_id;
-                        self.new_path(&network.graph, current_station_id, station_id_finish)
+                        self.new_path(
+                            &network.graph,
+                            current_station_id,
+                            station_id_finish,
+                            network,
+                        )
                     }
                 }
                 _ => {}
@@ -304,7 +320,7 @@ impl Person {
             }
             None => {
                 let finish = get_random_station_id(network);
-                self.new_path(&network.graph, station_id as u32, finish);
+                self.new_path(&network.graph, station_id as u32, finish, network);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
                 //     self.id,
@@ -433,7 +449,7 @@ impl Person {
     fn set_coordinates_of_station(&mut self, station_id: i32, network: &Network) {
         // println!("set real coords");
         let station = network.try_get_station_by_id_unmut(station_id).unwrap();
-        let coords_station = get_real_coordinates(station.coordinates);
+        let coords_station = get_screen_coordinates(station.coordinates);
         self.real_coordinates = (coords_station.0, coords_station.1)
     }
 

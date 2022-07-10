@@ -1,5 +1,5 @@
 use crate::config::{Config, MAX_XY, OFFSET, RADIUS_STATION, SCREEN_SIZE, SIDELEN_STATION};
-use crate::helper::get_real_coordinates;
+use crate::helper::get_screen_coordinates;
 use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
@@ -47,7 +47,7 @@ impl Station {
         let mut res;
         let color = [0.5, 0.5, 0.5, 1.0].into();
 
-        let real_coordinates = get_real_coordinates(self.coordinates);
+        let real_coordinates = get_screen_coordinates(self.coordinates);
 
         let circle = graphics::Mesh::new_circle(
             ctx,

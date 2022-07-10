@@ -1,6 +1,6 @@
 use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE};
 use crate::connection::{Connection, YieldTuple};
-use crate::helper::get_real_coordinates;
+use crate::helper::get_screen_coordinates;
 use crate::network::Network;
 use ggez::graphics::Rect;
 use ggez::{graphics, Context, GameResult};
@@ -49,8 +49,8 @@ impl Line {
                 y2 = from.coordinates.1;
             }
 
-            let (x1_real, y1_real) = get_real_coordinates((x1, y1));
-            let (x2_real, y2_real) = get_real_coordinates((x2, y2));
+            let (x1_real, y1_real) = get_screen_coordinates((x1, y1));
+            let (x2_real, y2_real) = get_screen_coordinates((x2, y2));
 
             let line = graphics::Mesh::new_line(
                 ctx,

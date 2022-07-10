@@ -1,7 +1,7 @@
 use crate::action::SetAction;
 use crate::config::Config as SimConfig;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
-use crate::helper::get_real_coordinates;
+use crate::helper::get_screen_coordinates;
 use crate::line::Line;
 use crate::station::Station;
 use ggez::Context;
@@ -94,7 +94,7 @@ impl Network {
         let mut closest_distance = 10000.;
         let mut closest_station = &self.stations[0];
         for station in &self.stations {
-            let station_coords = get_real_coordinates(station.coordinates);
+            let station_coords = get_screen_coordinates(station.coordinates);
             let distance = ((station_coords.0 - x).powi(2) + (station_coords.1 - y).powi(2)).sqrt();
 
             if distance < closest_distance && distance < 10. {

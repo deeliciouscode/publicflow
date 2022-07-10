@@ -1,6 +1,6 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::config::{POD_CAPACITY, RADIUS_POD};
-use crate::helper::get_real_coordinates;
+use crate::helper::get_screen_coordinates;
 use crate::line::LineState;
 use crate::network::Network;
 use ggez::{graphics, Context, GameResult};
@@ -417,8 +417,8 @@ impl PodState {
                     .unwrap();
                 let station_to = network.try_get_station_by_id_unmut(*station_id_to).unwrap();
 
-                let coordinates_from = get_real_coordinates(station_from.coordinates);
-                let coordinates_to = get_real_coordinates(station_to.coordinates);
+                let coordinates_from = get_screen_coordinates(station_from.coordinates);
+                let coordinates_to = get_screen_coordinates(station_to.coordinates);
                 let x = coordinates_from.0
                     + (coordinates_to.0 - coordinates_from.0)
                         * ((travel_time as f32 - *time_to_next_station as f32)
