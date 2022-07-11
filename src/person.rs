@@ -1,5 +1,5 @@
 use crate::action::{Actions, GetAction, SetAction};
-use crate::config::WIDTH_POD;
+use crate::config::Config;
 use crate::helper::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
@@ -52,6 +52,7 @@ impl PeopleBox {
         pods_box: &mut PodsBox,
         network: &mut Network,
         set_actions: &Vec<SetAction>,
+        config: &Config,
     ) {
         for action in set_actions {
             match action {
@@ -88,14 +89,14 @@ impl PeopleBox {
             }
         }
         for person in &mut self.people {
-            person.get_out_if_needed(pods_box, network);
+            person.get_out_if_needed(pods_box, network, config);
         }
         for person in &mut self.people {
-            person.update_state(pods_box, network);
+            person.update_state(pods_box, network, config);
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, network: &Network) {
+    pub fn draw(&self, ctx: &mut Context, network: &Network, config: &Config) {
         for person in &self.people {
             if person.visualize {
                 let _res = person.draw(ctx, network);
@@ -116,7 +117,14 @@ pub struct Person {
 }
 
 impl Person {
-    pub fn new(id: i32, transition_time: i32, network: &Network, start: i32, finish: i32) -> Self {
+    pub fn new(
+        id: i32,
+        transition_time: i32,
+        network: &Network,
+        start: i32,
+        finish: i32,
+        config: &Config,
+    ) -> Self {
         let mut person = Person {
             id: id,
             visualize: false,
@@ -133,6 +141,7 @@ impl Person {
         person.set_coordinates_of_station(
             person.path_state.get_current_station_id().unwrap() as i32,
             network,
+            config,
         );
         // println!("{:?}", person.path_state);
         person
@@ -180,7 +189,7 @@ impl Person {
         }
     }
 
-    pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
+    pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
         // println!("person state: {:?}", self.state);
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
@@ -188,7 +197,7 @@ impl Person {
                 // Assign first instead of using directly because:
                 // https://github.com/rust-lang/rust/issues/59159
                 let station_id_deref = *station_id;
-                self.try_to_take_next_pod(pods_box, network, station_id_deref);
+                self.try_to_take_next_pod(pods_box, network, station_id_deref, config);
             }
             PersonState::RidingPod { pod_id } => {
                 // println!("person in riding state");
@@ -218,7 +227,12 @@ impl Person {
         }
     }
 
-    fn process_action_on_arrival(&mut self, current_station_id: u32, network: &mut Network) {
+    fn process_action_on_arrival(
+        &mut self,
+        current_station_id: u32,
+        network: &mut Network,
+        config: &Config,
+    ) {
         match &self.action_on_arrival {
             Some(action) => match action {
                 SetAction::RoutePerson {
@@ -227,7 +241,7 @@ impl Person {
                     random_station,
                 } => {
                     if *random_station {
-                        let random_station_id = get_random_station_id(network);
+                        let random_station_id = get_random_station_id(network, config);
                         self.new_path(
                             &network.graph,
                             current_station_id,
@@ -250,18 +264,23 @@ impl Person {
         }
     }
 
-    pub fn get_out_if_needed(&mut self, pods_box: &mut PodsBox, network: &mut Network) {
+    pub fn get_out_if_needed(
+        &mut self,
+        pods_box: &mut PodsBox,
+        network: &mut Network,
+        config: &Config,
+    ) {
         match &self.state {
             PersonState::JustArrived {
                 pod_id,
                 station_id: _,
             } => {
                 let pod_id_deref = *pod_id;
-                self.decide_on_arrival(pods_box, network, pod_id_deref);
+                self.decide_on_arrival(pods_box, network, pod_id_deref, config);
                 let maybe_station_id = self.try_get_station_id();
                 match maybe_station_id {
                     Some(station_id) => {
-                        self.set_coordinates_of_station(station_id, network);
+                        self.set_coordinates_of_station(station_id, network, config);
                     }
                     None => {}
                 }
@@ -278,6 +297,7 @@ impl Person {
         pods_box: &mut PodsBox,
         network: &mut Network,
         station_id: i32,
+        config: &Config,
     ) {
         let mut rng = rand::thread_rng();
         let maybe_next_station_id = self.path_state.get_next_station_id();
@@ -319,7 +339,7 @@ impl Person {
                 }
             }
             None => {
-                let finish = get_random_station_id(network);
+                let finish = get_random_station_id(network, config);
                 self.new_path(&network.graph, station_id as u32, finish, network);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
@@ -385,7 +405,13 @@ impl Person {
         }
     }
 
-    fn decide_on_arrival(&mut self, pods_box: &mut PodsBox, network: &mut Network, pod_id: i32) {
+    fn decide_on_arrival(
+        &mut self,
+        pods_box: &mut PodsBox,
+        network: &mut Network,
+        pod_id: i32,
+        config: &Config,
+    ) {
         self.path_state.arrive();
         // println!("self.path_state: {:?}", self.path_state);
         let pod = pods_box.get_pod_by_id(pod_id).unwrap();
@@ -403,7 +429,7 @@ impl Person {
                     station.register_person(self.id);
                     let pod = pods_box.get_pod_by_id(pod_id).unwrap();
                     pod.deregister_person(&self.id);
-                    self.process_action_on_arrival(station.id as u32, network);
+                    self.process_action_on_arrival(station.id as u32, network, config);
                 } else {
                     self.state = self.state.to_riding(pod_id);
                 }
@@ -421,7 +447,7 @@ impl Person {
                     station.register_person(self.id);
                     let pod = pods_box.get_pod_by_id(pod_id).unwrap();
                     pod.deregister_person(&self.id);
-                    self.process_action_on_arrival(station.id as u32, network);
+                    self.process_action_on_arrival(station.id as u32, network, config);
                 }
             }
         }
@@ -446,10 +472,10 @@ impl Person {
         }
     }
 
-    fn set_coordinates_of_station(&mut self, station_id: i32, network: &Network) {
+    fn set_coordinates_of_station(&mut self, station_id: i32, network: &Network, config: &Config) {
         // println!("set real coords");
         let station = network.try_get_station_by_id_unmut(station_id).unwrap();
-        let coords_station = get_screen_coordinates(station.coordinates);
+        let coords_station = get_screen_coordinates(station.coordinates, config);
         self.real_coordinates = (coords_station.0, coords_station.1)
     }
 

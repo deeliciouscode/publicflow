@@ -1,4 +1,4 @@
-use crate::config::{OFFSET, SCREEN_SIZE};
+use crate::config::Config;
 use crate::network::Network;
 use geoutils::Location;
 use rand::Rng;
@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-pub fn get_screen_coordinates(coordinates: (f32, f32)) -> (f32, f32) {
+pub fn get_screen_coordinates(coordinates: (f32, f32), config: &Config) -> (f32, f32) {
     let lat_min: f32 = 11.4606;
     let lat_max: f32 = 11.7036;
     let lat_delta: f32 = lat_max - lat_min;
@@ -18,12 +18,15 @@ pub fn get_screen_coordinates(coordinates: (f32, f32)) -> (f32, f32) {
     let x_percentage = (coordinates.0 - lat_min) / lat_delta;
     let y_percentage = (coordinates.1 - lon_min) / lon_delta;
 
-    let x = OFFSET
-        + (x_percentage * SCREEN_SIZE.0) * ((SCREEN_SIZE.0 - 2.0 * OFFSET) / SCREEN_SIZE.0) as f32;
+    let offset = config.visual.screen_offset;
+    let screen_size = config.visual.screen_size;
 
-    let y = OFFSET
-        + ((1. - y_percentage) * SCREEN_SIZE.1)
-            * ((SCREEN_SIZE.1 - 2.0 * OFFSET) / SCREEN_SIZE.1) as f32;
+    let x = offset
+        + (x_percentage * screen_size.0) * ((screen_size.0 - 2.0 * offset) / screen_size.0) as f32;
+
+    let y = offset
+        + ((1. - y_percentage) * screen_size.1)
+            * ((screen_size.1 - 2.0 * offset) / screen_size.1) as f32;
     (x, y)
 }
 
@@ -46,9 +49,9 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn get_random_station_id(network: &Network) -> u32 {
+pub fn get_random_station_id(network: &Network, config: &Config) -> u32 {
     let mut rng = rand::thread_rng();
-    let station_ids: Vec<&i32> = network.config.network.coordinates_map.keys().collect();
+    let station_ids: Vec<&i32> = config.network.coordinates_map.keys().collect();
     let end_ix = rng.gen_range(0..station_ids.len());
     *station_ids[end_ix] as u32
 }

@@ -10,30 +10,8 @@ use yaml_rust::YamlLoader;
 pub const _SPEED_FACTOR: u64 = 1000;
 pub const _SIMULATION_DURATION: u64 = 1000;
 
-// pub const CONFIG_PATH: &str = "./config/network_simple.yaml";
-// pub const MAX_XY: (f32, f32) = (3.0, 2.0);
-pub const CONFIG_PATH: &str = "./config/general.yaml";
-pub const STATIONS_PATH: &str = "./config/stations_in_lines.yaml";
-pub const ALL_LINES_PATH: &str = "./config/all_lines.yaml";
-pub const SUBWAY_LINES_PATH: &str = "./config/subway_lines.yaml";
-pub const TRAM_LINES_PATH: &str = "./config/tram_lines.yaml";
-pub const MAX_XY: (f32, f32) = (70., 40.);
-pub const SCREEN_SIZE: (f32, f32) = (1920.0, 1150.0);
-pub const OFFSET: f32 = 100.0;
-pub const SIDELEN_STATION: f32 = 50.;
-pub const RADIUS_STATION: f32 = 10.;
-pub const SIDELEN_POD: f32 = 30.0;
-pub const RADIUS_POD: f32 = 5.0;
-pub const WIDTH_POD: f32 = 30.0;
-pub const LENGTH_POD: f32 = 30.0;
-pub const WIDTH_LINE: f32 = 2.0;
-pub const DESIRED_FPS: u32 = 20; // TODO: decouple game speed from draw rate
-pub const POD_CAPACITY: i32 = 20;
-pub const TRANSITION_TIME: i32 = 30;
-pub const POD_SPAWN_RATE: i32 = 30; // every so many seconds a pod is spawned till enough are there
-pub const VSYNC: bool = true;
+pub const CONFIG_PATH: &str = "./config/config.yaml";
 
-// EXTERNAL CONFIG
 pub fn load_yaml(file: &str) -> Yaml {
     let mut file = File::open(file).expect("Unable to open file");
     let mut contents = String::new();
@@ -51,65 +29,180 @@ pub struct NetworkConfig {
     pub coordinates_map: HashMap<i32, (String, String, (f32, f32))>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
-    pub pods: PodsConfig,
 }
 
 #[derive(Debug, Clone)]
-pub struct PodsConfig {
-    pub n_pods: i32,
+pub struct LogicConfig {
+    pub number_of_people: i32,
+    pub number_of_pods: i32,
+    pub pod_capacity: i32,
+    pub transition_time: i32,
+    pub pod_spawn_rate: i32,
 }
 
 #[derive(Debug, Clone)]
-pub struct PeopleConfig {
-    pub n_people: i32,
+pub struct VisualConfig {
+    pub screen_size: (f32, f32),
+    pub screen_offset: f32,
+    pub radius_station: f32,
+    pub radius_pod: f32,
+    pub width_line: f32,
+    pub desired_fps: u32,
+    pub vsync: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct Config {
     pub network: NetworkConfig,
-    pub people: PeopleConfig,
+    pub logic: LogicConfig,
+    pub visual: VisualConfig,
 }
 
-pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml) -> Config {
-    let mut n_stations: i64 = 0;
-    let mut coordinates_map: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
-    let mut lines: Vec<Line> = vec![];
-    let mut n_pods: i64 = 0;
-    let mut n_people: i64 = 0;
-    let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
+pub fn parse_config(raw_config: &Yaml) -> Config {
+    let mut stations_path = String::default();
+    let mut all_lines_path = String::default();
+    let mut screen_size = <(f32, f32)>::default();
+    let mut screen_offset = f32::default();
+    let mut radius_station = f32::default();
+    let mut radius_pod = f32::default();
+    let mut width_line = f32::default();
+    let mut desired_fps = u32::default();
+    let mut vsync = bool::default();
+    let mut number_of_people = i32::default();
+    let mut pod_capacity = i32::default();
+    let mut transition_time = i32::default();
+    let mut pod_spawn_rate = i32::default();
 
     // This whole construct essentially parses the raw Yaml typed structure we get into the more
     // usable Config structure from above.
     // It only respects correctly formatted yamls.
     // TODO: introduce a validator or something that panics if yaml is incorrectly formatted.
-    if let Yaml::Hash(config_hash) = raw_config {
-        if let Some(network_yaml) = config_hash.get(&Yaml::String(String::from("network"))) {
-            if let Yaml::Hash(network_hash) = network_yaml {
-                if let Some(pods_yaml) = network_hash.get(&Yaml::String(String::from("pods"))) {
-                    if let Yaml::Hash(pods_hash) = pods_yaml {
-                        if let Some(n_pods_yaml) =
-                            pods_hash.get(&Yaml::String(String::from("n_pods")))
-                        {
-                            if let Yaml::Integer(value) = n_pods_yaml {
-                                n_pods = *value;
-                            }
-                        }
+    if let Yaml::Hash(hash) = raw_config {
+        if let Some(yaml) = hash.get(&Yaml::String(String::from("network"))) {
+            if let Yaml::Hash(hash) = yaml {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("STATIONS_PATH"))) {
+                    if let Yaml::String(value) = yaml {
+                        stations_path = value.to_string();
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("ALL_LINES_PATH"))) {
+                    if let Yaml::String(value) = yaml {
+                        all_lines_path = value.to_string();
                     }
                 }
             }
         }
-        if let Some(people_yaml) = config_hash.get(&Yaml::String(String::from("people"))) {
-            if let Yaml::Hash(people_hash) = people_yaml {
-                if let Some(n_people_yaml) =
-                    people_hash.get(&Yaml::String(String::from("n_people")))
-                {
-                    if let Yaml::Integer(value) = n_people_yaml {
-                        n_people = *value;
+        if let Some(yaml) = hash.get(&Yaml::String(String::from("visual"))) {
+            if let Yaml::Hash(hash) = yaml {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("SCREEN_SIZE"))) {
+                    if let Yaml::Hash(hash) = yaml {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("X"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                screen_size.0 = float as f32;
+                            }
+                        }
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("Y"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                screen_size.1 = float as f32;
+                            }
+                        }
+                        println!("{:?}", screen_size)
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("SCREEN_OFFSET"))) {
+                    if let Some(float) = yaml.as_f64() {
+                        screen_offset = float as f32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("RADIUS_STATION"))) {
+                    if let Some(float) = yaml.as_f64() {
+                        radius_station = float as f32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("RADIUS_POD"))) {
+                    if let Some(float) = yaml.as_f64() {
+                        radius_pod = float as f32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("WIDTH_LINE"))) {
+                    if let Some(float) = yaml.as_f64() {
+                        width_line = float as f32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("DESIRED_FPS"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        desired_fps = *value as u32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("VSYNC"))) {
+                    if let Yaml::Boolean(value) = yaml {
+                        vsync = *value;
+                    }
+                }
+            }
+        }
+
+        if let Some(yaml) = hash.get(&Yaml::String(String::from("logic"))) {
+            if let Yaml::Hash(hash) = yaml {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("NUMBER_OF_PEOPLE"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        number_of_people = *value as i32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("POD_CAPACITY"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        pod_capacity = *value as i32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("TRANSITION_TIME"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        transition_time = *value as i32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("POD_SPAWN_RATE"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        pod_spawn_rate = *value as i32;
                     }
                 }
             }
         }
     }
+
+    let raw_stations = load_yaml(&stations_path);
+    let raw_lines = load_yaml(&all_lines_path);
+
+    let (network_config, number_of_pods) = gen_network_config(&raw_stations, &raw_lines);
+
+    let logical_config = LogicConfig {
+        number_of_people: number_of_people,
+        number_of_pods: number_of_pods,
+        pod_capacity: pod_capacity,
+        transition_time: transition_time,
+        pod_spawn_rate: pod_spawn_rate,
+    };
+
+    let visual_config = VisualConfig {
+        screen_size: screen_size,
+        screen_offset: screen_offset,
+        radius_station: radius_station,
+        radius_pod: radius_pod,
+        width_line: width_line,
+        desired_fps: desired_fps,
+        vsync: vsync,
+    };
+
+    Config {
+        network: network_config,
+        logic: logical_config,
+        visual: visual_config,
+    }
+}
+
+pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
+    let mut n_stations: i64 = 0;
+    let mut coordinates_map: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
+    let mut lines: Vec<Line> = vec![];
+    let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
 
     if let Yaml::Array(stations_array) = raw_stations {
         n_stations = stations_array.len() as i64;
@@ -161,7 +254,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
         }
     }
 
-    let mut n_stations_line_separated: i64 = 0;
+    let mut n_stations_line_separated: i32 = 0;
 
     if let Yaml::Array(lines_array) = raw_lines {
         for line_yaml in lines_array {
@@ -180,7 +273,7 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
                 if let Some(stations_yaml) = line_hash.get(&Yaml::String(String::from("stations")))
                 {
                     if let Yaml::Array(stations_array) = stations_yaml {
-                        n_stations_line_separated += stations_array.len() as i64;
+                        n_stations_line_separated += stations_array.len() as i32;
                         for station_yaml in stations_array {
                             if let Yaml::Integer(station_id) = station_yaml {
                                 stations.push(*station_id as i32);
@@ -221,28 +314,17 @@ pub fn parse_raw_config(raw_config: &Yaml, raw_stations: &Yaml, raw_lines: &Yaml
         }
     }
 
-    n_pods = n_stations_line_separated;
-
-    let pods_config = PodsConfig {
-        n_pods: n_pods as i32,
-    };
-
-    let people_config = PeopleConfig {
-        n_people: n_people as i32,
-    };
+    // TODO: find more elegant way to do this
+    let n_pods = n_stations_line_separated;
 
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
         coordinates_map: coordinates_map,
         edge_map: edge_map,
         lines: lines,
-        pods: pods_config,
     };
 
-    Config {
-        network: network_config,
-        people: people_config,
-    }
+    (network_config, n_pods)
 }
 
 fn calc_connections(

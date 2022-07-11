@@ -1,4 +1,4 @@
-use crate::config::{MAX_XY, OFFSET, SCREEN_SIZE, SIDELEN_STATION, WIDTH_LINE};
+use crate::config::Config;
 use crate::connection::{Connection, YieldTuple};
 use crate::helper::get_screen_coordinates;
 use crate::network::Network;
@@ -17,7 +17,7 @@ pub struct Line {
 
 impl Line {
     // TODO: handle result better
-    pub fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context, network: &Network, config: &Config) -> GameResult<()> {
         let mut res: GameResult<()> = std::result::Result::Ok(());
 
         for connection in &self.connections {
@@ -49,13 +49,13 @@ impl Line {
                 y2 = from.coordinates.1;
             }
 
-            let (x1_real, y1_real) = get_screen_coordinates((x1, y1));
-            let (x2_real, y2_real) = get_screen_coordinates((x2, y2));
+            let (x1_real, y1_real) = get_screen_coordinates((x1, y1), config);
+            let (x2_real, y2_real) = get_screen_coordinates((x2, y2), config);
 
             let line = graphics::Mesh::new_line(
                 ctx,
                 &[[x1_real, y1_real], [x2_real, y2_real]],
-                WIDTH_LINE,
+                config.visual.width_line,
                 color,
             )?;
 

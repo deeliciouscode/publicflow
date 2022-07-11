@@ -12,10 +12,7 @@ mod state;
 mod station;
 
 use crate::cli::run_cli;
-use crate::config::{
-    load_yaml, parse_raw_config, ALL_LINES_PATH, CONFIG_PATH, SCREEN_SIZE, STATIONS_PATH,
-    SUBWAY_LINES_PATH, TRAM_LINES_PATH, VSYNC,
-};
+use crate::config::{load_yaml, parse_config, CONFIG_PATH};
 use crate::state::State;
 use ggez::event::{self};
 use ggez::ContextBuilder;
@@ -29,26 +26,22 @@ fn main() {
     thread::spawn(|| {
         run_cli(tx);
     });
-    // let yaml = load_file("./config/network.yaml");
-    let raw_config = load_yaml(CONFIG_PATH);
-    // println!("{:?}\n", yaml);
-    let raw_stations = load_yaml(STATIONS_PATH);
-    // let raw_subway_lines = load_yaml(SUBWAY_LINES_PATH);
-    // let raw_tram_lines = load_yaml(TRAM_LINES_PATH);
-    let raw_lines = load_yaml(ALL_LINES_PATH);
 
-    let config = parse_raw_config(&raw_config, &raw_stations, &raw_lines);
-    // println!("config: {:?}\n", config);
+    let config_yaml = load_yaml(CONFIG_PATH);
+    let config = parse_config(&config_yaml);
 
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")
         .window_setup(ggez::conf::WindowSetup::default().title("PublicFlow Simulation"))
-        .window_setup(ggez::conf::WindowSetup::default().vsync(VSYNC)) // sync fps to screen refresh rate
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        .window_setup(ggez::conf::WindowSetup::default().vsync(config.visual.vsync)) // sync fps to screen refresh rate
+        .window_mode(
+            ggez::conf::WindowMode::default()
+                .dimensions(config.visual.screen_size.0, config.visual.screen_size.1),
+        )
         .build()
         .expect("aieee, could not create ggez context!");
 
-    let mut state = State::new(&config, rx).add_pods().add_people();
+    let mut state = State::new(config, rx).add_pods().add_people();
 
     event::run(ctx, event_loop, state);
 }

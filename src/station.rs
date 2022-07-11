@@ -1,4 +1,4 @@
-use crate::config::{Config, MAX_XY, OFFSET, RADIUS_STATION, SCREEN_SIZE, SIDELEN_STATION};
+use crate::config::Config;
 use crate::helper::get_screen_coordinates;
 use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
@@ -15,7 +15,6 @@ pub struct Station {
     pub pods_in_station: HashSet<i32>,
     pub people_in_station: HashSet<i32>,
     pub coordinates: (f32, f32),
-    pub config: Config,
 }
 
 impl Station {
@@ -43,11 +42,11 @@ impl Station {
         Some(self.pods_in_station.clone().into_iter().collect())
     }
 
-    pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
         let mut res;
         let color = [0.5, 0.5, 0.5, 1.0].into();
 
-        let real_coordinates = get_screen_coordinates(self.coordinates);
+        let real_coordinates = get_screen_coordinates(self.coordinates, config);
 
         let circle = graphics::Mesh::new_circle(
             ctx,
@@ -57,7 +56,7 @@ impl Station {
                 x: real_coordinates.0,
                 y: real_coordinates.1,
             },
-            RADIUS_STATION,
+            config.visual.radius_station,
             1.,
             color,
         )?;
@@ -92,7 +91,7 @@ impl Station {
         let radius = self.people_in_station.len() as f32;
 
         let red =
-            radius / (self.config.people.n_people as f32 / self.config.network.n_stations as f32);
+            radius / (config.logic.number_of_people as f32 / config.network.n_stations as f32);
         let green = 1. - red;
 
         let color_circle = [red, green, 0., 0.2].into();

@@ -1,6 +1,6 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::cli::recv_queries;
-use crate::config::{Config, DESIRED_FPS, POD_CAPACITY, TRANSITION_TIME};
+use crate::config::Config;
 use crate::helper::format_seconds;
 use crate::line::{Line, LineState};
 use crate::network::Network;
@@ -38,10 +38,15 @@ impl State {
             println!("set_actions: {:?}", set_actions);
         }
 
-        self.network.update(&set_actions);
-        self.pods_box.update(&mut self.network, &set_actions);
-        self.people_box
-            .update(&mut self.pods_box, &mut self.network, &set_actions);
+        self.network.update(&set_actions, &self.config);
+        self.pods_box
+            .update(&mut self.network, &set_actions, &self.config);
+        self.people_box.update(
+            &mut self.pods_box,
+            &mut self.network,
+            &set_actions,
+            &self.config,
+        );
     }
 
     fn handle_get_actions(&self, get_actions: Vec<GetAction>) {
@@ -104,7 +109,9 @@ impl State {
         }
 
         if self.on_pause {
-            let maybe_station = self.network.try_retrieve_station(self.last_mouse_left);
+            let maybe_station = self
+                .network
+                .try_retrieve_station(self.last_mouse_left, &self.config);
             match maybe_station {
                 Some(station) => {
                     let mut name = Text::new(String::from(format!("Name: {}", station.name)));
@@ -315,7 +322,7 @@ impl State {
 
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
     // as a next step spawn / divert pods dynamically
-    pub fn new(config: &Config, rx: mpsc::Receiver<Actions>) -> Self {
+    pub fn new(config: Config, rx: mpsc::Receiver<Actions>) -> Self {
         let mut stations: Vec<Station> = vec![];
         for abstract_station in config.network.coordinates_map.iter() {
             let station_id = abstract_station.0;
@@ -330,11 +337,10 @@ impl State {
                 pods_in_station: HashSet::from([]), // The pods will register themselves later
                 people_in_station: HashSet::from([]),
                 coordinates: (*lat as f32, *lon as f32),
-                config: config.clone(),
             })
         }
 
-        let mut network = Network::new(stations, config);
+        let mut network = Network::new(stations, &config);
 
         let people_box = PeopleBox { people: vec![] };
 
@@ -345,7 +351,7 @@ impl State {
             people_box: people_box,
             pods_box: pods_box,
             time_passed: 0,
-            config: config.clone(),
+            config: config,
             on_pause: false,
             last_mouse_left: (0., 0.),
             rx: rx,
@@ -404,8 +410,13 @@ impl State {
         };
 
         let mut pods: Vec<Pod> = vec![];
-        for pod_id in 0..self.config.network.pods.n_pods {
-            pods.push(Pod::new(pod_id, 10, POD_CAPACITY, calc_line_state(&pod_id)));
+        for pod_id in 0..self.config.logic.number_of_pods {
+            pods.push(Pod::new(
+                pod_id,
+                10,
+                self.config.logic.pod_capacity,
+                calc_line_state(&pod_id),
+            ));
         }
 
         let pods_box = PodsBox { pods: pods };
@@ -421,17 +432,18 @@ impl State {
         // println!("{:?}", station_ids);
 
         let mut people: Vec<Person> = vec![];
-        for person_id in 0..self.config.people.n_people {
+        for person_id in 0..self.config.logic.number_of_people {
             let start_ix = rng.gen_range(0..station_ids.len());
             let end_ix = rng.gen_range(0..station_ids.len());
             let start = station_ids[start_ix];
             let end = station_ids[end_ix];
             people.push(Person::new(
                 person_id,
-                TRANSITION_TIME,
+                self.config.logic.transition_time,
                 &self.network,
                 *start,
                 *end,
+                &self.config,
             ));
         }
 
@@ -470,7 +482,7 @@ impl EventHandler for State {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Update code here...
-        while timer::check_update_time(ctx, DESIRED_FPS) {
+        while timer::check_update_time(ctx, self.config.visual.desired_fps) {
             // println!("fps: {}", timer::fps(ctx));
             let actions = recv_queries(&self, &self.rx);
 
@@ -494,9 +506,9 @@ impl EventHandler for State {
         let bg_color = Color::new(0.15, 0.15, 0.15, 0.8);
         graphics::clear(ctx, bg_color);
 
-        self.network.draw(ctx);
-        self.pods_box.draw(ctx, &self.network);
-        self.people_box.draw(ctx, &self.network);
+        self.network.draw(ctx, &self.config);
+        self.pods_box.draw(ctx, &self.network, &self.config);
+        self.people_box.draw(ctx, &self.network, &self.config);
         self.draw(ctx);
 
         graphics::present(ctx)

@@ -1,11 +1,11 @@
 use crate::action::SetAction;
-use crate::config::Config as SimConfig;
+use crate::config::Config;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
 use crate::helper::get_screen_coordinates;
 use crate::line::Line;
 use crate::station::Station;
 use ggez::Context;
-use petgraph::dot::{Config, Dot};
+use petgraph::dot::{Config as PetConfig, Dot};
 use petgraph::graph::{DiGraph, UnGraph};
 // use std::;
 
@@ -14,8 +14,6 @@ pub struct Network {
     pub stations: Vec<Station>,
     pub graph: UnGraph<u32, u32>,
     pub lines: Vec<Line>,
-    pub config: SimConfig,
-    // pub mesh
 }
 
 fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
@@ -33,19 +31,18 @@ fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
 }
 
 impl Network {
-    pub fn new(stations: Vec<Station>, config: &SimConfig) -> Self {
+    pub fn new(stations: Vec<Station>, config: &Config) -> Self {
         let lines = config.network.lines.clone();
         let mut network = Network {
             stations: stations,
             graph: calc_graph(&lines),
             lines: lines,
-            config: config.clone(),
         };
         // network.print_state();
         network
     }
 
-    pub fn update(&mut self, set_actions: &Vec<SetAction>) {
+    pub fn update(&mut self, set_actions: &Vec<SetAction>, config: &Config) {
         if set_actions.len() != 0 {
             for action in set_actions {
                 match action {
@@ -89,12 +86,12 @@ impl Network {
         None
     }
 
-    pub fn try_retrieve_station(&self, (x, y): (f32, f32)) -> Option<&Station> {
+    pub fn try_retrieve_station(&self, (x, y): (f32, f32), config: &Config) -> Option<&Station> {
         // println!("{}, {}", x, y);
         let mut closest_distance = 10000.;
         let mut closest_station = &self.stations[0];
         for station in &self.stations {
-            let station_coords = get_screen_coordinates(station.coordinates);
+            let station_coords = get_screen_coordinates(station.coordinates, config);
             let distance = ((station_coords.0 - x).powi(2) + (station_coords.1 - y).powi(2)).sqrt();
 
             if distance < closest_distance && distance < 10. {
@@ -118,17 +115,17 @@ impl Network {
         }
         println!(
             "{:?}",
-            Dot::with_config(&self.graph, &[Config::NodeIndexLabel])
+            Dot::with_config(&self.graph, &[PetConfig::NodeIndexLabel])
         );
     }
 
-    pub fn draw(&self, ctx: &mut Context) {
+    pub fn draw(&self, ctx: &mut Context, config: &Config) {
         for line in &self.lines {
-            let _res = line.draw(ctx, self);
+            let _res = line.draw(ctx, self, config);
         }
 
         for station in &self.stations {
-            let _res = station.draw(ctx); // TODO: handle result error case
+            let _res = station.draw(ctx, config); // TODO: handle result error case
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::action::{Actions, GetAction, SetAction};
-use crate::config::{POD_CAPACITY, RADIUS_POD};
+use crate::config::Config;
 use crate::helper::get_screen_coordinates;
 use crate::line::LineState;
 use crate::network::Network;
@@ -66,13 +66,13 @@ impl PodsBox {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, network: &Network) {
+    pub fn draw(&self, ctx: &mut Context, network: &Network, config: &Config) {
         for pod in &self.pods {
-            let _res = pod.draw(ctx, network);
+            let _res = pod.draw(ctx, network, config);
         }
     }
 
-    pub fn update(&mut self, network: &mut Network, set_actions: &Vec<SetAction>) {
+    pub fn update(&mut self, network: &mut Network, set_actions: &Vec<SetAction>, config: &Config) {
         for action in set_actions {
             match action {
                 SetAction::BlockConnection { ids } => {
@@ -91,7 +91,7 @@ impl PodsBox {
             }
         }
         for pod in &mut self.pods {
-            pod.update_state(network)
+            pod.update_state(network, config)
         }
     }
 }
@@ -123,7 +123,7 @@ impl Pod {
         }
     }
 
-    fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
+    fn draw(&self, ctx: &mut Context, network: &Network, config: &Config) -> GameResult<()> {
         // let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
         // let green = 1. - red;
 
@@ -141,7 +141,7 @@ impl Pod {
                 x: real_x,
                 y: real_y,
             },
-            RADIUS_POD,
+            config.visual.radius_pod,
             1.,
             color,
         )?;
@@ -173,7 +173,7 @@ impl Pod {
     }
 
     // TODO: remove unused stuff
-    pub fn update_state(&mut self, network: &mut Network) {
+    pub fn update_state(&mut self, network: &mut Network, config: &Config) {
         match &self.state {
             PodState::BetweenStations {
                 station_id_from: _,
@@ -183,7 +183,7 @@ impl Pod {
             } => {
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
-                    self.state = self.state.drive_a_sec(self, network);
+                    self.state = self.state.drive_a_sec(self, network, config);
                 } else {
                     self.arrive_in_station(network);
                 }
@@ -398,7 +398,7 @@ impl PodState {
         }
     }
 
-    fn drive_a_sec(&self, pod: &Pod, network: &Network) -> PodState {
+    fn drive_a_sec(&self, pod: &Pod, network: &Network, config: &Config) -> PodState {
         match self {
             PodState::BetweenStations {
                 station_id_from,
@@ -417,8 +417,8 @@ impl PodState {
                     .unwrap();
                 let station_to = network.try_get_station_by_id_unmut(*station_id_to).unwrap();
 
-                let coordinates_from = get_screen_coordinates(station_from.coordinates);
-                let coordinates_to = get_screen_coordinates(station_to.coordinates);
+                let coordinates_from = get_screen_coordinates(station_from.coordinates, config);
+                let coordinates_to = get_screen_coordinates(station_to.coordinates, config);
                 let x = coordinates_from.0
                     + (coordinates_to.0 - coordinates_from.0)
                         * ((travel_time as f32 - *time_to_next_station as f32)
