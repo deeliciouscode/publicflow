@@ -38,6 +38,7 @@ pub struct LogicConfig {
     pub pod_capacity: i32,
     pub transition_time: i32,
     pub pod_spawn_rate: i32,
+    pub on_pause: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -49,6 +50,8 @@ pub struct VisualConfig {
     pub width_line: f32,
     pub desired_fps: u32,
     pub vsync: bool,
+    pub last_mouse_left: (f32, f32),
+    pub zoom_factor: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -106,7 +109,6 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
                                 screen_size.1 = float as f32;
                             }
                         }
-                        println!("{:?}", screen_size)
                     }
                 }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("SCREEN_OFFSET"))) {
@@ -179,6 +181,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         pod_capacity: pod_capacity,
         transition_time: transition_time,
         pod_spawn_rate: pod_spawn_rate,
+        on_pause: false,
     };
 
     let visual_config = VisualConfig {
@@ -189,6 +192,8 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         width_line: width_line,
         desired_fps: desired_fps,
         vsync: vsync,
+        last_mouse_left: (0., 0.),
+        zoom_factor: 0.,
     };
 
     Config {

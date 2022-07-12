@@ -21,8 +21,6 @@ pub struct State {
     pub people_box: PeopleBox,
     pub time_passed: u32,
     pub config: Config,
-    pub on_pause: bool,
-    pub last_mouse_left: (f32, f32),
     rx: mpsc::Receiver<Actions>,
 }
 
@@ -108,10 +106,12 @@ impl State {
             Err(err) => panic!("{:?}", err),
         }
 
-        if self.on_pause {
+        let last_mouse_left = self.config.visual.last_mouse_left;
+
+        if self.config.logic.on_pause {
             let maybe_station = self
                 .network
-                .try_retrieve_station(self.last_mouse_left, &self.config);
+                .try_retrieve_station(last_mouse_left, &self.config);
             match maybe_station {
                 Some(station) => {
                     let mut name = Text::new(String::from(format!("Name: {}", station.name)));
@@ -128,24 +128,24 @@ impl State {
                     pods.set_font(Font::default(), PxScale::from(18.));
 
                     let draw_param_name = DrawParam::new()
-                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 10.])
+                        .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 10.])
                         .color(Color::WHITE);
                     let res = graphics::draw(ctx, &name, draw_param_name);
                     let draw_param_name = DrawParam::new()
-                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 30.])
+                        .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 30.])
                         .color(Color::WHITE);
                     let res = graphics::draw(ctx, &id, draw_param_name);
                     let draw_param_count = DrawParam::new()
-                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 50.])
+                        .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 50.])
                         .color(Color::WHITE);
                     let res = graphics::draw(ctx, &count, draw_param_count);
                     let draw_param_pods = DrawParam::new()
-                        .offset([-self.last_mouse_left.0 - 10., -self.last_mouse_left.1 - 70.])
+                        .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 70.])
                         .color(Color::WHITE);
                     let res = graphics::draw(ctx, &pods, draw_param_pods);
                 }
                 None => {
-                    let maybe_pod = self.pods_box.try_retrieve_pod(self.last_mouse_left);
+                    let maybe_pod = self.pods_box.try_retrieve_pod(last_mouse_left);
                     match maybe_pod {
                         Some(pod) => {
                             let mut id = Text::new(String::from(format!("ID: {}", pod.id)));
@@ -165,31 +165,19 @@ impl State {
                             capacity.set_font(Font::default(), PxScale::from(18.));
 
                             let draw_param_id = DrawParam::new()
-                                .offset([
-                                    -self.last_mouse_left.0 - 10.,
-                                    -self.last_mouse_left.1 - 10.,
-                                ])
+                                .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 10.])
                                 .color(Color::WHITE);
                             let res = graphics::draw(ctx, &id, draw_param_id);
                             let draw_param_line = DrawParam::new()
-                                .offset([
-                                    -self.last_mouse_left.0 - 10.,
-                                    -self.last_mouse_left.1 - 30.,
-                                ])
+                                .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 30.])
                                 .color(Color::WHITE);
                             let res = graphics::draw(ctx, &line, draw_param_line);
                             let draw_param_count = DrawParam::new()
-                                .offset([
-                                    -self.last_mouse_left.0 - 10.,
-                                    -self.last_mouse_left.1 - 50.,
-                                ])
+                                .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 50.])
                                 .color(Color::WHITE);
                             let res = graphics::draw(ctx, &count, draw_param_count);
                             let draw_param_count = DrawParam::new()
-                                .offset([
-                                    -self.last_mouse_left.0 - 10.,
-                                    -self.last_mouse_left.1 - 70.,
-                                ])
+                                .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 70.])
                                 .color(Color::WHITE);
                             let res = graphics::draw(ctx, &capacity, draw_param_count);
                         }
@@ -352,8 +340,6 @@ impl State {
             pods_box: pods_box,
             time_passed: 0,
             config: config,
-            on_pause: false,
-            last_mouse_left: (0., 0.),
             rx: rx,
         };
 
@@ -467,16 +453,24 @@ impl EventHandler for State {
     // fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, repeat: bool) {
 
     // }
+    // first: only zoom
+    // later: zoom to specific location
+    fn mouse_wheel_event(&mut self, _ctx: &mut Context, _x: f32, y: f32) {
+        self.config.visual.zoom_factor += y;
+        // if self.config.visual.zoom_factor < 0. {
+        //     self.config.visual.zoom_factor = 0.;
+        // }
+    }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
         if button == MouseButton::Left {
-            self.last_mouse_left = (x, y)
+            self.config.visual.last_mouse_left = (x, y)
         }
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods) {
         if keycode == KeyCode::Space {
-            self.on_pause = !self.on_pause;
+            self.config.logic.on_pause = !self.config.logic.on_pause;
         }
     }
 
@@ -488,7 +482,7 @@ impl EventHandler for State {
 
             self.handle_get_actions(actions.get_actions);
 
-            if !self.on_pause {
+            if !self.config.logic.on_pause {
                 self.time_passed += 1;
                 self.update(actions.set_actions);
             }

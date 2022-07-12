@@ -6,13 +6,32 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-pub fn get_screen_coordinates(coordinates: (f32, f32), config: &Config) -> (f32, f32) {
-    let lat_min: f32 = 11.4606;
-    let lat_max: f32 = 11.7036;
-    let lat_delta: f32 = lat_max - lat_min;
+fn zoom_in(factor: f32, lat: (f32, f32), lon: (f32, f32)) -> ((f32, f32), (f32, f32)) {
+    let lat_min_rem: f32 = (lat.0 % 1.) % 0.01;
+    let lat_max_rem: f32 = (lat.1 % 1.) % 0.01;
 
-    let lon_min: f32 = 48.0416;
-    let lon_max: f32 = 48.2649;
+    let lon_min_rem: f32 = (lon.0 % 1.) % 0.01;
+    let lon_max_rem: f32 = (lon.1 % 1.) % 0.01;
+
+    let new_lats = (lat.0 + lat_min_rem * factor, lat.1 - lat_max_rem * factor);
+    let new_lons = (lon.0 + lon_min_rem * factor, lon.1 - lon_max_rem * factor);
+
+    (new_lats, new_lons)
+}
+
+pub fn get_screen_coordinates(coordinates: (f32, f32), config: &Config) -> (f32, f32) {
+    let mut lat_min: f32 = 11.4606;
+    let mut lat_max: f32 = 11.7036;
+    let mut lon_min: f32 = 48.0416;
+    let mut lon_max: f32 = 48.2649;
+
+    ((lat_min, lat_max), (lon_min, lon_max)) = zoom_in(
+        config.visual.zoom_factor,
+        (lat_min, lat_max),
+        (lon_min, lon_max),
+    );
+
+    let lat_delta: f32 = lat_max - lat_min;
     let lon_delta: f32 = lon_max - lon_min;
 
     let x_percentage = (coordinates.0 - lat_min) / lat_delta;
