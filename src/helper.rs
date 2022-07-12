@@ -2,34 +2,40 @@ use crate::config::Config;
 use crate::network::Network;
 use geoutils::Location;
 use rand::Rng;
+use std::cmp::{max, min};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-fn zoom_in(factor: f32, lat: (f32, f32), lon: (f32, f32)) -> ((f32, f32), (f32, f32)) {
-    let lat_min_rem: f32 = (lat.0 % 1.) % 0.01;
-    let lat_max_rem: f32 = (lat.1 % 1.) % 0.01;
+pub fn apply_zoom(config: &mut Config, rel_zoom_factor_wheel: f32) {
+    let lat_bounds = config.visual.latitude_range_bounds;
+    let lon_bounds = config.visual.longitude_range_bounds;
 
-    let lon_min_rem: f32 = (lon.0 % 1.) % 0.01;
-    let lon_max_rem: f32 = (lon.1 % 1.) % 0.01;
+    let (rel_factor_lat, rel_factor_lon) = config.visual.last_mouse_while_zooming_relative;
 
-    let new_lats = (lat.0 + lat_min_rem * factor, lat.1 - lat_max_rem * factor);
-    let new_lons = (lon.0 + lon_min_rem * factor, lon.1 - lon_max_rem * factor);
+    let lat_rng_curr = config.visual.latitude_range_current;
+    let lon_rng_curr = config.visual.longitude_range_current;
 
-    (new_lats, new_lons)
+    let lat_bounds_delta = lat_bounds.1 - lat_bounds.0;
+    let lon_bounds_delta = lon_bounds.1 - lon_bounds.0;
+
+    // change of 2% relative to the bounded area
+    let lat_change = lat_bounds_delta / 50.;
+    let lon_change = lon_bounds_delta / 50.;
+
+    let lat_min = lat_rng_curr.0 + lat_change * rel_factor_lat * rel_zoom_factor_wheel;
+    let lat_max = lat_rng_curr.1 - lat_change * (1. - rel_factor_lat) * rel_zoom_factor_wheel;
+
+    let lon_min = lon_rng_curr.0 + lon_change * (1. - rel_factor_lon) * rel_zoom_factor_wheel;
+    let lon_max = lon_rng_curr.1 - lon_change * rel_factor_lon * rel_zoom_factor_wheel;
+
+    config.visual.latitude_range_current = (lat_min.max(lat_bounds.0), lat_max.min(lat_bounds.1));
+    config.visual.longitude_range_current = (lon_min.max(lon_bounds.0), lon_max.min(lon_bounds.1));
 }
 
 pub fn get_screen_coordinates(coordinates: (f32, f32), config: &Config) -> (f32, f32) {
-    let mut lat_min: f32 = 11.4606;
-    let mut lat_max: f32 = 11.7036;
-    let mut lon_min: f32 = 48.0416;
-    let mut lon_max: f32 = 48.2649;
-
-    ((lat_min, lat_max), (lon_min, lon_max)) = zoom_in(
-        config.visual.zoom_factor,
-        (lat_min, lat_max),
-        (lon_min, lon_max),
-    );
+    let (lat_min, lat_max) = config.visual.latitude_range_current;
+    let (lon_min, lon_max) = config.visual.longitude_range_current;
 
     let lat_delta: f32 = lat_max - lat_min;
     let lon_delta: f32 = lon_max - lon_min;

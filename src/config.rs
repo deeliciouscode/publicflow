@@ -44,14 +44,19 @@ pub struct LogicConfig {
 #[derive(Debug, Clone)]
 pub struct VisualConfig {
     pub screen_size: (f32, f32),
+    pub latitude_range_bounds: (f32, f32),
+    pub longitude_range_bounds: (f32, f32),
+    pub latitude_range_current: (f32, f32),
+    pub longitude_range_current: (f32, f32),
     pub screen_offset: f32,
     pub radius_station: f32,
     pub radius_pod: f32,
     pub width_line: f32,
     pub desired_fps: u32,
     pub vsync: bool,
+    pub last_mouse: (f32, f32),
+    pub last_mouse_while_zooming_relative: (f32, f32),
     pub last_mouse_left: (f32, f32),
-    pub zoom_factor: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -65,6 +70,8 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     let mut stations_path = String::default();
     let mut all_lines_path = String::default();
     let mut screen_size = <(f32, f32)>::default();
+    let mut latitude_range_bounds = <(f32, f32)>::default();
+    let mut longitude_range_bounds = <(f32, f32)>::default();
     let mut screen_offset = f32::default();
     let mut radius_station = f32::default();
     let mut radius_pod = f32::default();
@@ -107,6 +114,34 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
                         if let Some(yaml) = hash.get(&Yaml::String(String::from("Y"))) {
                             if let Some(float) = yaml.as_f64() {
                                 screen_size.1 = float as f32;
+                            }
+                        }
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("LATITUDE"))) {
+                    if let Yaml::Hash(hash) = yaml {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MIN"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                latitude_range_bounds.0 = float as f32;
+                            }
+                        }
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MAX"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                latitude_range_bounds.1 = float as f32;
+                            }
+                        }
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("LONGITUDE"))) {
+                    if let Yaml::Hash(hash) = yaml {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MIN"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                longitude_range_bounds.0 = float as f32;
+                            }
+                        }
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MAX"))) {
+                            if let Some(float) = yaml.as_f64() {
+                                longitude_range_bounds.1 = float as f32;
                             }
                         }
                     }
@@ -186,14 +221,19 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 
     let visual_config = VisualConfig {
         screen_size: screen_size,
+        latitude_range_bounds: latitude_range_bounds,
+        longitude_range_bounds: longitude_range_bounds,
+        latitude_range_current: latitude_range_bounds,
+        longitude_range_current: longitude_range_bounds,
         screen_offset: screen_offset,
         radius_station: radius_station,
         radius_pod: radius_pod,
         width_line: width_line,
         desired_fps: desired_fps,
         vsync: vsync,
+        last_mouse: (0., 0.),
+        last_mouse_while_zooming_relative: (0., 0.),
         last_mouse_left: (0., 0.),
-        zoom_factor: 0.,
     };
 
     Config {

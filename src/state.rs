@@ -1,7 +1,7 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::cli::recv_queries;
 use crate::config::Config;
-use crate::helper::format_seconds;
+use crate::helper::{apply_zoom, format_seconds};
 use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
@@ -450,16 +450,19 @@ impl State {
 }
 
 impl EventHandler for State {
-    // fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, repeat: bool) {
+    // if this will be implmented do not forget to implment ESC -> exit, since that has to be done manually
+    // fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, repeat: bool) {}
 
-    // }
-    // first: only zoom
-    // later: zoom to specific location
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
+        self.config.visual.last_mouse = (x, y)
+    }
+
     fn mouse_wheel_event(&mut self, _ctx: &mut Context, _x: f32, y: f32) {
-        self.config.visual.zoom_factor += y;
-        // if self.config.visual.zoom_factor < 0. {
-        //     self.config.visual.zoom_factor = 0.;
-        // }
+        let x_rel = self.config.visual.last_mouse.0 / self.config.visual.screen_size.0;
+        let y_rel = self.config.visual.last_mouse.1 / self.config.visual.screen_size.1;
+
+        self.config.visual.last_mouse_while_zooming_relative = (x_rel, y_rel);
+        apply_zoom(&mut self.config, y);
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
@@ -485,12 +488,6 @@ impl EventHandler for State {
             if !self.config.logic.on_pause {
                 self.time_passed += 1;
                 self.update(actions.set_actions);
-            }
-
-            if self.time_passed % 25 == 0 {
-                // println!("-------------------------------");
-                // println!("time passed: {}", self.time_passed);
-                // self.print_state();
             }
         }
         Ok(())
