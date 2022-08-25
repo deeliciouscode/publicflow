@@ -4,6 +4,7 @@ use std::collections::HashSet;
 pub enum GetAction {
     GetStation { id: i32 },
     GetPerson { id: i32 },
+    GetPod { id: i32 },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +20,20 @@ pub enum SetAction {
         follow: bool,
     },
     HidePerson {
+        id: i32,
+    },
+    ShowPod {
+        id: i32,
+        permanent: bool,
+    },
+    HidePod {
+        id: i32,
+    },
+    ShowStation {
+        id: i32,
+        permanent: bool,
+    },
+    HideStation {
         id: i32,
     },
     RoutePerson {

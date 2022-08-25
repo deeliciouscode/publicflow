@@ -156,7 +156,7 @@ fn parse_get(input_list: &Vec<&str>) -> Vec<GetAction> {
                 }
             }
         }
-        "person" | "people" | "p" => {
+        "person" | "people" | "ps" => {
             if input_list.len() < 3 {
                 println!("Get which person/people??");
                 return get_actions;
@@ -165,6 +165,18 @@ fn parse_get(input_list: &Vec<&str>) -> Vec<GetAction> {
                 let ids = parse_id_list_and_ranges(arg);
                 for id in ids {
                     get_actions.push(GetAction::GetPerson { id: id })
+                }
+            }
+        }
+        "pod" | "pods" => {
+            if input_list.len() < 3 {
+                println!("Get which pod/pods??");
+                return get_actions;
+            }
+            for arg in &input_list[2..] {
+                let ids = parse_id_list_and_ranges(arg);
+                for id in ids {
+                    get_actions.push(GetAction::GetPod { id: id })
                 }
             }
         }
@@ -185,7 +197,7 @@ fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
 
     // TODO: viuslize all entities
     match input_list[1] {
-        "person" | "people" | "p" => {
+        "person" | "people" | "ps" => {
             if input_list.len() < 3 {
                 println!("Visualize which person/people??");
                 return set_actions;
@@ -208,8 +220,54 @@ fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
                 }
             }
         }
-        _ => {
-            println!("Can't visualize: {}, not implemented.", input_list[1])
+        "pod" | "pods" => {
+            if input_list.len() < 3 {
+                println!("Visualize which pod/pods??");
+                return set_actions;
+            }
+            let mut permanent = false;
+            for arg in &input_list[2..] {
+                match arg {
+                    &"--permanent" | &"-p" => {
+                        permanent = true;
+                    }
+                    id_or_ids => {
+                        let ids = parse_id_list_and_ranges(id_or_ids);
+                        for id in ids {
+                            set_actions.push(SetAction::ShowPod {
+                                id: id,
+                                permanent: permanent,
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        "station" | "stations" | "st" => {
+            if input_list.len() < 3 {
+                println!("Visualize which person/people??");
+                return set_actions;
+            }
+            let mut permanent = false;
+            for arg in &input_list[2..] {
+                match arg {
+                    &"--permanent" | &"-p" => {
+                        permanent = true;
+                    }
+                    id_or_ids => {
+                        let ids = parse_id_list_and_ranges(id_or_ids);
+                        for id in ids {
+                            set_actions.push(SetAction::ShowStation {
+                                id: id,
+                                permanent: permanent,
+                            })
+                        }
+                    }
+                }
+            }
+        }
+        any => {
+            println!("Can't visualize: {}, not implemented.", any)
         }
     }
 
@@ -229,7 +287,6 @@ fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
                 println!("Hide which person/people??");
                 return set_actions;
             }
-            let mut follow = false;
             for arg in &input_list[2..] {
                 {
                     let ids = parse_id_list_and_ranges(arg);
@@ -239,8 +296,36 @@ fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
                 }
             }
         }
-        _ => {
-            println!("Can't hide: {}, not implemented.", input_list[1])
+        "pod" | "pods" => {
+            if input_list.len() < 3 {
+                println!("Hide which pod/pods??");
+                return set_actions;
+            }
+            for arg in &input_list[2..] {
+                {
+                    let ids = parse_id_list_and_ranges(arg);
+                    for id in ids {
+                        set_actions.push(SetAction::HidePod { id: id })
+                    }
+                }
+            }
+        }
+        "station" | "stations" | "st" => {
+            if input_list.len() < 3 {
+                println!("Hide which station/stations??");
+                return set_actions;
+            }
+            for arg in &input_list[2..] {
+                {
+                    let ids = parse_id_list_and_ranges(arg);
+                    for id in ids {
+                        set_actions.push(SetAction::HideStation { id: id })
+                    }
+                }
+            }
+        }
+        any => {
+            println!("Can't hide: {}, not implemented.", any)
         }
     }
 

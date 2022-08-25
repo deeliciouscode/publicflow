@@ -8,6 +8,7 @@ use std::collections::HashSet;
 #[derive(Clone, Debug)]
 pub struct Station {
     pub id: i32,
+    pub visualize: bool,
     pub name: String,
     pub city: String,
     pub since_last_pod: i32,
@@ -62,6 +63,23 @@ impl Station {
         )?;
 
         res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
+        if self.visualize {
+            let circle = graphics::Mesh::new_circle(
+                ctx,
+                // graphics::DrawMode::stroke(2.),
+                graphics::DrawMode::stroke(4.),
+                ggez::mint::Point2 {
+                    x: real_coordinates.0,
+                    y: real_coordinates.1,
+                },
+                config.visual.radius_station + 4.,
+                1.,
+                color,
+            )?;
+
+            res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        }
 
         match res {
             Err(err) => panic!("Error 0: {}", err),

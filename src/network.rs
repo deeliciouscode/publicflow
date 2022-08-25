@@ -47,6 +47,25 @@ impl Network {
             let mut recalculate_graph = false;
             for action in set_actions {
                 match action {
+                    // TODO: differentiate between permament and not
+                    SetAction::ShowStation { id, permanent } => {
+                        for station in &mut self.stations {
+                            if station.id == *id {
+                                if *permanent {
+                                    station.visualize = true;
+                                } else {
+                                    station.visualize = true;
+                                }
+                            }
+                        }
+                    }
+                    SetAction::HideStation { id } => {
+                        for station in &mut self.stations {
+                            if station.id == *id {
+                                station.visualize = false;
+                            }
+                        }
+                    }
                     SetAction::BlockConnection { ids } => {
                         let ids_ref = &ids;
                         for line in &mut self.lines {

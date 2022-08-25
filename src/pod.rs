@@ -22,8 +22,17 @@ impl PodsBox {
         }
         return pods;
     }
-    pub fn get_pod_by_id(&mut self, pod_id: i32) -> Option<&mut Pod> {
+    pub fn try_get_pod_by_id_mut(&mut self, pod_id: i32) -> Option<&mut Pod> {
         for pod in &mut self.pods {
+            if pod.id == pod_id {
+                return Some(pod);
+            }
+        }
+        return None;
+    }
+
+    pub fn try_get_pod_by_id_unmut(&self, pod_id: i32) -> Option<&Pod> {
+        for pod in &self.pods {
             if pod.id == pod_id {
                 return Some(pod);
             }
@@ -76,6 +85,25 @@ impl PodsBox {
     pub fn update(&mut self, network: &mut Network, set_actions: &Vec<SetAction>, config: &Config) {
         for action in set_actions {
             match action {
+                // TODO: differentiate between permament and not
+                SetAction::ShowPod { id, permanent } => {
+                    for pod in &mut self.pods {
+                        if pod.id == *id {
+                            if *permanent {
+                                pod.visualize = true;
+                            } else {
+                                pod.visualize = true;
+                            }
+                        }
+                    }
+                }
+                SetAction::HidePod { id } => {
+                    for pod in &mut self.pods {
+                        if pod.id == *id {
+                            pod.visualize = false;
+                        }
+                    }
+                }
                 SetAction::BlockConnection { ids } => {
                     let ids_ref = &ids;
                     for pod in &mut self.pods {
@@ -103,6 +131,7 @@ impl PodsBox {
 #[derive(Clone, Debug)]
 pub struct Pod {
     pub id: i32,
+    visualize: bool,
     pub in_station_for: i32,
     pub capacity: i32,
     pub people_in_pod: HashSet<i32>,
@@ -115,6 +144,7 @@ impl Pod {
         let station_id = line_state.get_station_id();
         Pod {
             id: id,
+            visualize: false,
             in_station_for: in_station_for,
             capacity: capacity,
             people_in_pod: HashSet::new(),
@@ -151,6 +181,23 @@ impl Pod {
         )?;
 
         res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+
+        if self.visualize {
+            let circle = graphics::Mesh::new_circle(
+                ctx,
+                // graphics::DrawMode::stroke(2.),
+                graphics::DrawMode::stroke(4.),
+                ggez::mint::Point2 {
+                    x: real_x,
+                    y: real_y,
+                },
+                config.visual.radius_pod + 4.,
+                1.,
+                color,
+            )?;
+
+            res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        }
 
         match res {
             Err(err) => panic!("Error 3: {}", err),

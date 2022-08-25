@@ -316,7 +316,7 @@ impl Person {
                         // );
 
                         for pod_id in pod_ids {
-                            let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+                            let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
                             // println!(
                             //     "next_station ids: {}, {}",
                             //     pod.line_state.get_next_station_id(),
@@ -368,7 +368,7 @@ impl Person {
                 let range = rng.gen_range(0..pod_ids.len());
                 // println!("the random range: {:?}", range);
                 let pod_id_to_take = pod_ids[range];
-                let maybe_pod = pods_box.get_pod_by_id(pod_id_to_take);
+                let maybe_pod = pods_box.try_get_pod_by_id_mut(pod_id_to_take);
                 match maybe_pod {
                     Some(pod) => {
                         let got_in = pod.try_register_person(self.id);
@@ -392,7 +392,7 @@ impl Person {
     }
 
     fn ride_pod(&mut self, pods_box: &mut PodsBox, pod_id: i32) {
-        let maybe_pod = pods_box.get_pod_by_id(pod_id);
+        let maybe_pod = pods_box.try_get_pod_by_id_mut(pod_id);
         match maybe_pod {
             Some(pod) => {
                 if self.visualize {
@@ -415,7 +415,7 @@ impl Person {
     ) {
         self.path_state.arrive();
         // println!("self.path_state: {:?}", self.path_state);
-        let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+        let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
         let line_next_station_id = pod.line_state.get_next_station_id();
         let maybe_next_station_id = self.path_state.get_next_station_id();
         match maybe_next_station_id {
@@ -428,7 +428,7 @@ impl Person {
                         .try_get_station_by_id(pod.line_state.get_station_id())
                         .unwrap();
                     station.register_person(self.id);
-                    let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+                    let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
                     pod.deregister_person(&self.id);
                     self.process_action_on_arrival(station.id as u32, network, config);
                 } else {
@@ -446,7 +446,7 @@ impl Person {
                         .try_get_station_by_id(pod.line_state.get_station_id())
                         .unwrap();
                     station.register_person(self.id);
-                    let pod = pods_box.get_pod_by_id(pod_id).unwrap();
+                    let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
                     pod.deregister_person(&self.id);
                     self.process_action_on_arrival(station.id as u32, network, config);
                 }
@@ -461,7 +461,7 @@ impl Person {
         if get_out {
             // println!("Person {} wants to get out", self.id);
             self.state = self.state.to_transitioning();
-            let maybe_pod = pods_box.get_pod_by_id(pod_id);
+            let maybe_pod = pods_box.try_get_pod_by_id_mut(pod_id);
             match maybe_pod {
                 Some(pod) => {
                     pod.deregister_person(&self.id);
