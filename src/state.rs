@@ -494,7 +494,7 @@ impl EventHandler for State {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let bg_color = Color::new(0.15, 0.15, 0.15, 0.8);
+        let bg_color = Color::new(0.15, 0.15, 0.15, 1.0);
         graphics::clear(ctx, bg_color);
 
         self.network.draw(ctx, &self.config);

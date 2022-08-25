@@ -56,6 +56,7 @@ impl PeopleBox {
     ) {
         for action in set_actions {
             match action {
+                // TODO: differentiate between follow and not
                 SetAction::ShowPerson { id, follow } => {
                     for person in &mut self.people {
                         if person.id == *id {
@@ -92,7 +93,7 @@ impl PeopleBox {
             person.get_out_if_needed(pods_box, network, config);
         }
         for person in &mut self.people {
-            person.update_state(pods_box, network, config);
+            person.update(pods_box, network, config);
         }
     }
 
@@ -189,7 +190,7 @@ impl Person {
         }
     }
 
-    pub fn update_state(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
+    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
         // println!("person state: {:?}", self.state);
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
@@ -205,7 +206,7 @@ impl Person {
                 self.ride_pod(pods_box, pod_id_deref);
             }
             PersonState::JustArrived {
-                pod_id,
+                pod_id: _,
                 station_id: _,
             } => {} // This case is handled in get out if needed
             PersonState::Transitioning {

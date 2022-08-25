@@ -6,7 +6,7 @@ use crate::line::Line;
 use crate::station::Station;
 use ggez::Context;
 use petgraph::dot::{Config as PetConfig, Dot};
-use petgraph::graph::{DiGraph, UnGraph};
+use petgraph::graph::UnGraph;
 // use std::;
 
 #[derive(Clone, Debug)]
@@ -44,6 +44,7 @@ impl Network {
 
     pub fn update(&mut self, set_actions: &Vec<SetAction>, config: &Config) {
         if set_actions.len() != 0 {
+            let mut recalculate_graph = false;
             for action in set_actions {
                 match action {
                     SetAction::BlockConnection { ids } => {
@@ -51,18 +52,23 @@ impl Network {
                         for line in &mut self.lines {
                             line.block_connection(ids_ref);
                         }
+                        recalculate_graph = true;
                     }
                     SetAction::UnblockConnection { ids } => {
                         let ids_ref = &ids;
                         for line in &mut self.lines {
                             line.unblock_connection(ids_ref);
                         }
+                        recalculate_graph = true;
                     }
                     _ => {}
                 }
             }
-            self.graph = calc_graph(&self.lines);
+            if recalculate_graph {
+                self.graph = calc_graph(&self.lines);
+            }
         }
+        // TODO: make something useful with this
         for station in &mut self.stations {
             station.since_last_pod += 1;
         }

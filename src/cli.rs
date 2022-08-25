@@ -6,6 +6,8 @@ use std::io::Write;
 use std::str::FromStr;
 use std::sync::mpsc;
 
+// TODO: implement all aktions for all entities if possible to match text in Thesis
+
 fn prompt(name: &str) -> String {
     let mut line = String::new();
     print!("{}", name);
@@ -181,6 +183,7 @@ fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
         return set_actions;
     }
 
+    // TODO: viuslize all entities
     match input_list[1] {
         "person" | "people" | "p" => {
             if input_list.len() < 3 {

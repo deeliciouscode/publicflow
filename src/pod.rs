@@ -5,6 +5,7 @@ use crate::line::LineState;
 use crate::network::Network;
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
+// use rayon::prelude::*; // For Parralelism
 
 #[derive(Clone, Debug)]
 pub struct PodsBox {
@@ -91,8 +92,11 @@ impl PodsBox {
             }
         }
         for pod in &mut self.pods {
-            pod.update_state(network, config)
+            pod.update(network, config)
         }
+
+        // TODO: figure out a way to do this in parralel, maybe with message queues or something.
+        // self.pods.par_iter_mut().for_each(|pod| pod.update(network, config));
     }
 }
 
@@ -173,7 +177,7 @@ impl Pod {
     }
 
     // TODO: remove unused stuff
-    pub fn update_state(&mut self, network: &mut Network, config: &Config) {
+    pub fn update(&mut self, network: &mut Network, config: &Config) {
         match &self.state {
             PodState::BetweenStations {
                 station_id_from: _,
