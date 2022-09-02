@@ -5,19 +5,19 @@ use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
-pub struct StationGroup {
+pub struct Station {
     pub id: i32,
     pub visualize: bool,
     pub name: String,
     pub city: String,
     pub edges_to: HashSet<i32>,
-    pub pods_in_station_group: HashSet<i32>,
-    pub people_in_station_group: HashSet<i32>,
+    pub pods_in_station: HashSet<i32>,
+    pub people_in_station: HashSet<i32>,
     pub coordinates: (f32, f32),
-    pub stations: Vec<Station>,
+    pub platforms: Vec<Platform>,
 }
 
-impl StationGroup {
+impl Station {
     pub fn update(&self) {}
 
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
@@ -65,7 +65,7 @@ impl StationGroup {
             }
         }
 
-        let count = Text::new(String::from(self.people_in_station_group.len().to_string()));
+        let count = Text::new(String::from(self.people_in_station.len().to_string()));
         res = graphics::draw(
             ctx,
             &count,
@@ -83,7 +83,7 @@ impl StationGroup {
         // }
 
         // let radius = self.people_in_station.len() as f32 / 10.;
-        let radius = self.people_in_station_group.len() as f32;
+        let radius = self.people_in_station.len() as f32;
 
         let red =
             radius / (config.logic.number_of_people as f32 / config.network.n_stations as f32);
@@ -119,23 +119,7 @@ impl StationGroup {
             }
         }
     }
-}
 
-#[derive(Clone, Debug)]
-pub struct Station {
-    pub id: i32,
-    pub visualize: bool,
-    pub name: String,
-    pub city: String,
-    pub since_last_pod: i32,
-    pub edges_to: HashSet<i32>,
-    pub pods_in_station: HashSet<i32>,
-    pub people_in_station: HashSet<i32>,
-    pub coordinates: (f32, f32),
-    pub state: StationState,
-}
-
-impl Station {
     pub fn register_pod(&mut self, pod_id: i32) {
         self.pods_in_station.insert(pod_id);
     }
@@ -162,7 +146,34 @@ impl Station {
 }
 
 #[derive(Clone, Debug)]
-pub enum StationState {
+pub struct Platform {
+    pub id: i32,
+    pub since_last_pod: i32,
+    pub edges_to: HashSet<i32>,
+    pub lines_using_this: std::vec::Vec<std::string::String>,
+    pub pods_at_platform: HashSet<i32>,
+    pub state: PlatformState,
+}
+
+impl Platform {
+    pub fn new(
+        id: i32,
+        edges_to: &HashSet<i32>,
+        lines_using_this: &Vec<std::string::String>,
+    ) -> Self {
+        Platform {
+            id: id,
+            since_last_pod: 0,
+            edges_to: edges_to.clone(),
+            lines_using_this: lines_using_this.clone(),
+            pods_at_platform: HashSet::new(),
+            state: PlatformState::Operational,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum PlatformState {
     Operational,
     Passable,
     Queuable { queue: Vec<i32> },

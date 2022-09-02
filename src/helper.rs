@@ -76,7 +76,7 @@ where
 
 pub fn get_random_station_id(network: &Network, config: &Config) -> u32 {
     let mut rng = rand::thread_rng();
-    let station_ids: Vec<&i32> = config.network.coordinates_map.keys().collect();
+    let station_ids: Vec<&i32> = config.network.coordinates_map_stations.keys().collect();
     let end_ix = rng.gen_range(0..station_ids.len());
     *station_ids[end_ix] as u32
 }
@@ -89,12 +89,12 @@ pub fn get_air_travel_time(start: u32, end: u32, network: &Network) -> u32 {
         return 0;
     }
 
-    for station_group in &network.station_groups {
-        if station_group.id == start as i32 {
-            start_coords = station_group.coordinates
+    for station in &network.stations {
+        if station.id == start as i32 {
+            start_coords = station.coordinates
         }
-        if station_group.id == end as i32 {
-            end_coords = station_group.coordinates
+        if station.id == end as i32 {
+            end_coords = station.coordinates
         }
     }
 

@@ -26,7 +26,8 @@ pub fn load_yaml(file: &str) -> Yaml {
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
-    pub coordinates_map: HashMap<i32, (String, String, (f32, f32))>,
+    pub coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))>,
+    pub platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
 }
@@ -86,7 +87,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     // This whole construct essentially parses the raw Yaml typed structure we get into the more
     // usable Config structure from above.
     // It only respects correctly formatted yamls.
-    // TODO: introduce a validator or something that panics if yaml is incorrectly formatted.
+    // TODO: introduce a validator that panics if yaml is incorrectly formatted.
     if let Yaml::Hash(hash) = raw_config {
         if let Some(yaml) = hash.get(&Yaml::String(String::from("network"))) {
             if let Yaml::Hash(hash) = yaml {
@@ -245,7 +246,9 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 
 pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
     let mut n_stations: i64 = 0;
-    let mut coordinates_map: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
+    let mut coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
+    let mut platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>> =
+        HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
 
@@ -294,7 +297,7 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                     }
                 }
 
-                coordinates_map.insert(id, (name, city, (lat, lon)));
+                coordinates_map_stations.insert(id, (name, city, (lat, lon)));
             }
         }
     }
@@ -343,7 +346,13 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                         circular = *circular_bool;
                     }
                 }
-                update_edge_map(&stations, circular, &mut edge_map);
+                update_edge_map_and_group_platforms(
+                    &name,
+                    &stations,
+                    circular,
+                    &mut platforms_to_stations,
+                    &mut edge_map,
+                );
                 let connections = calc_connections(&name, &stations, circular, &distances);
                 // println!("{}, {:?}", name, connections);
                 let line = Line {
@@ -359,12 +368,15 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
         }
     }
 
+    // println!("{:?}", platforms_to_stations);
+
     // TODO: find more elegant way to do this
     let n_pods = n_stations_line_separated;
 
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
-        coordinates_map: coordinates_map,
+        coordinates_map_stations: coordinates_map_stations,
+        platforms_to_stations: platforms_to_stations,
         edge_map: edge_map,
         lines: lines,
     };
@@ -429,29 +441,85 @@ fn calc_connections(
     connections
 }
 
-fn update_edge_map(
+fn update_edge_map_and_group_platforms(
+    name: &String,
     station_ids: &Vec<i32>,
     circular: bool,
+    platforms_to_stations: &mut HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>>,
     edge_map: &mut HashMap<i32, HashSet<i32>>,
 ) {
     for i in 0..station_ids.len() {
         let station_id = station_ids[i];
+
         if !edge_map.contains_key(&station_id) {
             edge_map.insert(station_id, HashSet::new());
         }
 
-        if i == station_ids.len() - 1 {
-            if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
-                mut_hashset.insert(station_ids[i - 1]);
-                if circular {
-                    mut_hashset.insert(station_ids[0]);
+        let mut next_platform_id: i32 = 0;
+        if platforms_to_stations.contains_key(&station_id) {
+            if let Some(platforms) = platforms_to_stations.get(&station_id) {
+                next_platform_id = platforms.len() as i32;
+            }
+        }
+        let mut stations_involved = HashSet::from([]);
+        if i > 0 && i < station_ids.len() - 1 {
+            stations_involved.insert(station_ids[i - 1]);
+            stations_involved.insert(station_ids[i + 1]);
+        } else if i == 0 {
+            stations_involved.insert(station_ids[i + 1]);
+            if circular {
+                stations_involved.insert(station_ids[station_ids.len() - 1]);
+            }
+        } else if i == station_ids.len() - 1 {
+            stations_involved.insert(station_ids[i - 1]);
+            if circular {
+                stations_involved.insert(station_ids[0]);
+            }
+        }
+        if let Some(platforms) = platforms_to_stations.get_mut(&station_id) {
+            let mut platform_existed_already = false;
+            // TODO: try to simplify this
+            for (_, stations, _) in platforms.clone() {
+                if stations == stations_involved {
+                    platform_existed_already = true;
                 }
             }
-        } else if i == 0 {
+            if platform_existed_already {
+                for (_, stations, names) in platforms {
+                    if stations == &stations_involved {
+                        names.push(name.clone());
+                    }
+                }
+            } else {
+                platforms.push((
+                    next_platform_id,
+                    stations_involved.clone(),
+                    vec![name.clone()],
+                ));
+            }
+        } else {
+            platforms_to_stations.insert(
+                station_id,
+                vec![(
+                    next_platform_id,
+                    stations_involved.clone(),
+                    vec![name.clone()],
+                )],
+            );
+        }
+
+        if i == 0 {
             if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
                 mut_hashset.insert(station_ids[i + 1]);
                 if circular {
                     mut_hashset.insert(station_ids[station_ids.len() - 1]);
+                }
+            }
+        } else if i == station_ids.len() - 1 {
+            if let Some(mut_hashset) = edge_map.get_mut(&station_id) {
+                mut_hashset.insert(station_ids[i - 1]);
+                if circular {
+                    mut_hashset.insert(station_ids[0]);
                 }
             }
         } else {

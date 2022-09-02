@@ -41,7 +41,7 @@ fn main() {
         .build()
         .expect("aieee, could not create ggez context!");
 
-    let mut state = State::new(config, rx).add_pods().add_people();
+    let state = State::new(config, rx).add_pods().add_people();
 
     event::run(ctx, event_loop, state);
 }
