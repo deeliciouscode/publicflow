@@ -3,7 +3,7 @@ use crate::config::Config;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
 use crate::helper::get_screen_coordinates;
 use crate::line::Line;
-use crate::station::Station;
+use crate::station::{Station, StationGroup};
 use ggez::Context;
 use petgraph::dot::{Config as PetConfig, Dot};
 use petgraph::graph::UnGraph;
@@ -11,7 +11,7 @@ use petgraph::graph::UnGraph;
 
 #[derive(Clone, Debug)]
 pub struct Network {
-    pub stations: Vec<Station>,
+    pub station_groups: Vec<StationGroup>,
     pub graph: UnGraph<u32, u32>,
     pub lines: Vec<Line>,
 }
@@ -31,10 +31,10 @@ fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
 }
 
 impl Network {
-    pub fn new(stations: Vec<Station>, config: &Config) -> Self {
+    pub fn new(station_groups: Vec<StationGroup>, config: &Config) -> Self {
         let lines = config.network.lines.clone();
         let mut network = Network {
-            stations: stations,
+            station_groups: station_groups,
             graph: calc_graph(&lines),
             lines: lines,
         };
@@ -49,20 +49,20 @@ impl Network {
                 match action {
                     // TODO: differentiate between permament and not
                     SetAction::ShowStation { id, permanent } => {
-                        for station in &mut self.stations {
-                            if station.id == *id {
+                        for station_group in &mut self.station_groups {
+                            if station_group.id == *id {
                                 if *permanent {
-                                    station.visualize = true;
+                                    station_group.visualize = true;
                                 } else {
-                                    station.visualize = true;
+                                    station_group.visualize = true;
                                 }
                             }
                         }
                     }
                     SetAction::HideStation { id } => {
-                        for station in &mut self.stations {
-                            if station.id == *id {
-                                station.visualize = false;
+                        for station_group in &mut self.station_groups {
+                            if station_group.id == *id {
+                                station_group.visualize = false;
                             }
                         }
                     }
@@ -88,40 +88,68 @@ impl Network {
             }
         }
         // TODO: make something useful with this
-        for station in &mut self.stations {
-            station.since_last_pod += 1;
+        for station_group in &mut self.station_groups {
+            station_group.update();
         }
     }
 
+    pub fn try_get_station_group_by_id(&mut self, id: i32) -> Option<&mut StationGroup> {
+        for station_group in &mut self.station_groups {
+            if station_group.id == id {
+                return Some(station_group);
+            }
+        }
+        return None;
+    }
+
+    pub fn try_get_station_group_by_station_id(&mut self, id: i32) -> Option<&mut StationGroup> {
+        for station_group in &mut self.station_groups {
+            for station in &mut station_group.stations {
+                if station.id == id {
+                    return Some(station_group);
+                }
+            }
+        }
+        return None;
+    }
+
     pub fn try_get_station_by_id(&mut self, id: i32) -> Option<&mut Station> {
-        for station in &mut self.stations {
-            if station.id == id {
-                return Some(station);
+        for station_group in &mut self.station_groups {
+            for station in &mut station_group.stations {
+                if station.id == id {
+                    return Some(station);
+                }
             }
         }
         return None;
     }
 
     pub fn try_get_station_by_id_unmut(&self, id: i32) -> Option<&Station> {
-        for station in &self.stations {
-            if station.id == id {
-                return Some(station);
+        for station_group in &self.station_groups {
+            for station in &station_group.stations {
+                if station.id == id {
+                    return Some(station);
+                }
             }
         }
         None
     }
 
-    pub fn try_retrieve_station(&self, (x, y): (f32, f32), config: &Config) -> Option<&Station> {
+    pub fn try_retrieve_station_group(
+        &self,
+        (x, y): (f32, f32),
+        config: &Config,
+    ) -> Option<&StationGroup> {
         // println!("{}, {}", x, y);
         let mut closest_distance = 10000.;
-        let mut closest_station = &self.stations[0];
-        for station in &self.stations {
-            let station_coords = get_screen_coordinates(station.coordinates, config);
+        let mut closest_station = &self.station_groups[0];
+        for station_group in &self.station_groups {
+            let station_coords = get_screen_coordinates(station_group.coordinates, config);
             let distance = ((station_coords.0 - x).powi(2) + (station_coords.1 - y).powi(2)).sqrt();
 
             if distance < closest_distance && distance < 10. {
                 closest_distance = distance;
-                closest_station = station
+                closest_station = station_group
             }
         }
         if closest_distance == 10000. {
@@ -132,10 +160,10 @@ impl Network {
     }
 
     pub fn print_state(&self) {
-        for station in &self.stations {
+        for station_group in &self.station_groups {
             println!(
                 "Station: {} | Pods: {:?}",
-                station.id, station.pods_in_station
+                station_group.id, station_group.pods_in_station_group
             )
         }
         println!(
@@ -149,8 +177,8 @@ impl Network {
             let _res = line.draw(ctx, self, config);
         }
 
-        for station in &self.stations {
-            let _res = station.draw(ctx, config); // TODO: handle result error case
+        for station_group in &self.station_groups {
+            let _res = station_group.draw(ctx, config); // TODO: handle result error case
         }
     }
 }

@@ -4,44 +4,21 @@ use ggez::graphics::{Font, Rect, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
-// TODO: Maybe define capacity of HashSet when using it (for performance)
 #[derive(Clone, Debug)]
-pub struct Station {
+pub struct StationGroup {
     pub id: i32,
     pub visualize: bool,
     pub name: String,
     pub city: String,
-    pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
-    pub pods_in_station: HashSet<i32>,
-    pub people_in_station: HashSet<i32>,
+    pub pods_in_station_group: HashSet<i32>,
+    pub people_in_station_group: HashSet<i32>,
     pub coordinates: (f32, f32),
+    pub stations: Vec<Station>,
 }
 
-impl Station {
-    pub fn register_pod(&mut self, pod_id: i32) {
-        self.pods_in_station.insert(pod_id);
-    }
-
-    pub fn deregister_pod(&mut self, pod_id: i32) {
-        self.pods_in_station.remove(&pod_id);
-    }
-
-    pub fn register_person(&mut self, person_id: i32) {
-        // println!("register person {} in station {}.", person_id, self.id);
-        self.people_in_station.insert(person_id);
-    }
-
-    pub fn deregister_person(&mut self, person_id: i32) {
-        self.people_in_station.remove(&person_id);
-    }
-
-    pub fn get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
-        if self.pods_in_station.is_empty() {
-            return None;
-        }
-        Some(self.pods_in_station.clone().into_iter().collect())
-    }
+impl StationGroup {
+    pub fn update(&self) {}
 
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
         let mut res;
@@ -88,7 +65,7 @@ impl Station {
             }
         }
 
-        let count = Text::new(String::from(self.people_in_station.len().to_string()));
+        let count = Text::new(String::from(self.people_in_station_group.len().to_string()));
         res = graphics::draw(
             ctx,
             &count,
@@ -106,7 +83,7 @@ impl Station {
         // }
 
         // let radius = self.people_in_station.len() as f32 / 10.;
-        let radius = self.people_in_station.len() as f32;
+        let radius = self.people_in_station_group.len() as f32;
 
         let red =
             radius / (config.logic.number_of_people as f32 / config.network.n_stations as f32);
@@ -142,4 +119,52 @@ impl Station {
             }
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct Station {
+    pub id: i32,
+    pub visualize: bool,
+    pub name: String,
+    pub city: String,
+    pub since_last_pod: i32,
+    pub edges_to: HashSet<i32>,
+    pub pods_in_station: HashSet<i32>,
+    pub people_in_station: HashSet<i32>,
+    pub coordinates: (f32, f32),
+    pub state: StationState,
+}
+
+impl Station {
+    pub fn register_pod(&mut self, pod_id: i32) {
+        self.pods_in_station.insert(pod_id);
+    }
+
+    pub fn deregister_pod(&mut self, pod_id: i32) {
+        self.pods_in_station.remove(&pod_id);
+    }
+
+    pub fn register_person(&mut self, person_id: i32) {
+        // println!("register person {} in station {}.", person_id, self.id);
+        self.people_in_station.insert(person_id);
+    }
+
+    pub fn deregister_person(&mut self, person_id: i32) {
+        self.people_in_station.remove(&person_id);
+    }
+
+    pub fn get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
+        if self.pods_in_station.is_empty() {
+            return None;
+        }
+        Some(self.pods_in_station.clone().into_iter().collect())
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum StationState {
+    Operational,
+    Passable,
+    Queuable { queue: Vec<i32> },
+    InvalidState { reason: String },
 }

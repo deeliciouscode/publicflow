@@ -89,12 +89,12 @@ pub fn get_air_travel_time(start: u32, end: u32, network: &Network) -> u32 {
         return 0;
     }
 
-    for station in &network.stations {
-        if station.id == start as i32 {
-            start_coords = station.coordinates
+    for station_group in &network.station_groups {
+        if station_group.id == start as i32 {
+            start_coords = station_group.coordinates
         }
-        if station.id == end as i32 {
-            end_coords = station.coordinates
+        if station_group.id == end as i32 {
+            end_coords = station_group.coordinates
         }
     }
 

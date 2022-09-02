@@ -258,6 +258,10 @@ impl Pod {
                     self.depart_from_station(network);
                 }
             }
+            PodState::InQueue {
+                station_id,
+                coordinates,
+            } => {}
             PodState::InvalidState { reason } => {
                 panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
             }
@@ -361,6 +365,10 @@ pub enum PodState {
         station_id_from: i32,
         station_id_to: i32,
         time_to_next_station: i32,
+        coordinates: (f32, f32),
+    },
+    InQueue {
+        station_id: i32,
         coordinates: (f32, f32),
     },
     JustArrived {

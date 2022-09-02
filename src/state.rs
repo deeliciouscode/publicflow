@@ -6,7 +6,7 @@ use crate::line::{Line, LineState};
 use crate::network::Network;
 use crate::person::{PeopleBox, Person};
 use crate::pod::{Pod, PodsBox};
-use crate::station::Station;
+use crate::station::{Station, StationGroup, StationState};
 use ggez::event::{EventHandler, KeyCode, KeyMods, MouseButton};
 use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
@@ -126,22 +126,24 @@ impl State {
         let last_mouse_left = self.config.visual.last_mouse_left;
 
         if self.config.logic.on_pause {
-            let maybe_station = self
+            let maybe_station_group = self
                 .network
-                .try_retrieve_station(last_mouse_left, &self.config);
-            match maybe_station {
-                Some(station) => {
-                    let mut name = Text::new(String::from(format!("Name: {}", station.name)));
+                .try_retrieve_station_group(last_mouse_left, &self.config);
+            match maybe_station_group {
+                Some(station_group) => {
+                    let mut name = Text::new(String::from(format!("Name: {}", station_group.name)));
                     name.set_font(Font::default(), PxScale::from(18.));
-                    let mut id = Text::new(String::from(format!("ID: {}", station.id)));
+                    let mut id = Text::new(String::from(format!("ID: {}", station_group.id)));
                     id.set_font(Font::default(), PxScale::from(18.));
                     let mut count = Text::new(String::from(format!(
                         "People Count: {}",
-                        station.people_in_station.len()
+                        station_group.people_in_station_group.len()
                     )));
                     count.set_font(Font::default(), PxScale::from(18.));
-                    let mut pods =
-                        Text::new(String::from(format!("Pods: {:?}", station.pods_in_station)));
+                    let mut pods = Text::new(String::from(format!(
+                        "Pods: {:?}",
+                        station_group.pods_in_station_group
+                    )));
                     pods.set_font(Font::default(), PxScale::from(18.));
 
                     let draw_param_name = DrawParam::new()
@@ -208,25 +210,27 @@ impl State {
     // TODO:PRIO: implement spwaning of pods at a given rate till there are enough
     // as a next step spawn / divert pods dynamically
     pub fn new(config: Config, rx: mpsc::Receiver<Actions>) -> Self {
-        let mut stations: Vec<Station> = vec![];
+        let mut station_groups: Vec<StationGroup> = vec![];
         for abstract_station in config.network.coordinates_map.iter() {
             let station_id = abstract_station.0;
             let (name, city, (lat, lon)) = abstract_station.1;
 
-            stations.push(Station {
+            println!("{:?}", config.network.edge_map.get(&station_id).unwrap());
+
+            station_groups.push(StationGroup {
                 id: *station_id,
                 visualize: false,
                 name: name.clone(),
                 city: city.clone(),
-                since_last_pod: 0,
-                edges_to: HashSet::new(), // config.network.edge_map.get(&station_id).unwrap().clone(),
-                pods_in_station: HashSet::from([]), // The pods will register themselves later
-                people_in_station: HashSet::from([]),
+                edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
+                pods_in_station_group: HashSet::from([]), // The pods will register themselves later
+                people_in_station_group: HashSet::from([]),
                 coordinates: (*lat as f32, *lon as f32),
+                stations: vec![],
             })
         }
 
-        let mut network = Network::new(stations, &config);
+        let mut network = Network::new(station_groups, &config);
 
         let people_box = PeopleBox { people: vec![] };
 
