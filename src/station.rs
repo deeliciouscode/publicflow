@@ -20,6 +20,21 @@ pub struct Station {
 impl Station {
     pub fn update(&self) {}
 
+    pub fn stringify_platforms(&self) -> String {
+        let mut platforms_string = "".to_string();
+        for platform in &self.platforms {
+            platforms_string.push_str(&format!(
+                "\n ID: {} | Neighbors: {:?} | Lines: {:?} | State: {:?} | Pods: {:?}",
+                platform.id,
+                platform.edges_to,
+                platform.lines_using_this,
+                platform.state,
+                platform.pods_at_platform
+            ))
+        }
+        platforms_string
+    }
+
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
         let mut res;
         let color = [0.5, 0.5, 0.5, 1.0].into();

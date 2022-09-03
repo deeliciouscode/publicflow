@@ -63,6 +63,7 @@ impl State {
                             println!("Name: {}", station.name);
                             println!("City: {}", station.city);
                             // println!("Since Last Pod: {}", station.since_last_pod);
+                            println!("Platforms: {}", station.stringify_platforms());
                             println!("Edges To: {:?}", station.edges_to);
                             println!("Pods in Station: {:?}", station.pods_in_station);
                             println!("People in Station: {}", station.people_in_station.len());
