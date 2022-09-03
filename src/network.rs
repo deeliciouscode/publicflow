@@ -80,6 +80,27 @@ impl Network {
                         }
                         recalculate_graph = true;
                     }
+                    SetAction::MakePlatformOperational { station_id, line } => {
+                        for station in &mut self.stations {
+                            if station.id == *station_id {
+                                station.make_operational(line);
+                            }
+                        }
+                    }
+                    SetAction::MakePlatformPassable { station_id, line } => {
+                        for station in &mut self.stations {
+                            if station.id == *station_id {
+                                station.make_passable(line);
+                            }
+                        }
+                    }
+                    SetAction::MakePlatformQueuable { station_id, line } => {
+                        for station in &mut self.stations {
+                            if station.id == *station_id {
+                                station.make_queuable(line);
+                            }
+                        }
+                    }
                     _ => {}
                 }
             }
