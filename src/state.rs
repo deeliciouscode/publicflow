@@ -247,6 +247,8 @@ impl State {
 
         let mut network = Network::new(stations, &config);
 
+        // println!("{:?}", network.lines);
+
         let people_box = PeopleBox { people: vec![] };
 
         let pods_box = PodsBox { pods: vec![] };

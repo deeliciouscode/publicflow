@@ -84,6 +84,7 @@ impl Network {
                         for station in &mut self.stations {
                             if station.id == *station_id {
                                 station.make_operational(line);
+                                recalculate_graph = true;
                             }
                         }
                     }
@@ -91,6 +92,7 @@ impl Network {
                         for station in &mut self.stations {
                             if station.id == *station_id {
                                 station.make_passable(line);
+                                recalculate_graph = true;
                             }
                         }
                     }
@@ -98,6 +100,7 @@ impl Network {
                         for station in &mut self.stations {
                             if station.id == *station_id {
                                 station.make_queuable(line);
+                                recalculate_graph = true;
                             }
                         }
                     }

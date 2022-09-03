@@ -393,9 +393,10 @@ fn calc_connections(
     let mut connections: Vec<Connection> = vec![];
 
     // first some verifications
+    // println!("circular: {}, stat_len: {}, dist_len: {}", circular, station_ids.len(), distances.len());
     if circular && station_ids.len() != distances.len() {
         panic!("A circular line must have as many distances as it has stations. Ascertain that this is the case for line {}", name);
-    } else if station_ids.len() != distances.len() + 1 {
+    } else if !circular && station_ids.len() != distances.len() + 1 {
         panic!("A non circular line must have exactly n-1 distances if it has n stations. Ascertain that this is the case for line {}", name);
     }
 
