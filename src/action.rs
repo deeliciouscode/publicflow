@@ -9,11 +9,37 @@ pub enum GetAction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SetAction {
+    BlockStation {
+        id: i32,
+    },
+    UnblockStation {
+        id: i32,
+    },
+    BlockPlatform {
+        station_id: i32,
+        line: String,
+    },
+    UnblockPlatform {
+        station_id: i32,
+        line: String,
+    },
     BlockConnection {
         ids: HashSet<i32>,
     },
     UnblockConnection {
         ids: HashSet<i32>,
+    },
+    MakePlatformOperational {
+        station_id: i32,
+        line: String,
+    },
+    MakePlatformPassable {
+        station_id: i32,
+        line: String,
+    },
+    MakePlatformQueuable {
+        station_id: i32,
+        line: String,
     },
     ShowPerson {
         id: i32,

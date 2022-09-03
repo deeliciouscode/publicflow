@@ -56,6 +56,9 @@ fn parse_input(input_list: &Vec<&str>) -> Actions {
         "route" | "r" => {
             actions.set_actions = parse_route(&input_list);
         }
+        "make" | "m" => {
+            actions.set_actions = parse_make(&input_list);
+        }
         "run" => actions = run_script(&input_list),
         _ => {}
     }
@@ -382,6 +385,31 @@ fn parse_block(input_list: &Vec<&str>) -> Vec<SetAction> {
                 }
             }
         }
+        "station" | "st" => {
+            if input_list.len() < 3 {
+                println!("Block which stations??");
+                return set_actions;
+            }
+            for arg in &input_list[2..] {
+                let ids = parse_id_list_and_ranges(arg);
+                for id in ids {
+                    set_actions.push(SetAction::BlockStation { id: id })
+                }
+            }
+        }
+        "platform" | "pl" => {
+            if input_list.len() < 4 {
+                println!("Block which platforms??");
+                return set_actions;
+            }
+            let station_id: i32 = FromStr::from_str(input_list[2]).unwrap();
+            for arg in &input_list[3..] {
+                set_actions.push(SetAction::BlockPlatform {
+                    station_id: station_id,
+                    line: arg.to_string(),
+                })
+            }
+        }
         _ => {
             println!("Can't block: {}, not implemented.", input_list[1])
         }
@@ -417,8 +445,78 @@ fn parse_unblock(input_list: &Vec<&str>) -> Vec<SetAction> {
                 }
             }
         }
+        "station" | "st" => {
+            if input_list.len() < 3 {
+                println!("Unblock which stations??");
+                return set_actions;
+            }
+            for arg in &input_list[2..] {
+                let ids = parse_id_list_and_ranges(arg);
+                for id in ids {
+                    set_actions.push(SetAction::UnblockStation { id: id })
+                }
+            }
+        }
+        "platform" | "pl" => {
+            if input_list.len() < 4 {
+                println!("Unblock which platforms??");
+                return set_actions;
+            }
+            let station_id: i32 = FromStr::from_str(input_list[2]).unwrap();
+            for arg in &input_list[3..] {
+                set_actions.push(SetAction::UnblockPlatform {
+                    station_id: station_id,
+                    line: arg.to_string(),
+                })
+            }
+        }
         _ => {
             println!("Can't unblock: {}, not implemented.", input_list[1])
+        }
+    }
+
+    return set_actions;
+}
+
+fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
+    let mut set_actions: Vec<SetAction> = vec![];
+    if input_list.len() < 2 {
+        println!("Make what??");
+        return set_actions;
+    }
+
+    match input_list[1] {
+        "platform" | "pl" => {
+            if input_list.len() < 5 {
+                println!("Too few arguments, make what with platform??");
+                return set_actions;
+            }
+            let station_id: i32 = FromStr::from_str(input_list[3]).unwrap();
+            for arg in &input_list[4..] {
+                match input_list[2] {
+                    "operational" | "op" => set_actions.push(SetAction::MakePlatformOperational {
+                        station_id: station_id,
+                        line: arg.to_string(),
+                    }),
+                    "passable" | "pass" => set_actions.push(SetAction::MakePlatformPassable {
+                        station_id: station_id,
+                        line: arg.to_string(),
+                    }),
+                    "queuable" | "qu" => set_actions.push(SetAction::MakePlatformQueuable {
+                        station_id: station_id,
+                        line: arg.to_string(),
+                    }),
+                    _ => {
+                        println!("Make action: {} not implemented.", input_list[2])
+                    }
+                }
+            }
+        }
+        _ => {
+            println!(
+                "Can't make anything with: {}, not implemented.",
+                input_list[1]
+            )
         }
     }
 

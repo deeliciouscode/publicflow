@@ -243,7 +243,7 @@ impl State {
             })
         }
 
-        println!("{:?}", stations);
+        // println!("{:?}", stations);
 
         let mut network = Network::new(stations, &config);
 

@@ -1,6 +1,6 @@
 network:
-  STATIONS_PATH: "./config/stations_in_lines.yaml"
-  ALL_LINES_PATH: "./config/all_lines.yaml"
+  STATIONS_PATH: "./config/munich/stations_in_lines.yaml"
+  ALL_LINES_PATH: "./config/munich/all_lines.yaml"
   # SUBWAY_LINES_PATH: "./config/subway_lines.yaml"
   # TRAM_LINES_PATH: "./config/tram_lines.yaml"
 visual:
