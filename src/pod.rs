@@ -310,7 +310,7 @@ impl Pod {
         //     self.line_state.get_station_id(),
         //     self.id
         // );
-        let maybe_connection = self.line_state.get_connection(current, next);
+        let maybe_connection = self.line_state.try_get_connection(current, next);
         match maybe_connection {
             Some(connection) => {
                 if connection.station_ids == HashSet::from([641, 650]) {
@@ -506,7 +506,7 @@ impl PodState {
             } => {
                 let travel_time = pod
                     .line_state
-                    .get_connection(*station_id_from, *station_id_to)
+                    .try_get_connection(*station_id_from, *station_id_to)
                     .unwrap()
                     .travel_time;
 

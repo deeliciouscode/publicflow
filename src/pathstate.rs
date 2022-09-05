@@ -46,7 +46,7 @@ impl PathState {
         return self.path.len() == 1;
     }
 
-    pub fn get_current_station_id(&self) -> Option<u32> {
+    pub fn try_get_current_station_id(&self) -> Option<u32> {
         if self.path.len() >= 1 {
             Some(self.path[0].index() as u32)
         } else {
@@ -54,7 +54,7 @@ impl PathState {
         }
     }
 
-    pub fn get_next_station_id(&self) -> Option<u32> {
+    pub fn try_get_next_station_id(&self) -> Option<u32> {
         if self.path.len() >= 2 {
             Some(self.path[1].index() as u32)
         } else {

@@ -366,7 +366,9 @@ impl State {
         for person in &people {
             let station = self
                 .network
-                .try_get_station_by_id(person.path_state.get_current_station_id().unwrap() as i32)
+                .try_get_station_by_id(
+                    person.path_state.try_get_current_station_id().unwrap() as i32
+                )
                 .unwrap();
             station.register_person(person.id);
         }

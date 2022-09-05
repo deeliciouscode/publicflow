@@ -129,7 +129,7 @@ impl LineState {
         self.line_ix = self.next_ix;
     }
 
-    pub fn get_connection(&self, fst: i32, snd: i32) -> Option<&Connection> {
+    pub fn try_get_connection(&self, fst: i32, snd: i32) -> Option<&Connection> {
         for connection in &self.line.connections {
             if connection.station_ids == HashSet::from([fst, snd]) {
                 return Some(connection);
@@ -138,7 +138,7 @@ impl LineState {
         return None;
     }
 
-    pub fn get_current_connection(&self) -> Option<&Connection> {
+    pub fn try_get_current_connection(&self) -> Option<&Connection> {
         let fst = self.line.stations[self.line_ix as usize];
         let snd = self.line.stations[self.next_ix as usize];
         for connection in &self.line.connections {

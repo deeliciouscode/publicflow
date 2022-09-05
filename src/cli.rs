@@ -372,7 +372,7 @@ fn parse_block(input_list: &Vec<&str>) -> Vec<SetAction> {
                 return set_actions;
             }
             for connection in &input_list[2..] {
-                let maybe_station_ids = parse_connection(connection);
+                let maybe_station_ids = try_parse_connection(connection);
                 match maybe_station_ids {
                     Some(station_ids) => {
                         for i in 0..(station_ids.len() - 1) {
@@ -432,7 +432,7 @@ fn parse_unblock(input_list: &Vec<&str>) -> Vec<SetAction> {
                 return set_actions;
             }
             for connection in &input_list[2..] {
-                let maybe_station_ids = parse_connection(connection);
+                let maybe_station_ids = try_parse_connection(connection);
                 match maybe_station_ids {
                     Some(station_ids) => {
                         for i in 0..(station_ids.len() - 1) {
@@ -523,7 +523,7 @@ fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
     return set_actions;
 }
 
-fn parse_connection(connection: &&str) -> Option<Vec<i32>> {
+fn try_parse_connection(connection: &&str) -> Option<Vec<i32>> {
     let station_ids_str: Vec<&str> = connection.split("-").collect();
 
     if station_ids_str.len() < 2 {

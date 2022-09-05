@@ -140,7 +140,7 @@ impl Person {
             action_on_arrival: None,
         };
         person.set_coordinates_of_station(
-            person.path_state.get_current_station_id().unwrap() as i32,
+            person.path_state.try_get_current_station_id().unwrap() as i32,
             network,
             config,
         );
@@ -301,7 +301,7 @@ impl Person {
         config: &Config,
     ) {
         let mut rng = rand::thread_rng();
-        let maybe_next_station_id = self.path_state.get_next_station_id();
+        let maybe_next_station_id = self.path_state.try_get_next_station_id();
         match maybe_next_station_id {
             Some(next_station_id) => {
                 let station = network.try_get_station_by_id(station_id).unwrap();
@@ -417,7 +417,7 @@ impl Person {
         // println!("self.path_state: {:?}", self.path_state);
         let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
         let line_next_station_id = pod.line_state.get_next_station_id();
-        let maybe_next_station_id = self.path_state.get_next_station_id();
+        let maybe_next_station_id = self.path_state.try_get_next_station_id();
         match maybe_next_station_id {
             Some(desired_next_station_id) => {
                 if line_next_station_id != desired_next_station_id as i32
