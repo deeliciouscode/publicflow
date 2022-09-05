@@ -70,15 +70,16 @@ pub enum SetAction {
     },
 }
 
-// #[derive(Debug, Clone, PartialEq)]
-// pub enum VisualAction {
-// }
+#[derive(Debug, Clone, PartialEq)]
+pub enum DoAction {
+    KillSimulation { code: i32 },
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Actions {
     pub get_actions: Vec<GetAction>,
     pub set_actions: Vec<SetAction>,
-    // pub visual_actions: Vec<VisualAction>,
+    pub do_actions: Vec<DoAction>,
 }
 
 impl Actions {
@@ -86,7 +87,7 @@ impl Actions {
         Actions {
             get_actions: Vec::default(),
             set_actions: Vec::default(),
-            // visual_actions: Vec::default(),
+            do_actions: Vec::default(),
         }
     }
 }

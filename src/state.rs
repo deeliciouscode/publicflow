@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::control::action::{Actions, GetAction, SetAction};
+use crate::control::action::{Actions, DoAction, GetAction, SetAction};
 use crate::control::cli::recv_queries;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::helper::{apply_zoom, format_seconds};
@@ -16,6 +16,7 @@ use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
+use std::process::exit;
 use std::sync::mpsc;
 
 #[derive(Debug)]
@@ -107,6 +108,16 @@ impl State {
                             println!("No pod with id {} exists", id)
                         }
                     }
+                }
+            }
+        }
+    }
+
+    fn handle_do_actions(&self, do_actions: Vec<DoAction>) {
+        for do_action in do_actions {
+            match do_action {
+                DoAction::KillSimulation { code } => {
+                    exit(code);
                 }
             }
         }
@@ -420,6 +431,7 @@ impl EventHandler for State {
             let actions = recv_queries(&self.rx);
 
             self.handle_get_actions(actions.get_actions);
+            self.handle_do_actions(actions.do_actions);
 
             if !self.config.logic.on_pause {
                 self.time_passed += 1;

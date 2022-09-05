@@ -22,3 +22,6 @@ Cargo.lock
 /config_save/*
 /.vscode/*
 /.vscode/
+/.meta/
+/.meta/*
+

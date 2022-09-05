@@ -1,40 +1,56 @@
-use crate::control::action::Actions;
+use crate::control::action::{Actions, DoAction};
 use crate::control::parsers::block::{parse_block, parse_unblock};
 use crate::control::parsers::get::parse_get;
 use crate::control::parsers::make::parse_make;
 use crate::control::parsers::route::parse_route;
 use crate::control::parsers::viusualize::{parse_hide, parse_visualize};
 use crate::helper::helper::read_lines;
-use std::io::Write;
+use rustyline::error::ReadlineError;
+use rustyline::{Editor, Result};
 use std::sync::mpsc;
 
-// TODO: implement all aktions for all entities if possible to match text in Thesis
+// TODO: implement all actions for all entities if possible to match text in Thesis
 
-fn prompt(name: &str) -> String {
-    let mut line = String::new();
-    print!("{}", name);
-    std::io::stdout().flush().unwrap();
-    std::io::stdin()
-        .read_line(&mut line)
-        .expect("Error: Could not read a line");
-
-    return line.trim().to_string();
-}
-
-pub fn run_cli(tx: mpsc::Sender<Actions>) {
-    loop {
-        let input = prompt("> ");
-
-        if input == "exit" {
-            break;
-        };
-
-        let input_list: Vec<&str> = input.split(" ").collect();
-
-        let actions = parse_input(&input_list);
-
-        let _res = tx.send(actions);
+pub fn run_cli(tx: mpsc::Sender<Actions>) -> Result<()> {
+    // `()` can be used when no completer is required
+    let mut rl = Editor::<()>::new()?;
+    if rl.load_history(".meta/history.txt").is_err() {
+        println!("No previous history.");
     }
+    loop {
+        let readline = rl.readline(">> ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_str());
+                let input_list: Vec<&str> = line.split(" ").collect();
+                let actions = parse_input(&input_list);
+                let _res = tx.send(actions);
+            }
+            Err(ReadlineError::Interrupted) => {
+                let mut actions = Actions::new();
+                actions
+                    .do_actions
+                    .push(DoAction::KillSimulation { code: 0 });
+
+                let _res = tx.send(actions);
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                let mut actions = Actions::new();
+                actions
+                    .do_actions
+                    .push(DoAction::KillSimulation { code: 0 });
+
+                let _res = tx.send(actions);
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
+    }
+    rl.save_history(".meta/history.txt")
 }
 
 fn parse_input(input_list: &Vec<&str>) -> Actions {

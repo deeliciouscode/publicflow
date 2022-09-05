@@ -23,7 +23,7 @@ fn main() {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(|| {
-        run_cli(tx);
+        let _res = run_cli(tx);
     });
 
     let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);
