@@ -12,10 +12,15 @@ use yaml_rust::YamlLoader;
 pub const _SPEED_FACTOR: u64 = 1000;
 pub const _SIMULATION_DURATION: u64 = 1000;
 
-pub const CONFIG_PATH: &str = "./config/config.yaml";
+pub const CONFIG_ROOT: &str = "./config/";
+pub const CONFIG_NAME: &str = "config.yaml";
+pub const GENERAL_CONFIG_NAME: &str = "general.yaml";
+pub const STATIONS_CONFIG_NAME: &str = "stations.yaml";
+pub const LINES_CONFIG_NAME: &str = "lines.yaml";
 
-pub fn load_yaml(file: &str) -> Yaml {
-    let mut file = File::open(file).expect("Unable to open file");
+pub fn load_yaml(config_root: &str, config_name: &str) -> Yaml {
+    let config_path = format!("{}{}", config_root, config_name);
+    let mut file = File::open(config_path).expect("Unable to open file");
     let mut contents = String::new();
 
     file.read_to_string(&mut contents)
@@ -69,179 +74,198 @@ pub struct Config {
     pub visual: VisualConfig,
 }
 
-pub fn parse_config(raw_config: &Yaml) -> Config {
-    let mut stations_path = String::default();
-    let mut all_lines_path = String::default();
-    let mut screen_size = <(f32, f32)>::default();
-    let mut latitude_range_bounds = <(f32, f32)>::default();
-    let mut longitude_range_bounds = <(f32, f32)>::default();
-    let mut screen_offset = f32::default();
-    let mut radius_station = f32::default();
-    let mut radius_pod = f32::default();
-    let mut width_line = f32::default();
-    let mut desired_fps = u32::default();
-    let mut vsync = bool::default();
-    let mut number_of_people = i32::default();
-    let mut pod_capacity = i32::default();
-    let mut transition_time = i32::default();
-    let mut pod_spawn_rate = i32::default();
-
-    // This whole construct essentially parses the raw Yaml typed structure we get into the more
-    // usable Config structure from above.
-    // It only respects correctly formatted yamls.
-    // TODO: introduce a validator that panics if yaml is incorrectly formatted.
+pub fn parse_or_override_visual_config(raw_config: &Yaml, visual_config: &mut VisualConfig) {
     if let Yaml::Hash(hash) = raw_config {
-        if let Some(yaml) = hash.get(&Yaml::String(String::from("network"))) {
-            if let Yaml::Hash(hash) = yaml {
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("STATIONS_PATH"))) {
-                    if let Yaml::String(value) = yaml {
-                        stations_path = value.to_string();
-                    }
-                }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("ALL_LINES_PATH"))) {
-                    if let Yaml::String(value) = yaml {
-                        all_lines_path = value.to_string();
-                    }
-                }
-            }
-        }
         if let Some(yaml) = hash.get(&Yaml::String(String::from("visual"))) {
             if let Yaml::Hash(hash) = yaml {
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("SCREEN_SIZE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("screen_size"))) {
                     if let Yaml::Hash(hash) = yaml {
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("X"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("x"))) {
                             if let Some(float) = yaml.as_f64() {
-                                screen_size.0 = float as f32;
+                                visual_config.screen_size.0 = float as f32;
                             }
                         }
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("Y"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("y"))) {
                             if let Some(float) = yaml.as_f64() {
-                                screen_size.1 = float as f32;
+                                visual_config.screen_size.1 = float as f32;
                             }
                         }
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("LATITUDE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("latitude"))) {
                     if let Yaml::Hash(hash) = yaml {
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MIN"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("min"))) {
                             if let Some(float) = yaml.as_f64() {
-                                latitude_range_bounds.0 = float as f32;
+                                visual_config.latitude_range_bounds.0 = float as f32;
+                                visual_config.latitude_range_current.0 = float as f32;
                             }
                         }
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MAX"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("max"))) {
                             if let Some(float) = yaml.as_f64() {
-                                latitude_range_bounds.1 = float as f32;
+                                visual_config.latitude_range_bounds.1 = float as f32;
+                                visual_config.latitude_range_current.1 = float as f32;
                             }
                         }
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("LONGITUDE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("longitude"))) {
                     if let Yaml::Hash(hash) = yaml {
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MIN"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("min"))) {
                             if let Some(float) = yaml.as_f64() {
-                                longitude_range_bounds.0 = float as f32;
+                                visual_config.longitude_range_bounds.0 = float as f32;
+                                visual_config.longitude_range_current.0 = float as f32;
                             }
                         }
-                        if let Some(yaml) = hash.get(&Yaml::String(String::from("MAX"))) {
+                        if let Some(yaml) = hash.get(&Yaml::String(String::from("max"))) {
                             if let Some(float) = yaml.as_f64() {
-                                longitude_range_bounds.1 = float as f32;
+                                visual_config.longitude_range_bounds.1 = float as f32;
+                                visual_config.longitude_range_current.1 = float as f32;
                             }
                         }
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("SCREEN_OFFSET"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("screen_offset"))) {
                     if let Some(float) = yaml.as_f64() {
-                        screen_offset = float as f32;
+                        visual_config.screen_offset = float as f32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("RADIUS_STATION"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("radius_station"))) {
                     if let Some(float) = yaml.as_f64() {
-                        radius_station = float as f32;
+                        visual_config.radius_station = float as f32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("RADIUS_POD"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("radius_pod"))) {
                     if let Some(float) = yaml.as_f64() {
-                        radius_pod = float as f32;
+                        visual_config.radius_pod = float as f32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("WIDTH_LINE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("width_line"))) {
                     if let Some(float) = yaml.as_f64() {
-                        width_line = float as f32;
+                        visual_config.width_line = float as f32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("DESIRED_FPS"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("desired_fps"))) {
                     if let Yaml::Integer(value) = yaml {
-                        desired_fps = *value as u32;
+                        visual_config.desired_fps = *value as u32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("VSYNC"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("vsync"))) {
                     if let Yaml::Boolean(value) = yaml {
-                        vsync = *value;
+                        visual_config.vsync = *value;
                     }
                 }
             }
         }
+    }
+}
 
+pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut LogicConfig) {
+    if let Yaml::Hash(hash) = raw_config {
         if let Some(yaml) = hash.get(&Yaml::String(String::from("logic"))) {
             if let Yaml::Hash(hash) = yaml {
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("NUMBER_OF_PEOPLE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("number_of_people"))) {
                     if let Yaml::Integer(value) = yaml {
-                        number_of_people = *value as i32;
+                        logic_config.number_of_people = *value as i32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("POD_CAPACITY"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("pod_capacity"))) {
                     if let Yaml::Integer(value) = yaml {
-                        pod_capacity = *value as i32;
+                        logic_config.pod_capacity = *value as i32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("TRANSITION_TIME"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("transition_time"))) {
                     if let Yaml::Integer(value) = yaml {
-                        transition_time = *value as i32;
+                        logic_config.transition_time = *value as i32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("POD_SPAWN_RATE"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("pod_spawn_rate"))) {
                     if let Yaml::Integer(value) = yaml {
-                        pod_spawn_rate = *value as i32;
+                        logic_config.pod_spawn_rate = *value as i32;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// This function essentially parses the raw Yaml typed structure we get into the more
+// usable Config structure from above.
+// It only respects correctly formatted yamls.
+// TODO: introduce a validator that panics if yaml is incorrectly formatted.
+pub fn parse_config(raw_config: &Yaml) -> Config {
+    let mut town = String::default();
+    let mut overide_general = false;
+
+    if let Yaml::Hash(hash) = raw_config {
+        if let Some(yaml) = hash.get(&Yaml::String(String::from("general"))) {
+            if let Yaml::Hash(hash) = yaml {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("town"))) {
+                    if let Yaml::String(value) = yaml {
+                        town = value.to_string();
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("override"))) {
+                    if let Yaml::Boolean(value) = yaml {
+                        overide_general = *value;
                     }
                 }
             }
         }
     }
 
-    let raw_stations = load_yaml(&stations_path);
-    let raw_lines = load_yaml(&all_lines_path);
+    let town_specific_config_root_path = format!("{}{}/", CONFIG_ROOT, town);
+
+    let raw_general = load_yaml(&town_specific_config_root_path, GENERAL_CONFIG_NAME);
+    let raw_lines = load_yaml(&town_specific_config_root_path, LINES_CONFIG_NAME);
+    let raw_stations = load_yaml(&town_specific_config_root_path, STATIONS_CONFIG_NAME);
 
     let (network_config, number_of_pods) = gen_network_config(&raw_stations, &raw_lines);
 
-    let logical_config = LogicConfig {
-        number_of_people: number_of_people,
+    // println!("{:?}", network_config);
+
+    let mut logic_config = LogicConfig {
+        number_of_people: i32::default(),
         number_of_pods: number_of_pods,
-        pod_capacity: pod_capacity,
-        transition_time: transition_time,
-        pod_spawn_rate: pod_spawn_rate,
+        pod_capacity: i32::default(),
+        transition_time: i32::default(),
+        pod_spawn_rate: i32::default(),
         on_pause: false,
     };
 
-    let visual_config = VisualConfig {
-        screen_size: screen_size,
-        latitude_range_bounds: latitude_range_bounds,
-        longitude_range_bounds: longitude_range_bounds,
-        latitude_range_current: latitude_range_bounds,
-        longitude_range_current: longitude_range_bounds,
-        screen_offset: screen_offset,
-        radius_station: radius_station,
-        radius_pod: radius_pod,
-        width_line: width_line,
-        desired_fps: desired_fps,
-        vsync: vsync,
+    parse_or_override_logic_config(&raw_general, &mut logic_config);
+    // println!("{:?}", logic_config);
+    if overide_general {
+        parse_or_override_logic_config(&raw_config, &mut logic_config);
+    }
+    // println!("{:?}", logic_config);
+
+    let mut visual_config = VisualConfig {
+        screen_size: <(f32, f32)>::default(),
+        latitude_range_bounds: <(f32, f32)>::default(),
+        longitude_range_bounds: <(f32, f32)>::default(),
+        latitude_range_current: <(f32, f32)>::default(),
+        longitude_range_current: <(f32, f32)>::default(),
+        screen_offset: f32::default(),
+        radius_station: f32::default(),
+        radius_pod: f32::default(),
+        width_line: f32::default(),
+        desired_fps: u32::default(),
+        vsync: bool::default(),
         last_mouse: (0., 0.),
         last_mouse_while_zooming_relative: (0., 0.),
         last_mouse_left: (0., 0.),
     };
 
+    parse_or_override_visual_config(&raw_general, &mut visual_config);
+    // println!("{:?}", visual_config);
+    if overide_general {
+        parse_or_override_visual_config(&raw_config, &mut visual_config);
+    }
+    // println!("{:?}", visual_config);
+
     Config {
         network: network_config,
-        logic: logical_config,
+        logic: logic_config,
         visual: visual_config,
     }
 }

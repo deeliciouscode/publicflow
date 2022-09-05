@@ -10,7 +10,7 @@ mod pod;
 mod state;
 mod station;
 
-use crate::config::{load_yaml, parse_config, CONFIG_PATH};
+use crate::config::{load_yaml, parse_config, CONFIG_NAME, CONFIG_ROOT};
 use crate::control::cli::run_cli;
 use crate::state::State;
 use ggez::event::{self};
@@ -26,7 +26,7 @@ fn main() {
         run_cli(tx);
     });
 
-    let config_yaml = load_yaml(CONFIG_PATH);
+    let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);
     let config = parse_config(&config_yaml);
 
     // Make a Context.
