@@ -1,17 +1,12 @@
+use crate::enums::{ConnKind, LineName};
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct Connection {
     pub station_ids: HashSet<i32>,
     pub travel_time: i32,
-    pub kind: ConnectionKind,
+    pub line_name: LineName,
     pub is_blocked: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ConnectionKind {
-    Subway,
-    Tram,
 }
 
 pub trait YieldTuple<T> {

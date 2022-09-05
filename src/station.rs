@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::enums::LineName;
 use crate::helper::get_screen_coordinates;
 use crate::platform::{Platform, PlatformState};
 use ggez::graphics::{Font, Rect, Text};
@@ -45,7 +46,7 @@ impl Station {
         platforms_string
     }
 
-    pub fn make_operational(&mut self, line: &String) {
+    pub fn make_operational(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
                 platform.state = PlatformState::Operational
@@ -53,7 +54,7 @@ impl Station {
         }
     }
 
-    pub fn make_passable(&mut self, line: &String) {
+    pub fn make_passable(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
                 platform.state = PlatformState::Passable
@@ -61,7 +62,7 @@ impl Station {
         }
     }
 
-    pub fn make_queuable(&mut self, line: &String) {
+    pub fn make_queuable(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
                 platform.state = PlatformState::Queuable { queue: vec![] }

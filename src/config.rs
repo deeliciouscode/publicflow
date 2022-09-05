@@ -1,4 +1,6 @@
-use crate::connection::{Connection, ConnectionKind};
+use crate::connection::Connection;
+use crate::enums::{ConnKind, LineName};
+use crate::helper::transform_line_name_to_enum;
 use crate::line::Line;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -27,7 +29,7 @@ pub fn load_yaml(file: &str) -> Yaml {
 pub struct NetworkConfig {
     pub n_stations: i32,
     pub coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))>,
-    pub platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>>,
+    pub platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
 }
@@ -247,7 +249,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
     let mut n_stations: i64 = 0;
     let mut coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
-    let mut platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>> =
+    let mut platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>> =
         HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
@@ -310,12 +312,12 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                 let mut stations: Vec<i32> = vec![];
                 let mut distances: Vec<i32> = vec![];
                 let mut circular: bool = false;
-                let mut name: String = String::from("placeholder");
+                let mut line_name: LineName = LineName::Placeholder;
 
                 if let Some(name_yaml) = line_hash.get(&Yaml::String(String::from("name"))) {
                     // TODO finish this
                     if let Yaml::String(name_string) = name_yaml {
-                        name = name_string.clone();
+                        line_name = transform_line_name_to_enum(&name_string);
                     }
                 }
                 if let Some(stations_yaml) = line_hash.get(&Yaml::String(String::from("stations")))
@@ -347,16 +349,16 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                     }
                 }
                 update_edge_map_and_group_platforms(
-                    &name,
+                    &line_name,
                     &stations,
                     circular,
                     &mut platforms_to_stations,
                     &mut edge_map,
                 );
-                let connections = calc_connections(&name, &stations, circular, &distances);
+                let connections = calc_connections(&line_name, &stations, circular, &distances);
                 // println!("{}, {:?}", name, connections);
                 let line = Line {
-                    name: name,
+                    name: line_name,
                     stations: stations,
                     distances: distances,
                     circular: circular,
@@ -384,69 +386,11 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
     (network_config, n_pods)
 }
 
-fn calc_connections(
-    name: &String,
-    station_ids: &Vec<i32>,
-    circular: bool,
-    distances: &Vec<i32>,
-) -> Vec<Connection> {
-    let mut connections: Vec<Connection> = vec![];
-
-    // first some verifications
-    // println!("circular: {}, stat_len: {}, dist_len: {}", circular, station_ids.len(), distances.len());
-    if circular && station_ids.len() != distances.len() {
-        panic!("A circular line must have as many distances as it has stations. Ascertain that this is the case for line {}", name);
-    } else if !circular && station_ids.len() != distances.len() + 1 {
-        panic!("A non circular line must have exactly n-1 distances if it has n stations. Ascertain that this is the case for line {}", name);
-    }
-
-    let connection_kind;
-    match name.as_str().chars().nth(0).unwrap() {
-        'u' => connection_kind = ConnectionKind::Subway,
-        't' => connection_kind = ConnectionKind::Tram,
-        _ => panic!("Only Subway and Tram supported so far."),
-    }
-
-    for i in 0..station_ids.len() {
-        if i == station_ids.len() - 1 && circular {
-            let mut travel_time = Default::default();
-            if connection_kind == ConnectionKind::Subway {
-                travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
-            } else if connection_kind == ConnectionKind::Tram {
-                travel_time = distances[i] / 12; // 43 kmh ~= 12 m/s
-            }
-            connections.push(Connection {
-                station_ids: HashSet::from([station_ids[i], station_ids[0]]),
-                travel_time: travel_time,
-                kind: connection_kind,
-                is_blocked: false,
-            });
-            break;
-        } else if i == station_ids.len() - 1 {
-            break;
-        } else {
-            let mut travel_time = Default::default();
-            if connection_kind == ConnectionKind::Subway {
-                travel_time = distances[i] / 22; // 80 kmh ~= 22 m/s
-            } else if connection_kind == ConnectionKind::Tram {
-                travel_time = distances[i] / 12; // 43 kmh ~= 12 m/s
-            }
-            connections.push(Connection {
-                station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
-                travel_time: travel_time,
-                kind: connection_kind,
-                is_blocked: false,
-            });
-        }
-    }
-    connections
-}
-
 fn update_edge_map_and_group_platforms(
-    name: &String,
+    name: &LineName,
     station_ids: &Vec<i32>,
     circular: bool,
-    platforms_to_stations: &mut HashMap<i32, Vec<(i32, HashSet<i32>, Vec<String>)>>,
+    platforms_to_stations: &mut HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>>,
     edge_map: &mut HashMap<i32, HashSet<i32>>,
 ) {
     for i in 0..station_ids.len() {
@@ -530,4 +474,61 @@ fn update_edge_map_and_group_platforms(
             }
         }
     }
+}
+
+fn calc_connections(
+    line_name: &LineName,
+    station_ids: &Vec<i32>,
+    circular: bool,
+    distances: &Vec<i32>,
+) -> Vec<Connection> {
+    let mut connections: Vec<Connection> = vec![];
+
+    // first some verifications
+    // println!("circular: {}, stat_len: {}, dist_len: {}", circular, station_ids.len(), distances.len());
+    if circular && station_ids.len() != distances.len() {
+        panic!("A circular line must have as many distances as it has stations. Ascertain that this is the case for line {:?}", line_name);
+    } else if !circular && station_ids.len() != distances.len() + 1 {
+        panic!("A non circular line must have exactly n-1 distances if it has n stations. Ascertain that this is the case for line {:?}", line_name);
+    }
+
+    // let connection_kind;
+    // match name.as_str().chars().nth(0).unwrap() {
+    //     'u' => connection_kind = ConnectionKind::Subway,
+    //     't' => connection_kind = ConnectionKind::Tram,
+    //     _ => panic!("Only Subway and Tram supported so far."),
+    // }
+
+    fn get_travel_time(line_name: &LineName, distances: &Vec<i32>, i: usize) -> i32 {
+        let mut travel_time = Default::default();
+        match line_name.get_conn_kind() {
+            ConnKind::Subway => travel_time = distances[i] / 22, // 80 kmh ~= 22 m/s
+            ConnKind::Tram => travel_time = distances[i] / 12,   // 43 kmh ~= 12 m/s
+        }
+        return travel_time;
+    }
+
+    for i in 0..station_ids.len() {
+        if i == station_ids.len() - 1 && circular {
+            let travel_time = get_travel_time(line_name, distances, i);
+            connections.push(Connection {
+                station_ids: HashSet::from([station_ids[i], station_ids[0]]),
+                travel_time: travel_time,
+                line_name: line_name.clone(),
+                is_blocked: false,
+            });
+            break;
+        } else if i == station_ids.len() - 1 {
+            break;
+        } else {
+            let travel_time = get_travel_time(line_name, distances, i);
+            connections.push(Connection {
+                station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
+                travel_time: travel_time,
+                line_name: line_name.clone(),
+                is_blocked: false,
+            });
+        }
+    }
+    connections
 }

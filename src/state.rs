@@ -1,6 +1,7 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::cli::recv_queries;
 use crate::config::Config;
+use crate::enums::LineName;
 use crate::helper::{apply_zoom, format_seconds};
 use crate::line::{Line, LineState};
 use crate::network::Network;
@@ -175,7 +176,7 @@ impl State {
                             let mut id = Text::new(String::from(format!("ID: {}", pod.id)));
                             id.set_font(Font::default(), PxScale::from(18.));
                             let mut line = Text::new(String::from(format!(
-                                "Line: {}",
+                                "Line: {:?}",
                                 pod.line_state.line.name
                             )));
                             line.set_font(Font::default(), PxScale::from(18.));
@@ -278,7 +279,7 @@ impl State {
             let mut n_stations_skipped = 0;
             // default, needed so Line can never be nothing
             let mut line: Line = Line {
-                name: "placeholder".to_string(),
+                name: LineName::Placeholder,
                 stations: vec![],
                 distances: vec![],
                 circular: true,

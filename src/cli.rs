@@ -1,5 +1,5 @@
 use crate::action::{Actions, GetAction, SetAction};
-use crate::helper::read_lines;
+use crate::helper::{read_lines, transform_line_name_to_enum};
 use crate::state::State;
 use std::collections::HashSet;
 use std::io::Write;
@@ -496,15 +496,15 @@ fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                 match input_list[2] {
                     "operational" | "op" => set_actions.push(SetAction::MakePlatformOperational {
                         station_id: station_id,
-                        line: arg.to_string(),
+                        line: transform_line_name_to_enum(&arg.to_string()),
                     }),
                     "passable" | "pass" => set_actions.push(SetAction::MakePlatformPassable {
                         station_id: station_id,
-                        line: arg.to_string(),
+                        line: transform_line_name_to_enum(&arg.to_string()),
                     }),
                     "queuable" | "qu" => set_actions.push(SetAction::MakePlatformQueuable {
                         station_id: station_id,
-                        line: arg.to_string(),
+                        line: transform_line_name_to_enum(&arg.to_string()),
                     }),
                     _ => {
                         println!("Make action: {} not implemented.", input_list[2])

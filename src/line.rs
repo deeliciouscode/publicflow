@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::connection::{Connection, YieldTuple};
+use crate::enums::LineName;
 use crate::helper::get_screen_coordinates;
 use crate::network::Network;
 use ggez::graphics::Rect;
@@ -8,7 +9,7 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct Line {
-    pub name: String,
+    pub name: LineName,
     pub stations: Vec<i32>,
     pub distances: Vec<i32>,
     pub circular: bool,

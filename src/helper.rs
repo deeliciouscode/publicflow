@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::enums::{ConnKind, LineName};
 use crate::network::Network;
 use geoutils::Location;
 use rand::Rng;
@@ -112,3 +113,111 @@ pub fn get_air_travel_time(start: u32, end: u32, network: &Network) -> u32 {
 }
 
 // Experiment: Compare 0 heuristic vs air distance
+
+pub fn transform_line_name_to_enum(line_name: &String) -> LineName {
+    match line_name.as_str() {
+        "U1" | "u1" => {
+            return LineName::U1 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U2" | "u2" => {
+            return LineName::U2 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U3" | "u3" => {
+            return LineName::U3 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U4" | "u4" => {
+            return LineName::U4 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U5" | "u5" => {
+            return LineName::U5 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U6" | "u6" => {
+            return LineName::U6 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U7" | "u7" => {
+            return LineName::U7 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "U8" | "u8" => {
+            return LineName::U8 {
+                kind: ConnKind::Subway,
+            }
+        }
+        "T12" | "t12" => {
+            return LineName::T12 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T16" | "t16" => {
+            return LineName::T16 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T17" | "t17" => {
+            return LineName::T17 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T18" | "t18" => {
+            return LineName::T18 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T19" | "t19" => {
+            return LineName::T19 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T20" | "t20" => {
+            return LineName::T20 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T21" | "t21" => {
+            return LineName::T21 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T23" | "t23" => {
+            return LineName::T23 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T25" | "t25" => {
+            return LineName::T25 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T27" | "t27" => {
+            return LineName::T27 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T28" | "t28" => {
+            return LineName::T28 {
+                kind: ConnKind::Tram,
+            }
+        }
+        "T29" | "t29" => {
+            return LineName::T29 {
+                kind: ConnKind::Tram,
+            }
+        }
+        _ => {
+            panic!("{} can not be transformed into an enum.", line_name)
+        }
+    }
+}

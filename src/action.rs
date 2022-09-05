@@ -1,3 +1,4 @@
+use crate::enums::LineName;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,15 +32,15 @@ pub enum SetAction {
     },
     MakePlatformOperational {
         station_id: i32,
-        line: String,
+        line: LineName,
     },
     MakePlatformPassable {
         station_id: i32,
-        line: String,
+        line: LineName,
     },
     MakePlatformQueuable {
         station_id: i32,
-        line: String,
+        line: LineName,
     },
     ShowPerson {
         id: i32,

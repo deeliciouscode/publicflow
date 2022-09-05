@@ -1,6 +1,7 @@
 use crate::action::SetAction;
 use crate::config::Config;
 use crate::connection::{Connection, YieldTriple, YieldTuple};
+use crate::enums::LineName;
 use crate::helper::get_screen_coordinates;
 use crate::line::Line;
 use crate::platform::Platform;
@@ -130,7 +131,7 @@ impl Network {
     pub fn try_get_platform_by_station_id_and_line_name(
         &mut self,
         id: i32,
-        line_name: &String,
+        line_name: &LineName,
     ) -> Option<&mut Platform> {
         for station in &mut self.stations {
             if station.id == id {

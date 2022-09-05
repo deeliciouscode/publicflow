@@ -1,3 +1,4 @@
+use crate::enums::LineName;
 use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
@@ -5,17 +6,13 @@ pub struct Platform {
     pub id: i32,
     pub since_last_pod: i32,
     pub edges_to: HashSet<i32>,
-    pub lines_using_this: std::vec::Vec<std::string::String>,
+    pub lines_using_this: Vec<LineName>,
     pub pods_at_platform: HashSet<i32>,
     pub state: PlatformState,
 }
 
 impl Platform {
-    pub fn new(
-        id: i32,
-        edges_to: &HashSet<i32>,
-        lines_using_this: &Vec<std::string::String>,
-    ) -> Self {
+    pub fn new(id: i32, edges_to: &HashSet<i32>, lines_using_this: &Vec<LineName>) -> Self {
         Platform {
             id: id,
             since_last_pod: 0,

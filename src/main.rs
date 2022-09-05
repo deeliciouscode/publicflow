@@ -2,6 +2,7 @@ mod action;
 mod cli;
 mod config;
 mod connection;
+mod enums;
 mod helper;
 mod line;
 mod network;
