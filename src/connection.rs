@@ -1,4 +1,4 @@
-use crate::enums::{ConnKind, LineName};
+use crate::enums::LineName;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]

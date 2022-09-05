@@ -211,14 +211,14 @@ impl Pod {
 
     fn get_rgba(&self) -> [f32; 4] {
         match self.line_state.line.name {
-            LineName::U1 { kind: _ } => return [0.0, 1.0, 0.0, 1.0],
-            LineName::U2 { kind: _ } => return [1.0, 0.0, 0.0, 1.0],
-            LineName::U3 { kind: _ } => return [0.99, 0.63, 0.01, 1.0],
-            LineName::U4 { kind: _ } => return [0.13, 0.74, 0.69, 1.0],
-            LineName::U5 { kind: _ } => return [0.82, 0.73, 0.06, 1.0],
-            LineName::U6 { kind: _ } => return [0.0, 0.0, 1.0, 1.0],
-            LineName::U7 { kind: _ } => return [0.77, 0.75, 0.43, 1.0],
-            LineName::U8 { kind: _ } => return [0.68, 0.67, 0.55, 1.0],
+            LineName::U(1) => return [0.0, 1.0, 0.0, 1.0],
+            LineName::U(2) => return [1.0, 0.0, 0.0, 1.0],
+            LineName::U(3) => return [0.99, 0.63, 0.01, 1.0],
+            LineName::U(4) => return [0.13, 0.74, 0.69, 1.0],
+            LineName::U(5) => return [0.82, 0.73, 0.06, 1.0],
+            LineName::U(6) => return [0.0, 0.0, 1.0, 1.0],
+            LineName::U(7) => return [0.77, 0.75, 0.43, 1.0],
+            LineName::U(8) => return [0.68, 0.67, 0.55, 1.0],
             _ => return [0.6, 0.6, 0.6, 1.0], // TODO: color for trams
                                               // any => panic!("The line: {} is not defined.", any),
         };

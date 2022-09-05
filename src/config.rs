@@ -1,5 +1,5 @@
 use crate::connection::Connection;
-use crate::enums::{ConnKind, LineName};
+use crate::enums::LineName;
 use crate::helper::transform_line_name_to_enum;
 use crate::line::Line;
 use std::collections::{HashMap, HashSet};
@@ -501,9 +501,12 @@ fn calc_connections(
 
     fn get_travel_time(line_name: &LineName, distances: &Vec<i32>, i: usize) -> i32 {
         let mut travel_time = Default::default();
-        match line_name.get_conn_kind() {
-            ConnKind::Subway => travel_time = distances[i] / 22, // 80 kmh ~= 22 m/s
-            ConnKind::Tram => travel_time = distances[i] / 12,   // 43 kmh ~= 12 m/s
+        match line_name {
+            LineName::U(_) => travel_time = distances[i] / 22, // 80 kmh ~= 22 m/s
+            LineName::T(_) => travel_time = distances[i] / 12, // 43 kmh ~= 12 m/s
+            _ => {
+                panic!("Placeholder is not covered here. LineName should never be placeholder at exectution of the Simulation.")
+            }
         }
         return travel_time;
     }
