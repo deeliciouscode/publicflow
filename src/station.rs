@@ -11,7 +11,7 @@ pub struct Station {
     pub name: String,
     pub city: String,
     pub edges_to: HashSet<i32>,
-    pub pods_in_station: HashSet<i32>,
+    // pub pods_in_station: HashSet<i32>,
     pub people_in_station: HashSet<i32>,
     pub coordinates: (f32, f32),
     pub platforms: Vec<Platform>,
@@ -19,6 +19,15 @@ pub struct Station {
 
 impl Station {
     pub fn update(&self) {}
+
+    pub fn get_pods_in_station_as_vec(&self) -> Vec<i32> {
+        let mut pods_in_station: Vec<i32> = vec![];
+        for platform in &self.platforms {
+            pods_in_station.extend(platform.pods_at_platform.clone())
+        }
+        pods_in_station.sort();
+        pods_in_station
+    }
 
     pub fn stringify_platforms(&self) -> String {
         let mut platforms_string = "".to_string();
@@ -159,14 +168,6 @@ impl Station {
         }
     }
 
-    pub fn register_pod(&mut self, pod_id: i32) {
-        self.pods_in_station.insert(pod_id);
-    }
-
-    pub fn deregister_pod(&mut self, pod_id: i32) {
-        self.pods_in_station.remove(&pod_id);
-    }
-
     pub fn register_person(&mut self, person_id: i32) {
         // println!("register person {} in station {}.", person_id, self.id);
         self.people_in_station.insert(person_id);
@@ -176,11 +177,11 @@ impl Station {
         self.people_in_station.remove(&person_id);
     }
 
-    pub fn get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
-        if self.pods_in_station.is_empty() {
+    pub fn try_get_pod_ids_in_station_as_vec(&mut self) -> Option<Vec<i32>> {
+        if self.get_pods_in_station_as_vec().is_empty() {
             return None;
         }
-        Some(self.pods_in_station.clone().into_iter().collect())
+        Some(self.get_pods_in_station_as_vec())
     }
 }
 
@@ -207,6 +208,44 @@ impl Platform {
             lines_using_this: lines_using_this.clone(),
             pods_at_platform: HashSet::new(),
             state: PlatformState::Operational,
+        }
+    }
+
+    pub fn is_operational(&self) -> bool {
+        match self.state {
+            PlatformState::Operational => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_queuable(&self) -> bool {
+        match self.state {
+            PlatformState::Queuable { queue: _ } => true,
+            _ => false,
+        }
+    }
+
+    pub fn register_pod(&mut self, pod_id: i32) {
+        self.pods_at_platform.insert(pod_id);
+    }
+
+    pub fn deregister_pod(&mut self, pod_id: i32) {
+        self.pods_at_platform.remove(&pod_id);
+    }
+
+    pub fn queue_pod(&mut self, pod_id: i32) {
+        match &self.state {
+            PlatformState::Queuable { queue } => {
+                let mut new_queue = queue.clone();
+                new_queue.push(pod_id);
+                self.state = PlatformState::Queuable { queue: new_queue }
+            }
+            _ => {
+                println!(
+                    "Pod can not be queued because platform is in state {:?}",
+                    self.state
+                )
+            }
         }
     }
 }

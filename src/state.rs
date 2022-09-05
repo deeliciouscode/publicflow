@@ -65,7 +65,10 @@ impl State {
                             // println!("Since Last Pod: {}", station.since_last_pod);
                             println!("Platforms: {}", station.stringify_platforms());
                             println!("Edges To: {:?}", station.edges_to);
-                            println!("Pods in Station: {:?}", station.pods_in_station);
+                            println!(
+                                "Pods in Station: {:?}",
+                                station.get_pods_in_station_as_vec()
+                            );
                             println!("People in Station: {}", station.people_in_station.len());
                             println!("Coordinates: {:?}", station.coordinates);
                             println!("----------------------");
@@ -127,10 +130,10 @@ impl State {
         let last_mouse_left = self.config.visual.last_mouse_left;
 
         if self.config.logic.on_pause {
-            let maybe_station_group = self
+            let maybe_station = self
                 .network
-                .try_retrieve_station_group(last_mouse_left, &self.config);
-            match maybe_station_group {
+                .try_retrieve_station(last_mouse_left, &self.config);
+            match maybe_station {
                 Some(station) => {
                     let mut name = Text::new(String::from(format!("Name: {}", station.name)));
                     name.set_font(Font::default(), PxScale::from(18.));
@@ -141,8 +144,10 @@ impl State {
                         station.people_in_station.len()
                     )));
                     count.set_font(Font::default(), PxScale::from(18.));
-                    let mut pods =
-                        Text::new(String::from(format!("Pods: {:?}", station.pods_in_station)));
+                    let mut pods = Text::new(String::from(format!(
+                        "Pods: {:?}",
+                        station.get_pods_in_station_as_vec()
+                    )));
                     pods.set_font(Font::default(), PxScale::from(18.));
 
                     let draw_param_name = DrawParam::new()
@@ -236,7 +241,7 @@ impl State {
                 name: name.clone(),
                 city: city.clone(),
                 edges_to: config.network.edge_map.get(&station_id).unwrap().clone(),
-                pods_in_station: HashSet::from([]), // The pods will register themselves later
+                // pods_in_station: HashSet::from([]), // The pods will register themselves later
                 people_in_station: HashSet::from([]),
                 coordinates: (*lat as f32, *lon as f32),
                 platforms: platforms,

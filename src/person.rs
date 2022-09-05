@@ -305,7 +305,7 @@ impl Person {
         match maybe_next_station_id {
             Some(next_station_id) => {
                 let station = network.try_get_station_by_id(station_id).unwrap();
-                let maybe_pod_ids: Option<Vec<i32>> = station.get_pod_ids_in_station_as_vec();
+                let maybe_pod_ids: Option<Vec<i32>> = station.try_get_pod_ids_in_station_as_vec();
                 // println!("maybe_pod_ids: {:?}", maybe_pod_ids);
                 match maybe_pod_ids {
                     Some(pod_ids) => {
@@ -362,7 +362,7 @@ impl Person {
     ) {
         let mut rng = rand::thread_rng();
         let station = network.try_get_station_by_id(station_id).unwrap();
-        let maybe_pod_ids: Option<Vec<i32>> = station.get_pod_ids_in_station_as_vec();
+        let maybe_pod_ids: Option<Vec<i32>> = station.try_get_pod_ids_in_station_as_vec();
         match maybe_pod_ids {
             Some(pod_ids) => {
                 let range = rng.gen_range(0..pod_ids.len());

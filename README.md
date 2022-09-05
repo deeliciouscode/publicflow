@@ -13,4 +13,6 @@ ggez: for drawing use sprite batch (especially for people)
 
 ## TODO:
 
-TODO: make routinh more robust
+- make routing more robust
+- do not implement platform state 'passsable' for now since it would add a lot of complexities
+- 

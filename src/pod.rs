@@ -271,13 +271,33 @@ impl Pod {
     fn arrive_in_station(&mut self, net: &mut Network) {
         self.line_state.update_line_ix();
         self.line_state.set_next_station_ix();
-        self.state = self.state.to_just_arrived();
-        let arrived_in_id = self.state.get_station_id();
-        let maybe_station = net.try_get_station_by_id(arrived_in_id);
-        match maybe_station {
-            Some(station) => station.register_pod(self.id),
-            None => panic!("There is no station with id: {}", arrived_in_id),
+        let station_id_to = self.state.get_station_id_to();
+        let maybe_platform = net.try_get_platform_by_station_id_and_line_name(
+            station_id_to,
+            &self.line_state.line.name,
+        );
+
+        match maybe_platform {
+            Some(platform) => {
+                if platform.is_operational() {
+                    self.state = self.state.to_just_arrived();
+                    platform.register_pod(self.id);
+                } else if platform.is_queuable() {
+                    self.state = self.state.to_in_queue();
+                    platform.queue_pod(self.id);
+                }
+                // println!("Platform: {:?}", platform)
+            }
+            None => {
+                println!("Got no platform back")
+            }
         }
+
+        // let arrived_in_id = self.state.get_station_id();
+        // match maybe_station {
+        //     Some(station) => station.register_pod(self.id),
+        //     None => panic!("There is no station with id: {}", arrived_in_id),
+        // }
     }
 
     fn depart_from_station(&mut self, net: &mut Network) {
@@ -303,9 +323,11 @@ impl Pod {
             None => panic!("There is no connection between: {} and {}", current, next),
         }
 
-        let maybe_station = net.try_get_station_by_id(current);
-        match maybe_station {
-            Some(station) => station.deregister_pod(self.id),
+        let maybe_platform =
+            net.try_get_platform_by_station_id_and_line_name(current, &self.line_state.line.name);
+
+        match maybe_platform {
+            Some(platform) => platform.deregister_pod(self.id),
             None => panic!("There is no station with id: {}", current),
         }
     }
@@ -403,6 +425,23 @@ impl PodState {
             }
             _ => PodState::InvalidState {
                 reason: String::from("Pod can only appart from InStation state."),
+            },
+        }
+    }
+
+    fn to_in_queue(&self) -> PodState {
+        match self {
+            PodState::BetweenStations {
+                station_id_from: _,
+                station_id_to,
+                time_to_next_station: _,
+                coordinates,
+            } => PodState::InQueue {
+                station_id: *station_id_to,
+                coordinates: *coordinates,
+            },
+            _ => PodState::InvalidState {
+                reason: String::from("Pod can only arrive if in BetweenStations state."),
             },
         }
     }
@@ -534,9 +573,25 @@ impl PodState {
         }
     }
 
+    fn get_station_id_to(&self) -> i32 {
+        match self {
+            PodState::BetweenStations {
+                station_id_from: _,
+                station_id_to,
+                time_to_next_station: _,
+                coordinates: _
+            } => *station_id_to,
+            _ => panic!("Can only get id of station that the pod is driving towards if in BetweenStations state")
+        }
+    }
+
     fn try_get_coordinates(&self) -> Option<(f32, f32)> {
         match self {
             PodState::JustArrived {
+                station_id: _,
+                coordinates,
+            } => Some(*coordinates),
+            PodState::InQueue {
                 station_id: _,
                 coordinates,
             } => Some(*coordinates),

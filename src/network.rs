@@ -126,28 +126,22 @@ impl Network {
         return None;
     }
 
-    // To make this work, platforms would need a unique id across the network
-    // pub fn try_get_station_by_platform_id(&mut self, id: i32) -> Option<&mut Station> {
-    //     for station in &mut self.stations {
-    //         for platform in &mut station.platforms {
-    //             if platform.id == id {
-    //                 return Some(station);
-    //             }
-    //         }
-    //     }
-    //     return None;
-    // }
-
-    // pub fn try_get_station_by_id(&mut self, id: i32) -> Option<&mut Platform> {
-    //     for station in &mut self.stations {
-    //         for station in &mut station.stations {
-    //             if station.id == id {
-    //                 return Some(station);
-    //             }
-    //         }
-    //     }
-    //     return None;
-    // }
+    pub fn try_get_platform_by_station_id_and_line_name(
+        &mut self,
+        id: i32,
+        line_name: &String,
+    ) -> Option<&mut Platform> {
+        for station in &mut self.stations {
+            if station.id == id {
+                for platform in &mut station.platforms {
+                    if platform.lines_using_this.contains(line_name) {
+                        return Some(platform);
+                    }
+                }
+            }
+        }
+        return None;
+    }
 
     pub fn try_get_station_by_id_unmut(&self, id: i32) -> Option<&Station> {
         for station in &self.stations {
@@ -158,11 +152,7 @@ impl Network {
         None
     }
 
-    pub fn try_retrieve_station_group(
-        &self,
-        (x, y): (f32, f32),
-        config: &Config,
-    ) -> Option<&Station> {
+    pub fn try_retrieve_station(&self, (x, y): (f32, f32), config: &Config) -> Option<&Station> {
         // println!("{}, {}", x, y);
         let mut closest_distance = 10000.;
         let mut closest_station = &self.stations[0];
@@ -186,7 +176,8 @@ impl Network {
         for station in &self.stations {
             println!(
                 "Station: {} | Pods: {:?}",
-                station.id, station.pods_in_station
+                station.id,
+                station.get_pods_in_station_as_vec()
             )
         }
         println!(

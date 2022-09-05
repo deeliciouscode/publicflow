@@ -20,7 +20,7 @@ visual:
   DESIRED_FPS: 20 # TODO: decouple game speed from draw rate
   VSYNC: true
 logic:
-  NUMBER_OF_PEOPLE: 100
+  NUMBER_OF_PEOPLE: 300
   POD_CAPACITY: 5
   TRANSITION_TIME: 30
   POD_SPAWN_RATE: 30 # every so many seconds a pod should be spawned till enough are there
