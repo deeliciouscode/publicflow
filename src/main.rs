@@ -7,6 +7,7 @@ mod line;
 mod network;
 mod pathstate;
 mod person;
+mod platform;
 mod pod;
 mod state;
 mod station;
