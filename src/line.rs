@@ -1,9 +1,8 @@
 use crate::config::Config;
 use crate::connection::{Connection, YieldTuple};
-use crate::enums::LineName;
-use crate::helper::get_screen_coordinates;
+use crate::helper::enums::LineName;
+use crate::helper::helper::get_screen_coordinates;
 use crate::network::Network;
-use ggez::graphics::Rect;
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -139,7 +138,7 @@ impl LineState {
         return None;
     }
 
-    pub fn try_get_current_connection(&self) -> Option<&Connection> {
+    pub fn _try_get_current_connection(&self) -> Option<&Connection> {
         let fst = self.line.stations[self.line_ix as usize];
         let snd = self.line.stations[self.next_ix as usize];
         for connection in &self.line.connections {

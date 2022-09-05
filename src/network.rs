@@ -1,11 +1,10 @@
-use crate::action::SetAction;
 use crate::config::Config;
-use crate::connection::{Connection, YieldTriple, YieldTuple};
-use crate::enums::LineName;
-use crate::helper::get_screen_coordinates;
+use crate::control::action::SetAction;
+use crate::helper::enums::LineName;
+use crate::helper::helper::{calc_graph, get_screen_coordinates};
 use crate::line::Line;
-use crate::platform::Platform;
-use crate::station::Station;
+use crate::station::platform::Platform;
+use crate::station::station::Station;
 use ggez::Context;
 use petgraph::dot::{Config as PetConfig, Dot};
 use petgraph::graph::UnGraph;
@@ -18,24 +17,10 @@ pub struct Network {
     pub lines: Vec<Line>,
 }
 
-fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
-    let mut edges: Vec<(u32, u32, u32)> = vec![];
-
-    for line in lines {
-        for connection in &line.connections {
-            if !connection.is_blocked {
-                edges.push(connection.yield_triple())
-            }
-        }
-    }
-    let graph = UnGraph::from_edges(edges);
-    graph
-}
-
 impl Network {
     pub fn new(stations: Vec<Station>, config: &Config) -> Self {
         let lines = config.network.lines.clone();
-        let mut network = Network {
+        let network = Network {
             stations: stations,
             graph: calc_graph(&lines),
             lines: lines,
@@ -44,7 +29,7 @@ impl Network {
         network
     }
 
-    pub fn update(&mut self, set_actions: &Vec<SetAction>, config: &Config) {
+    pub fn update(&mut self, set_actions: &Vec<SetAction>) {
         if set_actions.len() != 0 {
             let mut recalculate_graph = false;
             for action in set_actions {
@@ -174,7 +159,7 @@ impl Network {
         }
     }
 
-    pub fn print_state(&self) {
+    pub fn _print_state(&self) {
         for station in &self.stations {
             println!(
                 "Station: {} | Pods: {:?}",

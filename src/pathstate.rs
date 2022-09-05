@@ -1,4 +1,4 @@
-use crate::helper::get_air_travel_time;
+use crate::helper::helper::get_air_travel_time;
 use crate::network::Network;
 use petgraph::algo::astar;
 use petgraph::graph::{NodeIndex, UnGraph};

@@ -1,4 +1,4 @@
-use crate::enums::LineName;
+use crate::helper::enums::LineName;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]

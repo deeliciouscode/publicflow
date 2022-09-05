@@ -1,120 +1,23 @@
-use crate::action::{Actions, GetAction, SetAction};
 use crate::config::Config;
-use crate::helper::{get_random_station_id, get_screen_coordinates};
+use crate::control::action::SetAction;
+use crate::helper::helper::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
-use crate::pod::{Pod, PodsBox};
+use crate::person::personstate::PersonState;
+use crate::pod::pod::Pod;
+use crate::pod::podsbox::PodsBox;
 use ggez::{graphics, Context, GameResult};
 use petgraph::graph::UnGraph;
-use rand::Rng;
-
-// TODO: implement destinations
-#[derive(Clone, Debug)]
-pub struct PeopleBox {
-    pub people: Vec<Person>,
-}
-
-impl PeopleBox {
-    pub fn print_state(&self) {
-        // Get people who need to get out first
-        for person in &self.people {
-            let maybe_station_id = person.try_get_station_id();
-            let station_id;
-            match maybe_station_id {
-                Some(_station_id) => station_id = _station_id.to_string(),
-                None => station_id = String::from("None"),
-            }
-            let maybe_pod_id = person.try_get_pod_id();
-            let pod_id;
-            match maybe_pod_id {
-                Some(_pod_id) => pod_id = _pod_id.to_string(),
-                None => pod_id = String::from("None"),
-            }
-
-            println!(
-                "Person: {} | Station: {} | Pod: {} | State: {:?}",
-                person.id, station_id, pod_id, person.state
-            )
-        }
-    }
-
-    pub fn try_get_person_by_id_unmut(&self, id: i32) -> Option<&Person> {
-        for person in &self.people {
-            if person.id == id {
-                return Some(person);
-            }
-        }
-        None
-    }
-
-    pub fn update(
-        &mut self,
-        pods_box: &mut PodsBox,
-        network: &mut Network,
-        set_actions: &Vec<SetAction>,
-        config: &Config,
-    ) {
-        for action in set_actions {
-            match action {
-                // TODO: differentiate between follow and not
-                SetAction::ShowPerson { id, follow } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            if *follow {
-                                person.visualize = true;
-                            } else {
-                                person.visualize = true;
-                            }
-                        }
-                    }
-                }
-                SetAction::HidePerson { id } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            person.visualize = false;
-                        }
-                    }
-                }
-                SetAction::RoutePerson {
-                    id,
-                    station_id,
-                    random_station,
-                } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            person.action_on_arrival = Some(action.clone())
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
-        for person in &mut self.people {
-            person.get_out_if_needed(pods_box, network, config);
-        }
-        for person in &mut self.people {
-            person.update(pods_box, network, config);
-        }
-    }
-
-    pub fn draw(&self, ctx: &mut Context, network: &Network, config: &Config) {
-        for person in &self.people {
-            if person.visualize {
-                let _res = person.draw(ctx, network);
-            }
-        }
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct Person {
     pub id: i32,
-    visualize: bool,
+    pub visualize: bool,
     transition_time: i32,
     pub real_coordinates: (f32, f32),
-    state: PersonState,
+    pub state: PersonState,
     pub path_state: PathState,
-    action_on_arrival: Option<SetAction>,
+    pub action_on_arrival: Option<SetAction>,
 }
 
 impl Person {
@@ -159,10 +62,10 @@ impl Person {
         // println!("{:?}", self.path_state);
     }
 
-    fn draw(&self, ctx: &mut Context, network: &Network) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let color = [0.0, 1.0, 1.0, 1.0].into();
 
-        let mut res: GameResult<()> = std::result::Result::Ok(());
+        let mut _res: GameResult<()> = std::result::Result::Ok(());
 
         let (real_x, real_y) = self.real_coordinates;
 
@@ -179,13 +82,13 @@ impl Person {
             color,
         )?;
 
-        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        _res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
-        match res {
+        match _res {
             Err(err) => panic!("Error 3: {}", err),
-            Ok(m) => {
+            Ok(_m) => {
                 // println!("No error at 3: {:?}", m);
-                return res;
+                return _res;
             }
         }
     }
@@ -242,7 +145,7 @@ impl Person {
                     random_station,
                 } => {
                     if *random_station {
-                        let random_station_id = get_random_station_id(network, config);
+                        let random_station_id = get_random_station_id(config);
                         self.new_path(
                             &network.graph,
                             current_station_id,
@@ -300,7 +203,6 @@ impl Person {
         station_id: i32,
         config: &Config,
     ) {
-        let mut rng = rand::thread_rng();
         let maybe_next_station_id = self.path_state.try_get_next_station_id();
         match maybe_next_station_id {
             Some(next_station_id) => {
@@ -340,7 +242,7 @@ impl Person {
                 }
             }
             None => {
-                let finish = get_random_station_id(network, config);
+                let finish = get_random_station_id(config);
                 self.new_path(&network.graph, station_id as u32, finish, network);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
@@ -351,43 +253,6 @@ impl Person {
                 // );
                 return; // TODO: remove the 1 second delay that is happening when the new_path = old_path
             }
-        }
-    }
-
-    fn try_to_take_a_pod(
-        &mut self,
-        pods_box: &mut PodsBox,
-        network: &mut Network,
-        station_id: i32,
-    ) {
-        let mut rng = rand::thread_rng();
-        let station = network.try_get_station_by_id(station_id).unwrap();
-        let maybe_pod_ids: Option<Vec<i32>> = station.try_get_pod_ids_in_station_as_vec();
-        match maybe_pod_ids {
-            Some(pod_ids) => {
-                let range = rng.gen_range(0..pod_ids.len());
-                // println!("the random range: {:?}", range);
-                let pod_id_to_take = pod_ids[range];
-                let maybe_pod = pods_box.try_get_pod_by_id_mut(pod_id_to_take);
-                match maybe_pod {
-                    Some(pod) => {
-                        let got_in = pod.try_register_person(self.id);
-                        if got_in {
-                            // println!("Getting into pod with id: {} now", pod_id_to_take);
-                            self.state = self.state.to_riding(pod_id_to_take);
-                            let station = network.try_get_station_by_id(station_id).unwrap();
-                            station.deregister_person(self.id);
-                        } else {
-                            // println!(
-                            //     "Couldn't get into pod with id: {} - it's full.",
-                            //     pod_id_to_take
-                            // );
-                        }
-                    }
-                    None => println!("Pod with id: {}, does not exist.", pod_id_to_take),
-                }
-            }
-            None => {} // None => println!("Can't leave the station, no pod here."),
         }
     }
 
@@ -454,25 +319,6 @@ impl Person {
         }
     }
 
-    fn make_on_arrival_descission(&mut self, pods_box: &mut PodsBox, pod_id: i32) {
-        let mut rng = rand::thread_rng();
-        let get_out = rng.gen_bool(0.5);
-        // println!("get_out: {}", get_out);
-        if get_out {
-            // println!("Person {} wants to get out", self.id);
-            self.state = self.state.to_transitioning();
-            let maybe_pod = pods_box.try_get_pod_by_id_mut(pod_id);
-            match maybe_pod {
-                Some(pod) => {
-                    pod.deregister_person(&self.id);
-                }
-                None => panic!("Pod with id: {} does not exist.", pod_id),
-            }
-        } else {
-            self.state = self.state.to_riding(pod_id); // pod_id is ignored in this case
-        }
-    }
-
     fn set_coordinates_of_station(&mut self, station_id: i32, network: &Network, config: &Config) {
         // println!("set real coords");
         let station = network.try_get_station_by_id_unmut(station_id).unwrap();
@@ -488,145 +334,5 @@ impl Person {
 
     pub fn try_get_station_id(&self) -> Option<i32> {
         self.state.try_get_station_id()
-    }
-
-    pub fn try_get_pod_id(&self) -> Option<i32> {
-        self.state.try_get_pod_id()
-    }
-}
-
-// Person State Machine:
-//      +-------------------+------> InvalidState <---------+
-//      |                   |               ^               |
-//      |                   |               |               |
-// ReadyToTakePod ---> RidingPod ---> JustArrived ---> Transitioning ---+
-//      ^                    ^                |             |    ^      |
-//      |                    +----------------+             |    |      |
-//      +---------------------------------------------------+    +------+
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum PersonState {
-    ReadyToTakePod {
-        station_id: i32,
-    },
-    RidingPod {
-        pod_id: i32,
-    },
-    JustArrived {
-        pod_id: i32,
-        station_id: i32,
-    },
-    Transitioning {
-        station_id: i32,
-        previous_pod_id: i32,
-        time_in_station: i32,
-    },
-    InvalidState {
-        reason: String,
-    },
-}
-
-// State Transitions
-impl PersonState {
-    fn to_riding(&self, pod_id: i32) -> PersonState {
-        match self {
-            PersonState::ReadyToTakePod { station_id: _ } => {
-                PersonState::RidingPod { pod_id: pod_id }
-            }
-            PersonState::JustArrived {
-                pod_id,
-                station_id: _,
-            } => PersonState::RidingPod { pod_id: *pod_id },
-            // _ => panic!("Person can only take a pod from ReadyToTakePod state.")
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only take a pod from ReadyToTakePod state."),
-            },
-        }
-    }
-
-    fn to_just_arrived(&self, station_id: i32) -> PersonState {
-        match self {
-            PersonState::RidingPod { pod_id } => PersonState::JustArrived {
-                pod_id: *pod_id,
-                station_id: station_id,
-            },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only arrive if in RidingPod state."),
-            },
-        }
-    }
-
-    fn to_transitioning(&self) -> PersonState {
-        match self {
-            PersonState::JustArrived { pod_id, station_id } => PersonState::Transitioning {
-                previous_pod_id: *pod_id,
-                station_id: *station_id,
-                time_in_station: 0,
-            },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only transition if in JustArrived state."),
-            },
-        }
-    }
-
-    fn to_ready(&self) -> PersonState {
-        match self {
-            PersonState::Transitioning {
-                previous_pod_id: _,
-                station_id,
-                time_in_station: _,
-            } => PersonState::ReadyToTakePod {
-                station_id: *station_id,
-            },
-            _ => PersonState::InvalidState {
-                reason: String::from(
-                    "Person can only get ready to take a pod if in Transitioning state.",
-                ),
-            },
-        }
-    }
-
-    fn wait_a_sec(&self) -> PersonState {
-        match self {
-            PersonState::Transitioning {
-                previous_pod_id,
-                station_id,
-                time_in_station,
-            } => PersonState::Transitioning {
-                previous_pod_id: *previous_pod_id,
-                station_id: *station_id,
-                time_in_station: time_in_station + 1,
-            },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only wait if in Transitioning state"),
-            },
-        }
-    }
-
-    fn try_get_station_id(&self) -> Option<i32> {
-        match self {
-            PersonState::ReadyToTakePod { station_id } => Some(*station_id),
-            PersonState::JustArrived {
-                pod_id: _,
-                station_id,
-            } => Some(*station_id),
-            PersonState::Transitioning {
-                station_id,
-                previous_pod_id: _,
-                time_in_station: _,
-            } => Some(*station_id),
-            _ => None,
-        }
-    }
-
-    fn try_get_pod_id(&self) -> Option<i32> {
-        match self {
-            PersonState::RidingPod { pod_id } => Some(*pod_id),
-            PersonState::JustArrived {
-                pod_id,
-                station_id: _,
-            } => Some(*pod_id),
-            _ => None,
-        }
     }
 }

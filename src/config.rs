@@ -1,6 +1,6 @@
 use crate::connection::Connection;
-use crate::enums::LineName;
-use crate::helper::transform_line_name_to_enum;
+use crate::helper::enums::LineName;
+use crate::helper::helper::transform_line_name_to_enum;
 use crate::line::Line;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -500,7 +500,7 @@ fn calc_connections(
     // }
 
     fn get_travel_time(line_name: &LineName, distances: &Vec<i32>, i: usize) -> i32 {
-        let mut travel_time = Default::default();
+        let travel_time;
         match line_name {
             LineName::U(_) => travel_time = distances[i] / 22, // 80 kmh ~= 22 m/s
             LineName::T(_) => travel_time = distances[i] / 12, // 43 kmh ~= 12 m/s

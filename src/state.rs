@@ -1,14 +1,16 @@
-use crate::action::{Actions, GetAction, SetAction};
-use crate::cli::recv_queries;
 use crate::config::Config;
-use crate::enums::{Direction, LineName};
-use crate::helper::{apply_zoom, format_seconds};
+use crate::control::action::{Actions, GetAction, SetAction};
+use crate::control::cli::recv_queries;
+use crate::helper::enums::{Direction, LineName};
+use crate::helper::helper::{apply_zoom, format_seconds};
 use crate::line::{Line, LineState};
 use crate::network::Network;
-use crate::person::{PeopleBox, Person};
-use crate::platform::Platform;
-use crate::pod::{Pod, PodsBox};
-use crate::station::Station;
+use crate::person::peoplebox::PeopleBox;
+use crate::person::person::Person;
+use crate::pod::pod::Pod;
+use crate::pod::podsbox::PodsBox;
+use crate::station::platform::Platform;
+use crate::station::station::Station;
 use ggez::event::{EventHandler, KeyCode, KeyMods, MouseButton};
 use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
@@ -27,18 +29,12 @@ pub struct State {
 }
 
 impl State {
-    pub fn print_state(&self) {
-        self.network.print_state();
-        self.pods_box.print_state();
-        self.people_box.print_state();
-    }
-
     pub fn update(&mut self, set_actions: Vec<SetAction>) {
         if set_actions.len() != 0 {
             println!("set_actions: {:?}", set_actions);
         }
 
-        self.network.update(&set_actions, &self.config);
+        self.network.update(&set_actions);
         self.pods_box
             .update(&mut self.network, &set_actions, &self.config);
         self.people_box.update(
@@ -123,8 +119,8 @@ impl State {
         )));
         time_passed.set_font(Font::default(), PxScale::from(40.));
         let draw_param = DrawParam::new().offset([-10., -10.]).color(Color::WHITE);
-        let res = graphics::draw(ctx, &time_passed, draw_param);
-        match res {
+        let _res = graphics::draw(ctx, &time_passed, draw_param);
+        match _res {
             Ok(_) => {}
             Err(err) => panic!("{:?}", err),
         }
@@ -155,19 +151,19 @@ impl State {
                     let draw_param_name = DrawParam::new()
                         .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 10.])
                         .color(Color::WHITE);
-                    let res = graphics::draw(ctx, &name, draw_param_name);
+                    let _res = graphics::draw(ctx, &name, draw_param_name);
                     let draw_param_name = DrawParam::new()
                         .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 30.])
                         .color(Color::WHITE);
-                    let res = graphics::draw(ctx, &id, draw_param_name);
+                    let _res = graphics::draw(ctx, &id, draw_param_name);
                     let draw_param_count = DrawParam::new()
                         .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 50.])
                         .color(Color::WHITE);
-                    let res = graphics::draw(ctx, &count, draw_param_count);
+                    let _res = graphics::draw(ctx, &count, draw_param_count);
                     let draw_param_pods = DrawParam::new()
                         .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 70.])
                         .color(Color::WHITE);
-                    let res = graphics::draw(ctx, &pods, draw_param_pods);
+                    let _res = graphics::draw(ctx, &pods, draw_param_pods);
                 }
                 None => {
                     let maybe_pod = self.pods_box.try_retrieve_pod(last_mouse_left);
@@ -192,19 +188,19 @@ impl State {
                             let draw_param_id = DrawParam::new()
                                 .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 10.])
                                 .color(Color::WHITE);
-                            let res = graphics::draw(ctx, &id, draw_param_id);
+                            let _res = graphics::draw(ctx, &id, draw_param_id);
                             let draw_param_line = DrawParam::new()
                                 .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 30.])
                                 .color(Color::WHITE);
-                            let res = graphics::draw(ctx, &line, draw_param_line);
+                            let _res = graphics::draw(ctx, &line, draw_param_line);
                             let draw_param_count = DrawParam::new()
                                 .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 50.])
                                 .color(Color::WHITE);
-                            let res = graphics::draw(ctx, &count, draw_param_count);
+                            let _res = graphics::draw(ctx, &count, draw_param_count);
                             let draw_param_count = DrawParam::new()
                                 .offset([-last_mouse_left.0 - 10., -last_mouse_left.1 - 70.])
                                 .color(Color::WHITE);
-                            let res = graphics::draw(ctx, &capacity, draw_param_count);
+                            let _res = graphics::draw(ctx, &capacity, draw_param_count);
                         }
                         None => {}
                     }
@@ -259,7 +255,7 @@ impl State {
 
         // println!("{:?}", stations);
 
-        let mut network = Network::new(stations, &config);
+        let network = Network::new(stations, &config);
 
         // println!("{:?}", network.lines);
 
@@ -421,7 +417,7 @@ impl EventHandler for State {
         // Update code here...
         while timer::check_update_time(ctx, self.config.visual.desired_fps) {
             // println!("fps: {}", timer::fps(ctx));
-            let actions = recv_queries(&self, &self.rx);
+            let actions = recv_queries(&self.rx);
 
             self.handle_get_actions(actions.get_actions);
 
@@ -438,8 +434,8 @@ impl EventHandler for State {
         graphics::clear(ctx, bg_color);
 
         self.network.draw(ctx, &self.config);
-        self.pods_box.draw(ctx, &self.network, &self.config);
-        self.people_box.draw(ctx, &self.network, &self.config);
+        self.pods_box.draw(ctx, &self.config);
+        self.people_box.draw(ctx);
         self.draw(ctx);
 
         graphics::present(ctx)

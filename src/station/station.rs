@@ -1,8 +1,9 @@
 use crate::config::Config;
-use crate::enums::LineName;
-use crate::helper::get_screen_coordinates;
-use crate::platform::{Platform, PlatformState};
-use ggez::graphics::{Font, Rect, Text};
+use crate::helper::enums::LineName;
+use crate::helper::helper::get_screen_coordinates;
+use crate::station::platform::Platform;
+use crate::station::platformstate::PlatformState;
+use ggez::graphics::{Font, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
 
@@ -71,7 +72,7 @@ impl Station {
     }
 
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
-        let mut res;
+        let mut _res;
         let color = [0.5, 0.5, 0.5, 1.0].into();
 
         let real_coordinates = get_screen_coordinates(self.coordinates, config);
@@ -89,7 +90,7 @@ impl Station {
             color,
         )?;
 
-        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        _res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
         if self.visualize {
             let circle = graphics::Mesh::new_circle(
@@ -105,10 +106,10 @@ impl Station {
                 color,
             )?;
 
-            res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+            _res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
         }
 
-        match res {
+        match _res {
             Err(err) => panic!("Error 0: {}", err),
             Ok(_m) => {
                 // println!("No error at 0: {:?}", m),
@@ -116,7 +117,7 @@ impl Station {
         }
 
         let count = Text::new(String::from(self.people_in_station.len().to_string()));
-        res = graphics::draw(
+        _res = graphics::draw(
             ctx,
             &count,
             (ggez::mint::Point2 {
@@ -159,13 +160,13 @@ impl Station {
             color_circle,
         )?;
 
-        res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
+        _res = graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },));
 
-        match res {
+        match _res {
             Err(err) => panic!("Error 3: {}", err),
-            Ok(m) => {
+            Ok(_m) => {
                 // println!("No error at 3: {:?}", m);
-                return res;
+                return _res;
             }
         }
     }

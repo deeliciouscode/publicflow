@@ -1,9 +1,11 @@
 use crate::config::Config;
-use crate::enums::LineName;
+use crate::connection::YieldTriple;
+use crate::helper::enums::LineName;
+use crate::line::Line;
 use crate::network::Network;
 use geoutils::Location;
+use petgraph::graph::UnGraph;
 use rand::Rng;
-use std::cmp::{max, min};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -76,7 +78,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn get_random_station_id(network: &Network, config: &Config) -> u32 {
+pub fn get_random_station_id(config: &Config) -> u32 {
     let mut rng = rand::thread_rng();
     let station_ids: Vec<&i32> = config.network.coordinates_map_stations.keys().collect();
     let end_ix = rng.gen_range(0..station_ids.len());
@@ -131,4 +133,18 @@ pub fn transform_line_name_to_enum(line_name: &str) -> LineName {
             panic!("Couldn't parse \'{}\' into i32", id_str);
         }
     }
+}
+
+pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
+    let mut edges: Vec<(u32, u32, u32)> = vec![];
+
+    for line in lines {
+        for connection in &line.connections {
+            if !connection.is_blocked {
+                edges.push(connection.yield_triple())
+            }
+        }
+    }
+    let graph = UnGraph::from_edges(edges);
+    graph
 }

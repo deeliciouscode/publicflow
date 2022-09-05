@@ -1,20 +1,17 @@
-mod action;
-mod cli;
 mod config;
 mod connection;
-mod enums;
+mod control;
 mod helper;
 mod line;
 mod network;
 mod pathstate;
 mod person;
-mod platform;
 mod pod;
 mod state;
 mod station;
 
-use crate::cli::run_cli;
 use crate::config::{load_yaml, parse_config, CONFIG_PATH};
+use crate::control::cli::run_cli;
 use crate::state::State;
 use ggez::event::{self};
 use ggez::ContextBuilder;

@@ -1,4 +1,5 @@
-use crate::enums::{Direction, LineName};
+use crate::helper::enums::{Direction, LineName};
+use crate::station::platformstate::PlatformState;
 use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
@@ -67,12 +68,4 @@ impl Platform {
             }
         }
     }
-}
-
-#[derive(Clone, Debug)]
-pub enum PlatformState {
-    Operational,
-    Passable,
-    Queuable { queue: Vec<i32> },
-    InvalidState { reason: String },
 }
