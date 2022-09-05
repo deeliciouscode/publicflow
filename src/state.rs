@@ -1,7 +1,7 @@
 use crate::action::{Actions, GetAction, SetAction};
 use crate::cli::recv_queries;
 use crate::config::Config;
-use crate::enums::LineName;
+use crate::enums::{Direction, LineName};
 use crate::helper::{apply_zoom, format_seconds};
 use crate::line::{Line, LineState};
 use crate::network::Network;
@@ -232,9 +232,16 @@ impl State {
             for abstract_platform in abstract_platforms {
                 platforms.push(Platform::new(
                     abstract_platform.0,
+                    Direction::Pos,
                     &abstract_platform.1,
                     &abstract_platform.2,
-                ))
+                ));
+                platforms.push(Platform::new(
+                    abstract_platform.0,
+                    Direction::Neg,
+                    &abstract_platform.1,
+                    &abstract_platform.2,
+                ));
             }
 
             stations.push(Station {
