@@ -1,7 +1,8 @@
+use std::collections::VecDeque;
+
 #[derive(Clone, Debug)]
 pub enum PlatformState {
-    Operational,
+    Operational { queue: VecDeque<i32> },
+    Queuable { queue: VecDeque<i32> },
     Passable,
-    Queuable { queue: Vec<i32> },
-    _InvalidState { reason: String },
 }

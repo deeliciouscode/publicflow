@@ -138,9 +138,11 @@ impl Pod {
                 }
             }
             PodState::InQueue {
-                station_id: _,
+                station_id,
                 coordinates: _,
-            } => {}
+            } => {
+                self.check_if_in_station(network, *station_id);
+            }
             PodState::InvalidState { reason } => {
                 panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
             }
@@ -151,32 +153,33 @@ impl Pod {
         self.line_state.update_line_ix();
         self.line_state.set_next_station_ix();
         let station_id_to = self.state.get_station_id_to();
-        let maybe_platform = net.try_get_platform_by_station_id_and_line_name(
-            station_id_to,
-            &self.line_state.line.name,
-        );
+        let maybe_platform = net.try_get_platform(station_id_to, &self.line_state.line.name);
 
         match maybe_platform {
             Some(platform) => {
-                if platform.is_operational() {
-                    self.state = self.state.to_just_arrived();
+                if platform.is_passable() {
+                    println!("Passable is not yet implemented so the behaviour is the same as for operational.")
+                } else {
                     platform.register_pod(self.id);
-                } else if platform.is_queuable() {
                     self.state = self.state.to_in_queue();
-                    platform.queue_pod(self.id);
                 }
-                // println!("Platform: {:?}", platform)
             }
             None => {
                 println!("Got no platform back")
             }
         }
+    }
 
-        // let arrived_in_id = self.state.get_station_id();
-        // match maybe_station {
-        //     Some(station) => station.register_pod(self.id),
-        //     None => panic!("There is no station with id: {}", arrived_in_id),
-        // }
+    fn check_if_in_station(&mut self, net: &mut Network, station_id: i32) {
+        let maybe_platform = net.try_get_platform(station_id, &self.line_state.line.name);
+        match maybe_platform {
+            Some(platform) => {
+                if platform.pods_at_platform.contains(&self.id) {
+                    self.state = self.state.to_just_arrived()
+                }
+            }
+            None => panic!("There is no station with id: {}", station_id),
+        }
     }
 
     fn depart_from_station(&mut self, net: &mut Network) {
@@ -202,8 +205,7 @@ impl Pod {
             None => panic!("There is no connection between: {} and {}", current, next),
         }
 
-        let maybe_platform =
-            net.try_get_platform_by_station_id_and_line_name(current, &self.line_state.line.name);
+        let maybe_platform = net.try_get_platform(current, &self.line_state.line.name);
 
         match maybe_platform {
             Some(platform) => platform.deregister_pod(self.id),

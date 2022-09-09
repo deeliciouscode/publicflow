@@ -113,11 +113,7 @@ impl Network {
         return None;
     }
 
-    pub fn try_get_platform_by_station_id_and_line_name(
-        &mut self,
-        id: i32,
-        line_name: &LineName,
-    ) -> Option<&mut Platform> {
+    pub fn try_get_platform(&mut self, id: i32, line_name: &LineName) -> Option<&mut Platform> {
         for station in &mut self.stations {
             if station.id == id {
                 for platform in &mut station.platforms {

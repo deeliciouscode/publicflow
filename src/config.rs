@@ -34,7 +34,7 @@ pub fn load_yaml(config_root: &str, config_name: &str) -> Yaml {
 pub struct NetworkConfig {
     pub n_stations: i32,
     pub coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))>,
-    pub platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>>,
+    pub platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, Vec<LineName>)>>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
 }
@@ -273,7 +273,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
     let mut n_stations: i64 = 0;
     let mut coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
-    let mut platforms_to_stations: HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>> =
+    let mut platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, Vec<LineName>)>> =
         HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
@@ -414,7 +414,7 @@ fn update_edge_map_and_group_platforms(
     name: &LineName,
     station_ids: &Vec<i32>,
     circular: bool,
-    platforms_to_stations: &mut HashMap<i32, Vec<(i32, HashSet<i32>, Vec<LineName>)>>,
+    platforms_to_stations: &mut HashMap<i32, Vec<(HashSet<i32>, Vec<LineName>)>>,
     edge_map: &mut HashMap<i32, HashSet<i32>>,
 ) {
     for i in 0..station_ids.len() {
@@ -424,12 +424,6 @@ fn update_edge_map_and_group_platforms(
             edge_map.insert(station_id, HashSet::new());
         }
 
-        let mut next_platform_id: i32 = 0;
-        if platforms_to_stations.contains_key(&station_id) {
-            if let Some(platforms) = platforms_to_stations.get(&station_id) {
-                next_platform_id = platforms.len() as i32;
-            }
-        }
         let mut stations_involved = HashSet::from([]);
         if i > 0 && i < station_ids.len() - 1 {
             stations_involved.insert(station_ids[i - 1]);
@@ -448,32 +442,24 @@ fn update_edge_map_and_group_platforms(
         if let Some(platforms) = platforms_to_stations.get_mut(&station_id) {
             let mut platform_existed_already = false;
             // TODO: try to simplify this
-            for (_, stations, _) in platforms.clone() {
+            for (stations, _) in platforms.clone() {
                 if stations == stations_involved {
                     platform_existed_already = true;
                 }
             }
             if platform_existed_already {
-                for (_, stations, names) in platforms {
+                for (stations, names) in platforms {
                     if stations == &stations_involved {
                         names.push(name.clone());
                     }
                 }
             } else {
-                platforms.push((
-                    next_platform_id,
-                    stations_involved.clone(),
-                    vec![name.clone()],
-                ));
+                platforms.push((stations_involved.clone(), vec![name.clone()]));
             }
         } else {
             platforms_to_stations.insert(
                 station_id,
-                vec![(
-                    next_platform_id,
-                    stations_involved.clone(),
-                    vec![name.clone()],
-                )],
+                vec![(stations_involved.clone(), vec![name.clone()])],
             );
         }
 

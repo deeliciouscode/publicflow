@@ -6,6 +6,7 @@ use crate::station::platformstate::PlatformState;
 use ggez::graphics::{Font, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
+use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
 pub struct Station {
@@ -21,7 +22,11 @@ pub struct Station {
 }
 
 impl Station {
-    pub fn update(&self) {}
+    pub fn update(&mut self) {
+        for platform in &mut self.platforms {
+            platform.update();
+        }
+    }
 
     pub fn get_pods_in_station_as_vec(&self) -> Vec<i32> {
         let mut pods_in_station: Vec<i32> = vec![];
@@ -36,12 +41,12 @@ impl Station {
         let mut platforms_string = "".to_string();
         for platform in &self.platforms {
             platforms_string.push_str(&format!(
-                "\n ID: {} | Neighbors: {:?} | Lines: {:?} | State: {:?} | Pods: {:?}",
-                platform.id,
+                "\n Lines: {:?} | Neighbors: {:?} | Direction: {:?} | State: {:?} | Pods: {:?}",
                 platform.edges_to,
                 platform.lines_using_this,
+                platform.direction,
                 platform.state,
-                platform.pods_at_platform
+                platform.pods_at_platform,
             ))
         }
         platforms_string
@@ -50,7 +55,21 @@ impl Station {
     pub fn make_operational(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
-                platform.state = PlatformState::Operational
+                match &platform.state {
+                    PlatformState::Queuable { queue } => {
+                        platform.state = PlatformState::Operational {
+                            queue: queue.clone(),
+                        }
+                    }
+                    PlatformState::Passable => {
+                        platform.state = PlatformState::Operational {
+                            queue: VecDeque::from([]),
+                        }
+                    }
+                    PlatformState::Operational { queue: _ } => {
+                        panic!("Is Operational already.")
+                    }
+                }
             }
         }
     }
@@ -63,10 +82,13 @@ impl Station {
         }
     }
 
+    // TODO: preserve queue
     pub fn make_queuable(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
-                platform.state = PlatformState::Queuable { queue: vec![] }
+                platform.state = PlatformState::Queuable {
+                    queue: VecDeque::from([]),
+                }
             }
         }
     }

@@ -99,6 +99,7 @@ impl State {
                             println!("----------------------");
                             println!("Id: {}", pod.id);
                             println!("Capacity: {:?}", pod.capacity);
+                            println!("State: {:?}", pod.state);
                             println!("People in Pod: {:?}", pod.people_in_pod.len());
                             println!("Last Station: {:?}", pod.line_state.line_ix);
                             println!("Next Station: {:?}", pod.line_state.next_ix);
@@ -238,16 +239,14 @@ impl State {
 
             for abstract_platform in abstract_platforms {
                 platforms.push(Platform::new(
-                    abstract_platform.0,
                     Direction::Pos,
+                    &abstract_platform.0,
                     &abstract_platform.1,
-                    &abstract_platform.2,
                 ));
                 platforms.push(Platform::new(
-                    abstract_platform.0,
                     Direction::Neg,
+                    &abstract_platform.0,
                     &abstract_platform.1,
-                    &abstract_platform.2,
                 ));
             }
 

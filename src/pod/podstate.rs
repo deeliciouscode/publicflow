@@ -80,13 +80,11 @@ impl PodState {
 
     pub fn to_just_arrived(&self) -> PodState {
         match self {
-            PodState::BetweenStations {
-                station_id_from: _,
-                station_id_to,
-                time_to_next_station: _,
+            PodState::InQueue {
+                station_id,
                 coordinates,
             } => PodState::JustArrived {
-                station_id: *station_id_to,
+                station_id: *station_id,
                 coordinates: *coordinates,
             },
             _ => PodState::InvalidState {
