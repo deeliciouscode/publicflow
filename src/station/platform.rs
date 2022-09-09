@@ -31,6 +31,7 @@ impl Platform {
         }
     }
 
+    // TODO: choose sensible rate at which a platform can let pods through
     pub fn update(&mut self) {
         self.since_last_pod += 1;
         if self.since_last_pod > 30 {
@@ -44,14 +45,14 @@ impl Platform {
         }
     }
 
-    pub fn is_operational(&self) -> bool {
+    pub fn _is_operational(&self) -> bool {
         match self.state {
             PlatformState::Operational { queue: _ } => true,
             _ => false,
         }
     }
 
-    pub fn is_queuable(&self) -> bool {
+    pub fn _is_queuable(&self) -> bool {
         match self.state {
             PlatformState::Queuable { queue: _ } => true,
             _ => false,
@@ -114,21 +115,5 @@ impl Platform {
 
     pub fn deregister_pod(&mut self, pod_id: i32) {
         self.pods_at_platform.remove(&pod_id);
-    }
-
-    pub fn queue_pod(&mut self, pod_id: i32) {
-        match &self.state {
-            PlatformState::Queuable { queue } => {
-                let mut new_queue = queue.clone();
-                new_queue.push_back(pod_id);
-                self.state = PlatformState::Queuable { queue: new_queue }
-            }
-            _ => {
-                println!(
-                    "Pod can not be queued because platform is in state {:?}",
-                    self.state
-                )
-            }
-        }
     }
 }

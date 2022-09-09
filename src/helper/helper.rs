@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::connection::YieldTriple;
 use crate::helper::enums::LineName;
-use crate::line::Line;
+use crate::line::line::Line;
 use crate::network::Network;
 use geoutils::Location;
 use petgraph::graph::UnGraph;

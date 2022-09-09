@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::helper::enums::LineName;
-use crate::line::LineState;
+use crate::line::linestate::LineState;
 use crate::network::Network;
 use crate::pod::podstate::PodState;
 use ggez::{graphics, Context, GameResult};
@@ -153,7 +153,11 @@ impl Pod {
         self.line_state.update_line_ix();
         self.line_state.set_next_station_ix();
         let station_id_to = self.state.get_station_id_to();
-        let maybe_platform = net.try_get_platform(station_id_to, &self.line_state.line.name);
+        let maybe_platform = net.try_get_platform(
+            station_id_to,
+            &self.line_state.line.name,
+            self.line_state.get_direction(),
+        );
 
         match maybe_platform {
             Some(platform) => {
@@ -171,7 +175,11 @@ impl Pod {
     }
 
     fn check_if_in_station(&mut self, net: &mut Network, station_id: i32) {
-        let maybe_platform = net.try_get_platform(station_id, &self.line_state.line.name);
+        let maybe_platform = net.try_get_platform(
+            station_id,
+            &self.line_state.line.name,
+            self.line_state.get_direction(),
+        );
         match maybe_platform {
             Some(platform) => {
                 if platform.pods_at_platform.contains(&self.id) {
@@ -205,7 +213,11 @@ impl Pod {
             None => panic!("There is no connection between: {} and {}", current, next),
         }
 
-        let maybe_platform = net.try_get_platform(current, &self.line_state.line.name);
+        let maybe_platform = net.try_get_platform(
+            current,
+            &self.line_state.line.name,
+            self.line_state.get_direction(),
+        );
 
         match maybe_platform {
             Some(platform) => platform.deregister_pod(self.id),

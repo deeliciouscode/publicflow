@@ -1,8 +1,9 @@
 use crate::config::Config;
 use crate::control::action::SetAction;
+use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;
 use crate::helper::helper::{calc_graph, get_screen_coordinates};
-use crate::line::Line;
+use crate::line::line::Line;
 use crate::station::platform::Platform;
 use crate::station::station::Station;
 use ggez::Context;
@@ -113,11 +114,18 @@ impl Network {
         return None;
     }
 
-    pub fn try_get_platform(&mut self, id: i32, line_name: &LineName) -> Option<&mut Platform> {
+    pub fn try_get_platform(
+        &mut self,
+        id: i32,
+        line_name: &LineName,
+        direction: Direction,
+    ) -> Option<&mut Platform> {
         for station in &mut self.stations {
             if station.id == id {
                 for platform in &mut station.platforms {
-                    if platform.lines_using_this.contains(line_name) {
+                    if platform.lines_using_this.contains(line_name)
+                        && platform.direction == direction
+                    {
                         return Some(platform);
                     }
                 }

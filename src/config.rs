@@ -1,7 +1,7 @@
 use crate::connection::Connection;
 use crate::helper::enums::LineName;
 use crate::helper::helper::transform_line_name_to_enum;
-use crate::line::Line;
+use crate::line::line::Line;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;

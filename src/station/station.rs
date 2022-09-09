@@ -82,12 +82,23 @@ impl Station {
         }
     }
 
-    // TODO: preserve queue
     pub fn make_queuable(&mut self, line: &LineName) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) {
-                platform.state = PlatformState::Queuable {
-                    queue: VecDeque::from([]),
+                match &platform.state {
+                    PlatformState::Operational { queue } => {
+                        platform.state = PlatformState::Queuable {
+                            queue: queue.clone(),
+                        }
+                    }
+                    PlatformState::Passable => {
+                        platform.state = PlatformState::Queuable {
+                            queue: VecDeque::from([]),
+                        }
+                    }
+                    PlatformState::Queuable { queue: _ } => {
+                        panic!("Is Queuable already.")
+                    }
                 }
             }
         }
