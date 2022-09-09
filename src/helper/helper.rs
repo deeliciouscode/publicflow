@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::connection::YieldTriple;
 use crate::helper::enums::LineName;
 use crate::line::line::Line;

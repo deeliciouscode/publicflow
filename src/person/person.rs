@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::control::action::SetAction;
 use crate::helper::helper::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;

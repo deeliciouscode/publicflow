@@ -1,3 +1,7 @@
+use crate::config::constants::{
+    CONFIG_ROOT, GENERAL_CONFIG_NAME, LINES_CONFIG_NAME, STATIONS_CONFIG_NAME,
+};
+use crate::config::structs::{Config, LogicConfig, NetworkConfig, VisualConfig};
 use crate::connection::Connection;
 use crate::helper::enums::LineName;
 use crate::helper::helper::transform_line_name_to_enum;
@@ -7,16 +11,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
-
-// CONSTANTS
-pub const _SPEED_FACTOR: u64 = 1000;
-pub const _SIMULATION_DURATION: u64 = 1000;
-
-pub const CONFIG_ROOT: &str = "./config/";
-pub const CONFIG_NAME: &str = "config.yaml";
-pub const GENERAL_CONFIG_NAME: &str = "general.yaml";
-pub const STATIONS_CONFIG_NAME: &str = "stations.yaml";
-pub const LINES_CONFIG_NAME: &str = "lines.yaml";
 
 pub fn load_yaml(config_root: &str, config_name: &str) -> Yaml {
     let config_path = format!("{}{}", config_root, config_name);
@@ -28,50 +22,6 @@ pub fn load_yaml(config_root: &str, config_name: &str) -> Yaml {
 
     let docs = YamlLoader::load_from_str(&contents).unwrap();
     return docs[0].clone();
-}
-
-#[derive(Debug, Clone)]
-pub struct NetworkConfig {
-    pub n_stations: i32,
-    pub coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))>,
-    pub platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, Vec<LineName>)>>,
-    pub edge_map: HashMap<i32, HashSet<i32>>,
-    pub lines: Vec<Line>,
-}
-
-#[derive(Debug, Clone)]
-pub struct LogicConfig {
-    pub number_of_people: i32,
-    pub number_of_pods: i32,
-    pub pod_capacity: i32,
-    pub transition_time: i32,
-    pub pod_spawn_rate: i32,
-    pub on_pause: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct VisualConfig {
-    pub screen_size: (f32, f32),
-    pub latitude_range_bounds: (f32, f32),
-    pub longitude_range_bounds: (f32, f32),
-    pub latitude_range_current: (f32, f32),
-    pub longitude_range_current: (f32, f32),
-    pub screen_offset: f32,
-    pub radius_station: f32,
-    pub radius_pod: f32,
-    pub width_line: f32,
-    pub desired_fps: u32,
-    pub vsync: bool,
-    pub last_mouse: (f32, f32),
-    pub last_mouse_while_zooming_relative: (f32, f32),
-    pub last_mouse_left: (f32, f32),
-}
-
-#[derive(Debug, Clone)]
-pub struct Config {
-    pub network: NetworkConfig,
-    pub logic: LogicConfig,
-    pub visual: VisualConfig,
 }
 
 pub fn parse_or_override_visual_config(raw_config: &Yaml, visual_config: &mut VisualConfig) {
@@ -178,9 +128,9 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
                         logic_config.transition_time = *value as i32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("pod_spawn_rate"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("pods_per_hour"))) {
                     if let Yaml::Integer(value) = yaml {
-                        logic_config.pod_spawn_rate = *value as i32;
+                        logic_config.pods_per_hour = *value as i32;
                     }
                 }
             }
@@ -228,7 +178,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         number_of_pods: number_of_pods,
         pod_capacity: i32::default(),
         transition_time: i32::default(),
-        pod_spawn_rate: i32::default(),
+        pods_per_hour: i32::default(),
         on_pause: false,
     };
 

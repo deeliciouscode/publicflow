@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::control::action::{Actions, DoAction, GetAction, SetAction};
 use crate::control::cli::recv_queries;
 use crate::helper::enums::{Direction, LineName};
@@ -240,11 +240,13 @@ impl State {
 
             for abstract_platform in abstract_platforms {
                 platforms.push(Platform::new(
+                    &config,
                     Direction::Pos,
                     &abstract_platform.0,
                     &abstract_platform.1,
                 ));
                 platforms.push(Platform::new(
+                    &config,
                     Direction::Neg,
                     &abstract_platform.0,
                     &abstract_platform.1,

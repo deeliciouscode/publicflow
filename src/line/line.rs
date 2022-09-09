@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::connection::{Connection, YieldTuple};
 use crate::helper::enums::LineName;
 use crate::helper::helper::get_screen_coordinates;

@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::control::action::SetAction;
 use crate::network::Network;
 use crate::pod::pod::Pod;

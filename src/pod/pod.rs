@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::helper::enums::LineName;
 use crate::line::linestate::LineState;
 use crate::network::Network;
@@ -164,8 +164,12 @@ impl Pod {
                 if platform.is_passable() {
                     println!("Passable is not yet implemented so the behaviour is the same as for operational.")
                 } else {
-                    platform.register_pod(self.id);
-                    self.state = self.state.to_in_queue();
+                    let is_at_platform = platform.register_pod(self.id);
+                    if is_at_platform {
+                        self.state = self.state.to_just_arrived();
+                    } else {
+                        self.state = self.state.to_in_queue();
+                    }
                 }
             }
             None => {

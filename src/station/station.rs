@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::helper::enums::LineName;
 use crate::helper::helper::get_screen_coordinates;
 use crate::station::platform::Platform;

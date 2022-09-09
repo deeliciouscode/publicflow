@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::control::action::SetAction;
 use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;

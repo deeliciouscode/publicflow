@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::structs::Config;
 use crate::helper::helper::get_screen_coordinates;
 use crate::network::Network;
 use crate::pod::pod::Pod;
@@ -80,6 +80,15 @@ impl PodState {
 
     pub fn to_just_arrived(&self) -> PodState {
         match self {
+            PodState::BetweenStations {
+                station_id_from: _,
+                station_id_to,
+                time_to_next_station: _,
+                coordinates,
+            } => PodState::JustArrived {
+                station_id: *station_id_to,
+                coordinates: *coordinates,
+            },
             PodState::InQueue {
                 station_id,
                 coordinates,

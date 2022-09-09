@@ -18,4 +18,4 @@ logic:
   number_of_people: 1000
   pod_capacity: 20
   transition_time: 30
-  pod_spawn_rate: 30
+  pods_per_hour: 60
