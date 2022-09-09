@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::helper::enums::LineName;
+use crate::helper::enums::{Direction, LineName};
 use crate::helper::helper::get_screen_coordinates;
 use crate::station::platform::Platform;
 use crate::station::platformstate::PlatformState;
@@ -52,9 +52,9 @@ impl Station {
         platforms_string
     }
 
-    pub fn make_operational(&mut self, line: &LineName) {
+    pub fn make_operational(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
-            if platform.lines_using_this.contains(line) {
+            if platform.lines_using_this.contains(line) && &platform.direction == direction {
                 match &platform.state {
                     PlatformState::Queuable { queue } => {
                         platform.state = PlatformState::Operational {
@@ -67,24 +67,24 @@ impl Station {
                         }
                     }
                     PlatformState::Operational { queue: _ } => {
-                        panic!("Is Operational already.")
+                        println!("Is Operational already.")
                     }
                 }
             }
         }
     }
 
-    pub fn make_passable(&mut self, line: &LineName) {
+    pub fn make_passable(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
-            if platform.lines_using_this.contains(line) {
+            if platform.lines_using_this.contains(line) && &platform.direction == direction {
                 platform.state = PlatformState::Passable
             }
         }
     }
 
-    pub fn make_queuable(&mut self, line: &LineName) {
+    pub fn make_queuable(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
-            if platform.lines_using_this.contains(line) {
+            if platform.lines_using_this.contains(line) && &platform.direction == direction {
                 match &platform.state {
                     PlatformState::Operational { queue } => {
                         platform.state = PlatformState::Queuable {
@@ -97,7 +97,7 @@ impl Station {
                         }
                     }
                     PlatformState::Queuable { queue: _ } => {
-                        panic!("Is Queuable already.")
+                        println!("Is Queuable already.")
                     }
                 }
             }

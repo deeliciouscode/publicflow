@@ -1,6 +1,6 @@
 use crate::config::structs::Config;
 use crate::connection::YieldTriple;
-use crate::helper::enums::LineName;
+use crate::helper::enums::{Direction, LineName};
 use crate::line::line::Line;
 use crate::network::Network;
 use geoutils::Location;
@@ -133,6 +133,33 @@ pub fn transform_line_name_to_enum(line_name: &str) -> LineName {
             panic!("Couldn't parse \'{}\' into i32", id_str);
         }
     }
+}
+
+pub fn parse_make_arg_to_line_and_direction(
+    line_and_direction: &str,
+) -> (LineName, Vec<Direction>) {
+    let line_name_str = line_and_direction.replace(&['+', '-'][..], "");
+    let line_name = transform_line_name_to_enum(&line_name_str);
+    let mut directions = vec![];
+
+    let contains_plus = line_and_direction.contains('+');
+    let contains_minus = line_and_direction.contains('-');
+
+    if contains_plus {
+        directions.push(Direction::Pos);
+    }
+
+    if contains_minus {
+        directions.push(Direction::Neg);
+    }
+
+    // default should block both directions
+    if !contains_plus && !contains_minus {
+        directions.push(Direction::Pos);
+        directions.push(Direction::Neg);
+    }
+
+    return (line_name, directions);
 }
 
 pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {

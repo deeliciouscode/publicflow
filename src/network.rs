@@ -68,26 +68,38 @@ impl Network {
                         }
                         recalculate_graph = true;
                     }
-                    SetAction::MakePlatformOperational { station_id, line } => {
+                    SetAction::MakePlatformOperational {
+                        station_id,
+                        line,
+                        direction,
+                    } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_operational(line);
+                                station.make_operational(line, direction);
                                 recalculate_graph = true;
                             }
                         }
                     }
-                    SetAction::MakePlatformPassable { station_id, line } => {
+                    SetAction::MakePlatformPassable {
+                        station_id,
+                        line,
+                        direction,
+                    } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_passable(line);
+                                station.make_passable(line, direction);
                                 recalculate_graph = true;
                             }
                         }
                     }
-                    SetAction::MakePlatformQueuable { station_id, line } => {
+                    SetAction::MakePlatformQueuable {
+                        station_id,
+                        line,
+                        direction,
+                    } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_queuable(line);
+                                station.make_queuable(line, direction);
                                 recalculate_graph = true;
                             }
                         }

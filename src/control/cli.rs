@@ -75,7 +75,7 @@ fn parse_input(input_list: &Vec<&str>) -> Actions {
             actions.set_actions = parse_route(&input_list);
         }
         "make" | "m" => {
-            actions.set_actions = parse_make(&input_list);
+            actions.set_actions = parse_make(&input_list); // make platform op 0 u1 -> make platform 0 u1 - op
         }
         "run" => actions = run_script(&input_list),
         _ => {}

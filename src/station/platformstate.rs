@@ -10,8 +10,7 @@ pub enum PlatformState {
 impl PlatformState {
     pub fn get_queue(&self) -> &VecDeque<i32> {
         match self {
-            PlatformState::Operational { queue } => queue,
-            PlatformState::Queuable { queue } => queue,
+            PlatformState::Operational { queue } | PlatformState::Queuable { queue } => queue,
             PlatformState::Passable => {
                 panic!("PlatformState::Passable doesn't have a queue")
             }
