@@ -102,8 +102,14 @@ impl State {
                             println!("Capacity: {:?}", pod.capacity);
                             println!("State: {:?}", pod.state);
                             println!("People in Pod: {:?}", pod.people_in_pod.len());
-                            println!("Last Station: {:?}", pod.line_state.line_ix);
-                            println!("Next Station: {:?}", pod.line_state.next_ix);
+                            println!(
+                                "Last Station: {:?}",
+                                pod.line_state.line.stations[pod.line_state.line_ix as usize]
+                            );
+                            println!(
+                                "Next Station: {:?}",
+                                pod.line_state.line.stations[pod.line_state.next_ix as usize]
+                            );
                             println!("----------------------");
                         }
                         None => {
@@ -341,7 +347,7 @@ impl State {
         for pod_id in 0..self.config.logic.number_of_pods {
             pods.push(Pod::new(
                 pod_id,
-                10,
+                self.config.logic.pod_in_station_seconds,
                 self.config.logic.pod_capacity,
                 calc_line_state(&pod_id),
             ));

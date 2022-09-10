@@ -1,7 +1,7 @@
 - circular: false
   distances: [1000, 1000, 1000, 1000]
   name: u1
-  stations: [1, 10, 0, 100, 1000]
+  stations: [1000, 100, 0, 10, 1]
 - circular: false
   distances: [1000, 1000, 1000, 1000]
   name: u2

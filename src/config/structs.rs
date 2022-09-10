@@ -6,7 +6,7 @@ use std::collections::{HashMap, HashSet};
 pub struct NetworkConfig {
     pub n_stations: i32,
     pub coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))>,
-    pub platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, Vec<LineName>)>>,
+    pub platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>>,
     pub edge_map: HashMap<i32, HashSet<i32>>,
     pub lines: Vec<Line>,
 }
@@ -17,6 +17,7 @@ pub struct LogicConfig {
     pub number_of_pods: i32,
     pub pod_capacity: i32,
     pub transition_time: i32,
+    pub pod_in_station_seconds: i32,
     pub pods_per_hour: i32,
     pub shuffle_people: bool,
     pub on_pause: bool,

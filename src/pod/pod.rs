@@ -30,7 +30,7 @@ impl Pod {
             line_state: line_state,
             state: PodState::InStation {
                 station_id: station_id,
-                time_in_station: 0,
+                time_in_station: in_station_for,
                 coordinates: (0., 0.),
             },
         }
@@ -130,7 +130,9 @@ impl Pod {
                 time_in_station,
                 coordinates: _,
             } => {
-                // println!("Pod in InStation state");
+                // if self.id == 0 {
+                //     println!("Pod 0 in InStation state {}, {}", self.in_station_for, time_in_station);
+                // }
                 if self.in_station_for > *time_in_station {
                     self.state = self.state.wait_a_sec();
                 } else {
@@ -211,21 +213,20 @@ impl Pod {
                     // println!("is blocked: {}", connection.is_blocked)
                 }
                 if !connection.is_blocked {
+                    let maybe_platform = net.try_get_platform(
+                        current,
+                        &self.line_state.line.name,
+                        self.line_state.get_direction(),
+                    );
+
+                    match maybe_platform {
+                        Some(platform) => platform.deregister_pod(self.id),
+                        None => panic!("There is no station with id: {}", current),
+                    }
                     self.state = self.state.to_between_stations(next, connection.travel_time);
                 }
             }
             None => panic!("There is no connection between: {} and {}", current, next),
-        }
-
-        let maybe_platform = net.try_get_platform(
-            current,
-            &self.line_state.line.name,
-            self.line_state.get_direction(),
-        );
-
-        match maybe_platform {
-            Some(platform) => platform.deregister_pod(self.id),
-            None => panic!("There is no station with id: {}", current),
         }
     }
 

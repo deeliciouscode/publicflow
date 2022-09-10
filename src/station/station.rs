@@ -42,8 +42,8 @@ impl Station {
         for platform in &self.platforms {
             platforms_string.push_str(&format!(
                 "\n Lines: {:?} | Neighbors: {:?} | Direction: {:?} | State: {:?} | Pods: {:?}",
-                platform.edges_to,
                 platform.lines_using_this,
+                platform.edges_to,
                 platform.direction,
                 platform.state,
                 platform.pods_at_platform,

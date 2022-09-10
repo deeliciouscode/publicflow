@@ -10,7 +10,7 @@ pub struct Platform {
     pub since_last_pod: i32,
     pub seconds_between_pods: i32,
     pub edges_to: HashSet<i32>,
-    pub lines_using_this: Vec<LineName>,
+    pub lines_using_this: HashSet<LineName>,
     pub pods_at_platform: HashSet<i32>,
     pub state: PlatformState,
 }
@@ -20,7 +20,7 @@ impl Platform {
         config: &Config,
         direction: Direction,
         edges_to: &HashSet<i32>,
-        lines_using_this: &Vec<LineName>,
+        lines_using_this: &HashSet<LineName>,
     ) -> Self {
         Platform {
             direction: direction,
@@ -41,7 +41,7 @@ impl Platform {
         // if self.edges_to == HashSet::from([1, 0]) && self.direction == Direction::Pos {
         //     println!("Since last pod: {} | seconds between: {}", self.since_last_pod, self.seconds_between_pods);
         // }
-        if self.since_last_pod >= self.seconds_between_pods {
+        if self.since_last_pod >= self.seconds_between_pods && self.pods_at_platform.len() == 0 {
             match self.state {
                 PlatformState::Operational { queue: _ } => {
                     self.let_pod_enter();
@@ -112,6 +112,7 @@ impl Platform {
                 self.state = PlatformState::Operational { queue: new_queue };
                 if self.state.get_queue().len() == 1
                     && self.since_last_pod >= self.seconds_between_pods
+                    && self.pods_at_platform.len() == 0
                 {
                     self.let_pod_enter();
                     return true;
