@@ -185,7 +185,7 @@ impl Station {
         //     println!("calculated radius: {} | radius: {}", calculated_radius, radius);
         // }
 
-        let red = radius / fair_share;
+        let red = self.people_in_station.len() as f32 / fair_share;
         let green = 1. - red;
 
         let color_circle = [red, green, 0., 0.2].into();

@@ -1,5 +1,5 @@
 general:
-  town: "munich"
+  town: "playground"
   override: true
 visual:
   screen_size: 
