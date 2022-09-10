@@ -18,6 +18,7 @@ pub struct LogicConfig {
     pub pod_capacity: i32,
     pub transition_time: i32,
     pub pods_per_hour: i32,
+    pub shuffle_people: bool,
     pub on_pause: bool,
 }
 

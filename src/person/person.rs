@@ -9,7 +9,7 @@ use crate::pod::podsbox::PodsBox;
 use ggez::{graphics, Context, GameResult};
 use petgraph::graph::UnGraph;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Person {
     pub id: i32,
     pub visualize: bool,

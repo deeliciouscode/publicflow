@@ -43,3 +43,18 @@
   lat: 11.00
   lon: 48.10
   name: Twothousand
+- city: PlayCity
+  id: 3
+  lat: 11.05
+  lon: 48.00
+  name: Three
+- city: PlayCity
+  id: 300
+  lat: 11.05
+  lon: 48.075
+  name: Threehundred
+- city: PlayCity
+  id: 3000
+  lat: 11.05
+  lon: 48.10
+  name: Threethousand

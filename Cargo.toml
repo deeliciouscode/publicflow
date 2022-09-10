@@ -14,5 +14,6 @@ ggez = "0.7"
 itertools = "0.10.3"
 geoutils = "0.5.0"
 rustyline = "10.0.0"
+shuffle = "0.1.7"
 
 # rayon = "1.5.3"

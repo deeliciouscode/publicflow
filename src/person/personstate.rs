@@ -29,6 +29,12 @@ pub enum PersonState {
     },
 }
 
+impl Default for PersonState {
+    fn default() -> Self {
+        PersonState::ReadyToTakePod { station_id: 0 }
+    }
+}
+
 // State Transitions
 impl PersonState {
     pub fn to_riding(&self, pod_id: i32) -> PersonState {

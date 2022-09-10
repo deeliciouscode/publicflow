@@ -4,6 +4,10 @@ use crate::network::Network;
 use crate::person::person::Person;
 use crate::pod::podsbox::PodsBox;
 use ggez::Context;
+use rand::rngs::mock::StepRng;
+// use shuffle::irs::Irs; // Turned out to slow down execution too much
+use shuffle::fy::FisherYates;
+use shuffle::shuffler::Shuffler;
 // use crate::person::person::Person;
 
 // TODO: implement destinations
@@ -67,6 +71,15 @@ impl PeopleBox {
         for person in &mut self.people {
             person.get_out_if_needed(pods_box, network, config);
         }
+
+        // Only FisherYates is acceptable in terms of speed
+        // Inverse Riffle Shuffeling would be more random but so much slower
+        if config.logic.shuffle_people {
+            let mut rng = StepRng::new(2, 10);
+            let mut fy = FisherYates::default();
+            let _res = fy.shuffle(&mut self.people, &mut rng);
+        }
+
         for person in &mut self.people {
             person.update(pods_box, network, config);
         }

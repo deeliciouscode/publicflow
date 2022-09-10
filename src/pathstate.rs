@@ -4,7 +4,7 @@ use petgraph::algo::astar;
 use petgraph::graph::{NodeIndex, UnGraph};
 use std::collections::VecDeque;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct PathState {
     pub path: VecDeque<NodeIndex<u32>>,
     pub current: NodeIndex<u32>,
