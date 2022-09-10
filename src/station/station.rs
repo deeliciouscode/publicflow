@@ -167,10 +167,25 @@ impl Station {
         // }
 
         // let radius = self.people_in_station.len() as f32 / 10.;
-        let radius = self.people_in_station.len() as f32;
+        let fair_share = config.logic.number_of_people as f32 / config.network.n_stations as f32;
+        let large_share = fair_share * 3.;
+        let max_radius = config.visual.radius_station * 5.;
+        let min_radius = config.visual.radius_station;
+        let calculated_radius =
+            min_radius + (self.people_in_station.len() as f32 / large_share) * max_radius;
+        let radius;
+        if calculated_radius > max_radius {
+            radius = max_radius;
+        } else {
+            radius = calculated_radius;
+        }
 
-        let red =
-            radius / (config.logic.number_of_people as f32 / config.network.n_stations as f32);
+        // if self.id == 0 {
+        //     println!("{}, {}", self.people_in_station.len() as f32, config.logic.number_of_people as f32);
+        //     println!("calculated radius: {} | radius: {}", calculated_radius, radius);
+        // }
+
+        let red = radius / fair_share;
         let green = 1. - red;
 
         let color_circle = [red, green, 0., 0.2].into();
