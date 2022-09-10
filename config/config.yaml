@@ -1,27 +1,27 @@
 general:
-  town: "playground"
+  town: "munich"
   override: true
 visual:
   screen_size: 
     x: 1920.0
     y: 1150.0
-  latitude:
-    min: 11.00
-    max: 11.10
-  longitude:
-    min: 48.00
-    max: 48.10
+  # latitude:
+  #   min: 11.00
+  #   max: 11.10
+  # longitude:
+  #   min: 48.00
+  #   max: 48.10
   screen_offset: 100.0
   radius_station: 10.0
   radius_pod: 5.0
   width_line: 2.0
-  desired_fps: 200 # TODO: decouple game speed from draw rate
+  desired_fps: 60 # TODO: decouple game speed from draw rate
   vsync: true
 logic:
-  number_of_people: 1000
-  pod_capacity: 20
-  transition_time: 60
-  pod_in_station_seconds: 40
-  pods_per_hour: 40
+  number_of_people: 2000
+  pod_capacity: 30
+  transition_time: 30
+  pod_in_station_seconds: 30
+  pods_per_hour: 30
   shuffle_people: true
 

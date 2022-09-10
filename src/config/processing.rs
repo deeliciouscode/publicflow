@@ -236,7 +236,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
     let mut n_stations: i64 = 0;
     let mut coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
-    let mut platforms_to_stations: HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>> =
+    let mut station_platforms: HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>> =
         HashMap::new();
     let mut lines: Vec<Line> = vec![];
     let mut edge_map: HashMap<i32, HashSet<i32>> = HashMap::new();
@@ -339,7 +339,7 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                     &line_name,
                     &stations,
                     circular,
-                    &mut platforms_to_stations,
+                    &mut station_platforms,
                     &mut edge_map,
                 );
                 let connections = calc_connections(&line_name, &stations, circular, &distances);
@@ -357,7 +357,7 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
         }
     }
 
-    // println!("{:?}", platforms_to_stations);
+    // println!("{:?}", station_platforms);
 
     // TODO: find more elegant way to do this
     let n_pods = n_stations_line_separated;
@@ -365,7 +365,7 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
     let network_config = NetworkConfig {
         n_stations: n_stations as i32,
         coordinates_map_stations: coordinates_map_stations,
-        platforms_to_stations: platforms_to_stations,
+        station_platforms: station_platforms,
         edge_map: edge_map,
         lines: lines,
     };
@@ -374,10 +374,10 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
 }
 
 fn update_edge_map_and_group_platforms(
-    name: &LineName,
+    line_name: &LineName,
     station_ids: &Vec<i32>,
     circular: bool,
-    platforms_to_stations: &mut HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>>,
+    station_platforms: &mut HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>>,
     edge_map: &mut HashMap<i32, HashSet<i32>>,
 ) {
     for i in 0..station_ids.len() {
@@ -402,34 +402,74 @@ fn update_edge_map_and_group_platforms(
                 stations_involved.insert(station_ids[0]);
             }
         }
-        if let Some(platforms) = platforms_to_stations.get_mut(&station_id) {
+
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+
+        if let Some(platforms) = station_platforms.get_mut(&station_id) {
             let mut platform_existed_already = false;
-            // TODO: try to simplify this
-            for (stations, _) in platforms.clone() {
+            for (stations_existing, line_names_existing) in platforms.clone() {
                 for station in &stations_involved {
-                    if stations.contains(station) {
-                        platform_existed_already = true;
+                    let maybe_first_line_name_existing = line_names_existing.iter().next();
+                    match maybe_first_line_name_existing {
+                        Some(first_line_name_existing) => {
+                            if stations_existing.contains(station)
+                                && first_line_name_existing.in_same_line_class(line_name)
+                            {
+                                platform_existed_already = true;
+                            }
+                        }
+                        None => {}
                     }
                 }
             }
             if platform_existed_already {
-                for (stations, names) in platforms {
+                for (stations_existing, line_names_existing) in platforms {
                     for station in &stations_involved {
-                        if stations.contains(station) {
-                            stations.extend(stations_involved.clone());
-                            names.extend(HashSet::from([name.clone()])); // push(name.clone());
+                        let maybe_first_line_name_existing = line_names_existing.iter().next();
+                        match maybe_first_line_name_existing {
+                            Some(first_line_name_existing) => {
+                                if stations_existing.contains(station)
+                                    && first_line_name_existing.in_same_line_class(line_name)
+                                {
+                                    stations_existing.extend(stations_involved.clone());
+                                    line_names_existing.extend(HashSet::from([line_name.clone()]));
+                                }
+                            }
+                            None => {}
                         }
                     }
                 }
             } else {
-                platforms.push((stations_involved.clone(), HashSet::from([name.clone()])));
+                platforms.push((
+                    stations_involved.clone(),
+                    HashSet::from([line_name.clone()]),
+                ));
             }
         } else {
-            platforms_to_stations.insert(
+            station_platforms.insert(
                 station_id,
-                vec![(stations_involved.clone(), HashSet::from([name.clone()]))],
+                vec![(
+                    stations_involved.clone(),
+                    HashSet::from([line_name.clone()]),
+                )],
             );
         }
+
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
 
         if i == 0 {
             if let Some(mut_hashset) = edge_map.get_mut(&station_id) {

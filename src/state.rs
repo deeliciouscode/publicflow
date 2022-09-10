@@ -237,11 +237,7 @@ impl State {
             let (name, city, (lat, lon)) = abstract_station.1;
 
             // println!("{:?}", config.network.edge_map.get(&station_id).unwrap());
-            let abstract_platforms = config
-                .network
-                .platforms_to_stations
-                .get(station_id)
-                .unwrap();
+            let abstract_platforms = config.network.station_platforms.get(station_id).unwrap();
             let mut platforms = vec![];
 
             for abstract_platform in abstract_platforms {

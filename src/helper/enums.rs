@@ -18,6 +18,17 @@ impl PartialEq for LineName {
 
 impl Eq for LineName {}
 
+impl LineName {
+    pub fn in_same_line_class(&self, other: &Self) -> bool {
+        match (self, other) {
+            (&LineName::U(_), &LineName::U(_)) => true,
+            (&LineName::T(_), &LineName::T(_)) => true,
+            (&LineName::Placeholder, &LineName::Placeholder) => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Direction {
     Pos,
