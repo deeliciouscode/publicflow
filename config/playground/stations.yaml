@@ -8,6 +8,7 @@
   lat: 11.10
   lon: 48.10
   name: One
+  entrypoint_for: ["u1-"]
 - city: PlayCity
   id: 10
   lat: 11.075
@@ -18,16 +19,19 @@
   lat: 11.025
   lon: 48.025
   name: Hundred
+  entrypoint_for: ["u3"]
 - city: PlayCity
   id: 1000
   lat: 11.00
   lon: 48.00
-  name: Thousand  
+  name: Thousand
+  entrypoint_for: ["u1+"]  
 - city: PlayCity
   id: 2
   lat: 11.10
   lon: 48.00
   name: Two
+  entrypoint_for: ["u2+"]
 - city: PlayCity
   id: 20
   lat: 11.075
@@ -43,11 +47,13 @@
   lat: 11.00
   lon: 48.10
   name: Twothousand
+  entrypoint_for: ["u2-"]
 - city: PlayCity
   id: 3
   lat: 11.05
   lon: 48.00
   name: Three
+  entrypoint_for: ["u4+"]
 - city: PlayCity
   id: 300
   lat: 11.05
@@ -58,3 +64,4 @@
   lat: 11.05
   lon: 48.10
   name: Threethousand
+  entrypoint_for: ["u4-"]

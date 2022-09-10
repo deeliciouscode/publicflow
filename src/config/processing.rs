@@ -235,7 +235,8 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 
 pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConfig, i32) {
     let mut n_stations: i64 = 0;
-    let mut coordinates_map_stations: HashMap<i32, (String, String, (f32, f32))> = HashMap::new();
+    let mut coordinates_map_stations: HashMap<i32, (String, Vec<String>, String, (f32, f32))> =
+        HashMap::new();
     let mut station_platforms: HashMap<i32, Vec<(HashSet<i32>, HashSet<LineName>)>> =
         HashMap::new();
     let mut lines: Vec<Line> = vec![];
@@ -250,6 +251,7 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                 let mut lat: f32 = -1.0;
                 let mut lon: f32 = -1.0;
                 let mut name: String = String::from("placeholder");
+                let mut entrypoint_for: Vec<String> = vec![];
 
                 if let Some(city_yaml) = station_hash.get(&Yaml::String(String::from("city"))) {
                     // TODO finish this
@@ -286,7 +288,20 @@ pub fn gen_network_config(raw_stations: &Yaml, raw_lines: &Yaml) -> (NetworkConf
                     }
                 }
 
-                coordinates_map_stations.insert(id, (name, city, (lat, lon)));
+                if let Some(entrypoint_for_yaml) =
+                    station_hash.get(&Yaml::String(String::from("entrypoint_for")))
+                {
+                    // TODO finish this
+                    if let Yaml::Array(entrypoint_for_array) = entrypoint_for_yaml {
+                        for line_name in entrypoint_for_array {
+                            if let Yaml::String(line_name_string) = line_name {
+                                entrypoint_for.push(line_name_string.clone());
+                            }
+                        }
+                    }
+                }
+
+                coordinates_map_stations.insert(id, (name, entrypoint_for, city, (lat, lon)));
             }
         }
     }
@@ -403,15 +418,6 @@ fn update_edge_map_and_group_platforms(
             }
         }
 
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-
         if let Some(platforms) = station_platforms.get_mut(&station_id) {
             let mut platform_existed_already = false;
             for (stations_existing, line_names_existing) in platforms.clone() {
@@ -461,15 +467,6 @@ fn update_edge_map_and_group_platforms(
                 )],
             );
         }
-
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
 
         if i == 0 {
             if let Some(mut_hashset) = edge_map.get_mut(&station_id) {

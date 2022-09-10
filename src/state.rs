@@ -234,7 +234,7 @@ impl State {
         let mut stations: Vec<Station> = vec![];
         for abstract_station in config.network.coordinates_map_stations.iter() {
             let station_id = abstract_station.0;
-            let (name, city, (lat, lon)) = abstract_station.1;
+            let (name, entrypoint_for, city, (lat, lon)) = abstract_station.1;
 
             // println!("{:?}", config.network.edge_map.get(&station_id).unwrap());
             let abstract_platforms = config.network.station_platforms.get(station_id).unwrap();
@@ -243,12 +243,14 @@ impl State {
             for abstract_platform in abstract_platforms {
                 platforms.push(Platform::new(
                     &config,
+                    entrypoint_for,
                     Direction::Pos,
                     &abstract_platform.0,
                     &abstract_platform.1,
                 ));
                 platforms.push(Platform::new(
                     &config,
+                    entrypoint_for,
                     Direction::Neg,
                     &abstract_platform.0,
                     &abstract_platform.1,

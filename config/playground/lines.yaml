@@ -7,9 +7,9 @@
   name: u2
   stations: [2, 20, 0, 200, 2000]
 - circular: true
-  distances: [1400, 1400, 1400, 700, 700]
+  distances: [1400, 700, 700, 1400, 1400]
   name: u3
-  stations: [10, 20, 100, 200, 300]
+  stations: [100, 200, 300, 10, 20]
 - circular: false
   distances: [1000, 1000, 700, 700]
   name: u4

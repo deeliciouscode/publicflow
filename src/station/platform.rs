@@ -18,6 +18,7 @@ pub struct Platform {
 impl Platform {
     pub fn new(
         config: &Config,
+        entrypoint_for: &Vec<String>, // TODO: continue here. One idea would be that podsbox requests new pods from a platform
         direction: Direction,
         edges_to: &HashSet<i32>,
         lines_using_this: &HashSet<LineName>,
