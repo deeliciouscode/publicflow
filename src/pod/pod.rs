@@ -36,6 +36,55 @@ impl Pod {
         }
     }
 
+    // TODO: remove unused stuff
+    pub fn update(&mut self, network: &mut Network, config: &Config) {
+        match &self.state {
+            PodState::BetweenStations {
+                station_id_from: _,
+                station_id_to: _,
+                time_to_next_station,
+                coordinates: _,
+            } => {
+                // println!("Pod in BetweenStations State");
+                if *time_to_next_station > 0 {
+                    self.state = self.state.drive_a_sec(self, network, config);
+                } else {
+                    self.arrive_in_station(network);
+                }
+            }
+            PodState::JustArrived {
+                station_id: _,
+                coordinates: _,
+            } => {
+                // println!("Pod in JustArrived State");
+                self.state = self.state.to_in_station();
+            }
+            PodState::InStation {
+                station_id: _,
+                time_in_station,
+                coordinates: _,
+            } => {
+                // if self.id == 0 {
+                //     println!("Pod 0 in InStation state {}, {}", self.in_station_for, time_in_station);
+                // }
+                if self.in_station_for > *time_in_station {
+                    self.state = self.state.wait_a_sec();
+                } else {
+                    self.depart_from_station(network);
+                }
+            }
+            PodState::InQueue {
+                station_id,
+                coordinates: _,
+            } => {
+                self.check_if_in_station(network, *station_id);
+            }
+            PodState::InvalidState { reason } => {
+                panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
+            }
+        }
+    }
+
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
         // let red = self.people_in_pod.len() as f32 / POD_CAPACITY as f32;
         // let green = 1. - red;
@@ -100,55 +149,6 @@ impl Pod {
             _ => return [0.6, 0.6, 0.6, 1.0], // TODO: color for trams
                                               // any => panic!("The line: {} is not defined.", any),
         };
-    }
-
-    // TODO: remove unused stuff
-    pub fn update(&mut self, network: &mut Network, config: &Config) {
-        match &self.state {
-            PodState::BetweenStations {
-                station_id_from: _,
-                station_id_to: _,
-                time_to_next_station,
-                coordinates: _,
-            } => {
-                // println!("Pod in BetweenStations State");
-                if *time_to_next_station > 0 {
-                    self.state = self.state.drive_a_sec(self, network, config);
-                } else {
-                    self.arrive_in_station(network);
-                }
-            }
-            PodState::JustArrived {
-                station_id: _,
-                coordinates: _,
-            } => {
-                // println!("Pod in JustArrived State");
-                self.state = self.state.to_in_station();
-            }
-            PodState::InStation {
-                station_id: _,
-                time_in_station,
-                coordinates: _,
-            } => {
-                // if self.id == 0 {
-                //     println!("Pod 0 in InStation state {}, {}", self.in_station_for, time_in_station);
-                // }
-                if self.in_station_for > *time_in_station {
-                    self.state = self.state.wait_a_sec();
-                } else {
-                    self.depart_from_station(network);
-                }
-            }
-            PodState::InQueue {
-                station_id,
-                coordinates: _,
-            } => {
-                self.check_if_in_station(network, *station_id);
-            }
-            PodState::InvalidState { reason } => {
-                panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
-            }
-        }
     }
 
     fn arrive_in_station(&mut self, net: &mut Network) {

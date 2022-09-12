@@ -51,6 +51,44 @@ impl Person {
         person
     }
 
+    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
+        // println!("person state: {:?}", self.state);
+        match &self.state {
+            PersonState::ReadyToTakePod { station_id } => {
+                // println!("person in ready state");
+                // Assign first instead of using directly because:
+                // https://github.com/rust-lang/rust/issues/59159
+                let station_id_deref = *station_id;
+                self.try_to_take_next_pod(pods_box, network, station_id_deref, config);
+            }
+            PersonState::RidingPod { pod_id } => {
+                // println!("person in riding state");
+                let pod_id_deref = *pod_id;
+                self.ride_pod(pods_box, pod_id_deref);
+            }
+            PersonState::JustArrived {
+                pod_id: _,
+                station_id: _,
+            } => {} // This case is handled in get out if needed
+            PersonState::Transitioning {
+                station_id: _,
+                previous_pod_id: _,
+                time_in_station,
+            } => {
+                if *time_in_station < self.transition_time {
+                    // println!("person in transitioning state and not ready.");
+                    self.state = self.state.wait_a_sec();
+                } else {
+                    // println!("person in transitioning state and going to ready state.");
+                    self.state = self.state.to_ready();
+                }
+            }
+            PersonState::InvalidState { reason } => {
+                panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
+            }
+        }
+    }
+
     pub fn new_path(
         &mut self,
         graph: &UnGraph<u32, u32>,
@@ -89,44 +127,6 @@ impl Person {
             Ok(_m) => {
                 // println!("No error at 3: {:?}", m);
                 return _res;
-            }
-        }
-    }
-
-    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
-        // println!("person state: {:?}", self.state);
-        match &self.state {
-            PersonState::ReadyToTakePod { station_id } => {
-                // println!("person in ready state");
-                // Assign first instead of using directly because:
-                // https://github.com/rust-lang/rust/issues/59159
-                let station_id_deref = *station_id;
-                self.try_to_take_next_pod(pods_box, network, station_id_deref, config);
-            }
-            PersonState::RidingPod { pod_id } => {
-                // println!("person in riding state");
-                let pod_id_deref = *pod_id;
-                self.ride_pod(pods_box, pod_id_deref);
-            }
-            PersonState::JustArrived {
-                pod_id: _,
-                station_id: _,
-            } => {} // This case is handled in get out if needed
-            PersonState::Transitioning {
-                station_id: _,
-                previous_pod_id: _,
-                time_in_station,
-            } => {
-                if *time_in_station < self.transition_time {
-                    // println!("person in transitioning state and not ready.");
-                    self.state = self.state.wait_a_sec();
-                } else {
-                    // println!("person in transitioning state and going to ready state.");
-                    self.state = self.state.to_ready();
-                }
-            }
-            PersonState::InvalidState { reason } => {
-                panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
             }
         }
     }

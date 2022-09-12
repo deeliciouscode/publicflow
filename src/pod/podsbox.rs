@@ -13,6 +13,13 @@ pub struct PodsBox {
 }
 
 impl PodsBox {
+    pub fn update(&mut self, network: &mut Network, config: &Config) {
+        for pod in &mut self.pods {
+            pod.update(network, config)
+        }
+        // TODO: figure out a way to do this in parralel, maybe with message queues or something.
+        // self.pods.par_iter_mut().for_each(|pod| pod.update(network, config));
+    }
     pub fn try_get_pod_by_id_mut(&mut self, pod_id: i32) -> Option<&mut Pod> {
         for pod in &mut self.pods {
             if pod.id == pod_id {
@@ -150,14 +157,5 @@ impl PodsBox {
         for pod in &mut self.pods {
             pod.line_state.line.unblock_connection(ids_ref);
         }
-    }
-
-    pub fn update(&mut self, network: &mut Network, config: &Config) {
-        for pod in &mut self.pods {
-            pod.update(network, config)
-        }
-
-        // TODO: figure out a way to do this in parralel, maybe with message queues or something.
-        // self.pods.par_iter_mut().for_each(|pod| pod.update(network, config));
     }
 }
