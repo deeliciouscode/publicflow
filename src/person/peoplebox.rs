@@ -26,48 +26,7 @@ impl PeopleBox {
         None
     }
 
-    pub fn update(
-        &mut self,
-        actions: &Vec<Action>,
-        pods_box: &mut PodsBox,
-        network: &mut Network,
-        config: &Config,
-    ) {
-        for action in actions {
-            match action {
-                // TODO: differentiate between follow and not
-                Action::ShowPerson { id, follow } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            if *follow {
-                                person.visualize = true;
-                            } else {
-                                person.visualize = true;
-                            }
-                        }
-                    }
-                }
-                Action::HidePerson { id } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            person.visualize = false;
-                        }
-                    }
-                }
-                Action::RoutePerson {
-                    id,
-                    station_id: _,
-                    random_station: _,
-                } => {
-                    for person in &mut self.people {
-                        if person.id == *id {
-                            person.action_on_arrival = Some(action.clone())
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
+    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
         for person in &mut self.people {
             person.get_out_if_needed(pods_box, network, config);
         }
@@ -82,6 +41,35 @@ impl PeopleBox {
 
         for person in &mut self.people {
             person.update(pods_box, network, config);
+        }
+    }
+
+    // TODO: differentiate between follow and not
+    pub fn apply_show_person(&mut self, id: i32, follow: bool) {
+        for person in &mut self.people {
+            if person.id == id {
+                if follow {
+                    person.visualize = true;
+                } else {
+                    person.visualize = true;
+                }
+            }
+        }
+    }
+
+    pub fn apply_hide_person(&mut self, id: i32) {
+        for person in &mut self.people {
+            if person.id == id {
+                person.visualize = false;
+            }
+        }
+    }
+
+    pub fn apply_route_person(&mut self, id: i32, action: Action) {
+        for person in &mut self.people {
+            if person.id == id {
+                person.action_on_arrival = Some(action.clone())
+            }
         }
     }
 

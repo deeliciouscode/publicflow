@@ -1,5 +1,4 @@
 use crate::config::structs::Config;
-use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::get_screen_coordinates;
 use crate::line::line::Line;
@@ -25,15 +24,25 @@ pub struct Station {
 }
 
 impl Station {
-    pub fn update(
+    pub fn update(&mut self) {
+        for platform in &mut self.platforms {
+            platform.update();
+        }
+    }
+
+    pub fn spawn_pod(
         &mut self,
-        effect_actions: &Vec<Action>,
+        line_name: &LineName,
+        direction: &Direction,
         pods_box: &mut PodsBox,
         lines: &Vec<Line>,
         config: &Config,
     ) {
         for platform in &mut self.platforms {
-            platform.update(effect_actions, pods_box, lines, config);
+            // if platform.can_spawn_for
+            if platform.lines_using_this.contains(&line_name) && direction == &platform.direction {
+                pods_box.add_pod(&line_name, &direction, lines, config);
+            }
         }
     }
 

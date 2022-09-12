@@ -1,5 +1,4 @@
 use crate::control::action::{Action, Actions};
-use std::process::exit;
 use std::sync::mpsc;
 use std::thread::sleep;
 use std::time::Duration;

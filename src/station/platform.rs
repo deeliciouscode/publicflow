@@ -1,9 +1,6 @@
 use crate::config::structs::Config;
-use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::parse_str_to_line_and_directions;
-use crate::line::line::Line;
-use crate::pod::podsbox::PodsBox;
 use crate::station::platformstate::PlatformState;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -55,31 +52,7 @@ impl Platform {
     }
 
     // TODO: choose sensible rate at which a platform can let pods through
-    pub fn update(
-        &mut self,
-        effect_actions: &Vec<Action>,
-        pods_box: &mut PodsBox,
-        lines: &Vec<Line>,
-        config: &Config,
-    ) {
-        for action in effect_actions {
-            match action {
-                // TODO: differentiate between permament and not
-                Action::SpawnPod {
-                    station_id,
-                    line_name,
-                    direction,
-                } => {
-                    if station_id == &self.station_id
-                        && self.lines_using_this.contains(line_name)
-                        && direction == &self.direction
-                    {
-                        pods_box.add_pod(line_name, direction, lines, config);
-                    }
-                }
-                _ => {}
-            }
-        }
+    pub fn update(&mut self) {
         self.since_last_pod += 1;
         // if self.edges_to == HashSet::from([1, 0]) && self.direction == Direction::Pos {
         //     println!("Since last pod: {} | seconds between: {}", self.since_last_pod, self.seconds_between_pods);

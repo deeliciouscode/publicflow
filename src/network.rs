@@ -1,5 +1,4 @@
 use crate::config::structs::Config;
-use crate::control::action::Action;
 use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;
 use crate::helper::functions::{calc_graph, get_screen_coordinates};
@@ -10,7 +9,7 @@ use crate::station::station::Station;
 use ggez::Context;
 use petgraph::dot::{Config as PetConfig, Dot};
 use petgraph::graph::UnGraph;
-// use std::;
+use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct Network {
@@ -31,95 +30,98 @@ impl Network {
         network
     }
 
-    pub fn update(
+    pub fn update(&mut self) {
+        // TODO: make something useful with this
+        for station in &mut self.stations {
+            station.update();
+        }
+    }
+
+    pub fn apply_show_station(&mut self, id: i32, permanent: bool) {
+        for station in &mut self.stations {
+            if station.id == id {
+                if permanent {
+                    station.visualize = true;
+                } else {
+                    station.visualize = true;
+                }
+            }
+        }
+    }
+
+    pub fn apply_hide_station(&mut self, id: i32) {
+        for station in &mut self.stations {
+            if station.id == id {
+                station.visualize = false;
+            }
+        }
+    }
+
+    pub fn apply_block_connection(&mut self, ids: &HashSet<i32>) {
+        let ids_ref = &ids;
+        for line in &mut self.lines {
+            line.block_connection(ids_ref);
+        }
+    }
+
+    pub fn apply_unblock_connection(&mut self, ids: &HashSet<i32>) {
+        let ids_ref = &ids;
+        for line in &mut self.lines {
+            line.unblock_connection(ids_ref);
+        }
+    }
+
+    pub fn apply_make_platform_op(
         &mut self,
-        effect_actions: &Vec<Action>,
+        station_id: i32,
+        line_name: LineName,
+        direction: Direction,
+    ) {
+        for station in &mut self.stations {
+            if station.id == station_id {
+                station.make_operational(&line_name, &direction);
+            }
+        }
+    }
+
+    pub fn apply_make_platform_qu(
+        &mut self,
+        station_id: i32,
+        line_name: LineName,
+        direction: Direction,
+    ) {
+        for station in &mut self.stations {
+            if station.id == station_id {
+                station.make_queuable(&line_name, &direction);
+            }
+        }
+    }
+
+    pub fn apply_make_platform_pass(
+        &mut self,
+        station_id: i32,
+        line_name: LineName,
+        direction: Direction,
+    ) {
+        for station in &mut self.stations {
+            if station.id == station_id {
+                station.make_passable(&line_name, &direction);
+            }
+        }
+    }
+
+    pub fn apply_spawn_pod(
+        &mut self,
+        station_id: i32,
+        line_name: LineName,
+        direction: Direction,
         pods_box: &mut PodsBox,
         config: &Config,
     ) {
-        if effect_actions.len() != 0 {
-            let mut recalculate_graph = false;
-            for action in effect_actions {
-                match action {
-                    // TODO: differentiate between permament and not
-                    Action::ShowStation { id, permanent } => {
-                        for station in &mut self.stations {
-                            if station.id == *id {
-                                if *permanent {
-                                    station.visualize = true;
-                                } else {
-                                    station.visualize = true;
-                                }
-                            }
-                        }
-                    }
-                    Action::HideStation { id } => {
-                        for station in &mut self.stations {
-                            if station.id == *id {
-                                station.visualize = false;
-                            }
-                        }
-                    }
-                    Action::BlockConnection { ids } => {
-                        let ids_ref = &ids;
-                        for line in &mut self.lines {
-                            line.block_connection(ids_ref);
-                        }
-                        recalculate_graph = true;
-                    }
-                    Action::UnblockConnection { ids } => {
-                        let ids_ref = &ids;
-                        for line in &mut self.lines {
-                            line.unblock_connection(ids_ref);
-                        }
-                        recalculate_graph = true;
-                    }
-                    Action::MakePlatformOperational {
-                        station_id,
-                        line_name,
-                        direction,
-                    } => {
-                        for station in &mut self.stations {
-                            if station.id == *station_id {
-                                station.make_operational(line_name, direction);
-                                recalculate_graph = true;
-                            }
-                        }
-                    }
-                    Action::MakePlatformPassable {
-                        station_id,
-                        line_name,
-                        direction,
-                    } => {
-                        for station in &mut self.stations {
-                            if station.id == *station_id {
-                                station.make_passable(line_name, direction);
-                                recalculate_graph = true;
-                            }
-                        }
-                    }
-                    Action::MakePlatformQueuable {
-                        station_id,
-                        line_name,
-                        direction,
-                    } => {
-                        for station in &mut self.stations {
-                            if station.id == *station_id {
-                                station.make_queuable(line_name, direction);
-                                recalculate_graph = true;
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            if recalculate_graph {
-                self.graph = calc_graph(&self.lines);
-            }
-        }
-        // TODO: make something useful with this
         for station in &mut self.stations {
-            station.update(effect_actions, pods_box, &self.lines, config);
+            if station.id == station_id {
+                station.spawn_pod(&line_name, &direction, pods_box, &self.lines, config);
+            }
         }
     }
 

@@ -1,11 +1,11 @@
 use crate::config::structs::Config;
-use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::line::line::Line;
 use crate::line::linestate::LineState;
 use crate::network::Network;
 use crate::pod::pod::Pod;
 use ggez::Context;
+use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct PodsBox {
@@ -118,43 +118,41 @@ impl PodsBox {
         }
     }
 
-    pub fn update(&mut self, network: &mut Network, effect_actions: &Vec<Action>, config: &Config) {
-        for action in effect_actions {
-            match action {
-                // TODO: differentiate between permament and not
-                Action::ShowPod { id, permanent } => {
-                    for pod in &mut self.pods {
-                        if pod.id == *id {
-                            if *permanent {
-                                pod.visualize = true;
-                            } else {
-                                pod.visualize = true;
-                            }
-                        }
-                    }
+    pub fn apply_show_pod(&mut self, id: i32, permanent: bool) {
+        for pod in &mut self.pods {
+            if pod.id == id {
+                if permanent {
+                    pod.visualize = true;
+                } else {
+                    pod.visualize = true;
                 }
-                Action::HidePod { id } => {
-                    for pod in &mut self.pods {
-                        if pod.id == *id {
-                            pod.visualize = false;
-                        }
-                    }
-                }
-                Action::BlockConnection { ids } => {
-                    let ids_ref = &ids;
-                    for pod in &mut self.pods {
-                        pod.line_state.line.block_connection(ids_ref);
-                    }
-                }
-                Action::UnblockConnection { ids } => {
-                    let ids_ref = &ids;
-                    for pod in &mut self.pods {
-                        pod.line_state.line.unblock_connection(ids_ref);
-                    }
-                }
-                _ => {}
             }
         }
+    }
+
+    pub fn apply_hide_pod(&mut self, id: i32) {
+        for pod in &mut self.pods {
+            if pod.id == id {
+                pod.visualize = false;
+            }
+        }
+    }
+
+    pub fn apply_block_connection(&mut self, ids: &HashSet<i32>) {
+        let ids_ref = &ids;
+        for pod in &mut self.pods {
+            pod.line_state.line.block_connection(ids_ref);
+        }
+    }
+
+    pub fn apply_unblock_connection(&mut self, ids: &HashSet<i32>) {
+        let ids_ref = &ids;
+        for pod in &mut self.pods {
+            pod.line_state.line.unblock_connection(ids_ref);
+        }
+    }
+
+    pub fn update(&mut self, network: &mut Network, config: &Config) {
         for pod in &mut self.pods {
             pod.update(network, config)
         }

@@ -2,7 +2,9 @@ use crate::config::structs::Config;
 use crate::control::action::{Action, Actions};
 use crate::control::proxy::recv_actions;
 use crate::helper::enums::{Direction, LineName};
+use crate::helper::functions::calc_graph;
 use crate::helper::functions::{apply_zoom, format_seconds};
+use crate::helper::printer::{print_get_person, print_get_pod, print_get_station};
 use crate::line::line::Line;
 use crate::line::linestate::LineState;
 use crate::network::Network;
@@ -19,7 +21,6 @@ use rand::Rng;
 use std::collections::HashSet;
 use std::process::exit;
 use std::sync::mpsc;
-use std::thread;
 
 #[derive(Debug)]
 pub struct State {
@@ -32,24 +33,15 @@ pub struct State {
 }
 
 impl State {
-    pub fn update(&mut self, effect_actions: &Vec<Action>) {
-        if effect_actions.len() != 0 {
-            println!("effect_actions: {:?}", effect_actions);
-        }
-
-        self.network
-            .update(effect_actions, &mut self.pods_box, &self.config);
-        self.pods_box
-            .update(&mut self.network, effect_actions, &self.config);
-        self.people_box.update(
-            effect_actions,
-            &mut self.pods_box,
-            &mut self.network,
-            &self.config,
-        );
+    pub fn update(&mut self) {
+        self.network.update();
+        self.pods_box.update(&mut self.network, &self.config);
+        self.people_box
+            .update(&mut self.pods_box, &mut self.network, &self.config);
     }
 
-    fn handle_actions(&self, action: Actions) {
+    fn handle_actions(&mut self, action: Actions) {
+        let mut recalculate_graph = false;
         for action in action.actions {
             if action != Action::NoAction {
                 println!("{:?}", action);
@@ -58,114 +50,85 @@ impl State {
                 // The special case where nothing is done, used for debugging purposes
                 Action::NoAction => {}
                 // Actions that just retrieve something
-                Action::GetStation { id } => {
-                    let maybe_station = self.network.try_get_station_by_id_unmut(id);
-                    match maybe_station {
-                        Some(station) => {
-                            println!("----------------------");
-                            println!("Id: {}", station.id);
-                            println!("Name: {}", station.name);
-                            println!("City: {}", station.city);
-                            // println!("Since Last Pod: {}", station.since_last_pod);
-                            println!("Platforms: {}", station.stringify_platforms());
-                            println!("Edges To: {:?}", station.edges_to);
-                            println!(
-                                "Pods in Station: {:?}",
-                                station.get_pods_in_station_as_vec()
-                            );
-                            println!("People in Station: {}", station.people_in_station.len());
-                            println!("Coordinates: {:?}", station.coordinates);
-                            println!("----------------------");
-                        }
-                        None => {
-                            println!("No station with id {} exists", id)
-                        }
-                    }
-                }
-                Action::GetPerson { id } => {
-                    let maybe_person = self.people_box.try_get_person_by_id_unmut(id);
-                    match maybe_person {
-                        Some(person) => {
-                            println!("----------------------");
-                            println!("Id: {}", person.id);
-                            println!("Coordinates: {:?}", person.real_coordinates);
-                            println!("Path: {:?}", person.path_state.path);
-                            println!("----------------------");
-                        }
-                        None => {
-                            println!("No person with id {} exists", id)
-                        }
-                    }
-                }
-                Action::GetPod { id } => {
-                    let maybe_pod = self.pods_box.try_get_pod_by_id_unmut(id);
-                    match maybe_pod {
-                        Some(pod) => {
-                            println!("----------------------");
-                            println!("Id: {}", pod.id);
-                            println!("Capacity: {:?}", pod.capacity);
-                            println!("State: {:?}", pod.state);
-                            println!("People in Pod: {:?}", pod.people_in_pod.len());
-                            println!(
-                                "Last Station: {:?}",
-                                pod.line_state.line.stations[pod.line_state.line_ix as usize]
-                            );
-                            println!(
-                                "Next Station: {:?}",
-                                pod.line_state.line.stations[pod.line_state.next_ix as usize]
-                            );
-                            println!("----------------------");
-                        }
-                        None => {
-                            println!("No pod with id {} exists", id)
-                        }
-                    }
-                }
+                Action::GetStation { id } => print_get_station(&self.network, id),
+                Action::GetPerson { id } => print_get_person(&self.people_box, id),
+                Action::GetPod { id } => print_get_pod(&self.pods_box, id),
                 // Actions with effect on the state
-                Action::BlockStation { id } => {}
-                Action::UnblockStation { id } => {}
-                Action::BlockPlatform { station_id, line } => {}
-                Action::UnblockPlatform { station_id, line } => {}
-                Action::BlockConnection { ids } => {}
-                Action::UnblockConnection { ids } => {}
+                Action::BlockConnection { ids } => {
+                    self.network.apply_block_connection(&ids);
+                    self.pods_box.apply_block_connection(&ids);
+                    recalculate_graph = true;
+                }
+                Action::UnblockConnection { ids } => {
+                    self.network.apply_unblock_connection(&ids);
+                    self.pods_box.apply_unblock_connection(&ids);
+                    recalculate_graph = true;
+                }
                 Action::MakePlatformOperational {
                     station_id,
                     line_name,
                     direction,
-                } => {}
+                } => {
+                    self.network
+                        .apply_make_platform_op(station_id, line_name, direction);
+                    recalculate_graph = true;
+                }
                 Action::MakePlatformPassable {
                     station_id,
                     line_name,
                     direction,
-                } => {}
+                } => {
+                    self.network
+                        .apply_make_platform_pass(station_id, line_name, direction);
+                    recalculate_graph = true;
+                }
                 Action::MakePlatformQueuable {
                     station_id,
                     line_name,
                     direction,
-                } => {}
+                } => {
+                    self.network
+                        .apply_make_platform_qu(station_id, line_name, direction);
+                    recalculate_graph = true;
+                }
                 Action::SpawnPod {
                     station_id,
                     line_name,
                     direction,
-                } => {}
-                Action::ShowPerson { id, follow } => {}
-                Action::HidePerson { id } => {}
-                Action::ShowPod { id, permanent } => {}
-                Action::HidePod { id } => {}
-                Action::ShowStation { id, permanent } => {}
-                Action::HideStation { id: i32 } => {}
+                } => {
+                    self.network.apply_spawn_pod(
+                        station_id,
+                        line_name,
+                        direction,
+                        &mut self.pods_box,
+                        &self.config,
+                    );
+                }
+                Action::ShowPerson { id, follow } => self.people_box.apply_show_person(id, follow),
+                Action::HidePerson { id } => self.people_box.apply_hide_person(id),
+                Action::ShowPod { id, permanent } => self.pods_box.apply_show_pod(id, permanent),
+                Action::HidePod { id } => self.pods_box.apply_hide_pod(id),
+                Action::ShowStation { id, permanent } => {
+                    self.network.apply_show_station(id, permanent)
+                }
+                Action::HideStation { id } => self.network.apply_hide_station(id),
                 Action::RoutePerson {
                     id,
-                    station_id,
-                    random_station,
-                } => {}
+                    station_id: _,
+                    random_station: _,
+                } => self.people_box.apply_route_person(id, action),
                 Action::KillSimulation { code } => {
                     exit(code);
                 }
-                Action::Sleep { duration } => {
-                    thread::sleep(duration);
+                Action::Sleep { duration: _ } => {
+                    // Do Nothing, sleep is handled in the action proxy
+                    // Also this should never be reached since the proxy thread
+                    // is not supposed to send it.
                 }
             }
+        }
+        if recalculate_graph {
+            self.network.graph = calc_graph(&self.network.lines);
         }
     }
 
@@ -479,7 +442,7 @@ impl EventHandler for State {
 
             if !self.config.logic.on_pause {
                 self.time_passed += 1;
-                // self.update();
+                self.update();
             }
         }
         Ok(())

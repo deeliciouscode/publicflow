@@ -1,7 +1,6 @@
 use crate::control::action::Action;
-use crate::control::parsers::shared::{parse_id_list_and_ranges, try_parse_connection};
+use crate::control::parsers::shared::try_parse_connection;
 use std::collections::HashSet;
-use std::str::FromStr;
 
 pub fn parse_block(input_list: &Vec<&str>) -> Vec<Action> {
     let mut effect_actions: Vec<Action> = vec![];
@@ -28,31 +27,6 @@ pub fn parse_block(input_list: &Vec<&str>) -> Vec<Action> {
                     }
                     None => return effect_actions,
                 }
-            }
-        }
-        "station" | "st" => {
-            if input_list.len() < 3 {
-                println!("Block which stations??");
-                return effect_actions;
-            }
-            for arg in &input_list[2..] {
-                let ids = parse_id_list_and_ranges(arg);
-                for id in ids {
-                    effect_actions.push(Action::BlockStation { id: id })
-                }
-            }
-        }
-        "platform" | "pl" => {
-            if input_list.len() < 4 {
-                println!("Block which platforms??");
-                return effect_actions;
-            }
-            let station_id: i32 = FromStr::from_str(input_list[2]).unwrap();
-            for arg in &input_list[3..] {
-                effect_actions.push(Action::BlockPlatform {
-                    station_id: station_id,
-                    line: arg.to_string(),
-                })
             }
         }
         _ => {
@@ -88,31 +62,6 @@ pub fn parse_unblock(input_list: &Vec<&str>) -> Vec<Action> {
                     }
                     None => return effect_actions,
                 }
-            }
-        }
-        "station" | "st" => {
-            if input_list.len() < 3 {
-                println!("Unblock which stations??");
-                return effect_actions;
-            }
-            for arg in &input_list[2..] {
-                let ids = parse_id_list_and_ranges(arg);
-                for id in ids {
-                    effect_actions.push(Action::UnblockStation { id: id })
-                }
-            }
-        }
-        "platform" | "pl" => {
-            if input_list.len() < 4 {
-                println!("Unblock which platforms??");
-                return effect_actions;
-            }
-            let station_id: i32 = FromStr::from_str(input_list[2]).unwrap();
-            for arg in &input_list[3..] {
-                effect_actions.push(Action::UnblockPlatform {
-                    station_id: station_id,
-                    line: arg.to_string(),
-                })
             }
         }
         _ => {

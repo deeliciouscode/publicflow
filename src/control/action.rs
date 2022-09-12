@@ -15,20 +15,6 @@ pub enum Action {
     GetPod {
         id: i32,
     },
-    BlockStation {
-        id: i32,
-    },
-    UnblockStation {
-        id: i32,
-    },
-    BlockPlatform {
-        station_id: i32,
-        line: String,
-    },
-    UnblockPlatform {
-        station_id: i32,
-        line: String,
-    },
     BlockConnection {
         ids: HashSet<i32>,
     },
@@ -99,8 +85,5 @@ impl Actions {
         Actions {
             actions: Vec::default(),
         }
-    }
-    pub fn from(actions: Vec<Action>) -> Self {
-        Actions { actions: actions }
     }
 }
