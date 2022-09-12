@@ -2,7 +2,7 @@ use crate::config::structs::Config;
 use crate::control::action::{Actions, DoAction, GetAction, SetAction};
 use crate::control::cli::recv_queries;
 use crate::helper::enums::{Direction, LineName};
-use crate::helper::helper::{apply_zoom, format_seconds};
+use crate::helper::functions::{apply_zoom, format_seconds};
 use crate::line::line::Line;
 use crate::line::linestate::LineState;
 use crate::network::Network;

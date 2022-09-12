@@ -1,6 +1,6 @@
 use crate::config::structs::Config;
 use crate::helper::enums::{Direction, LineName};
-use crate::helper::helper::get_screen_coordinates;
+use crate::helper::functions::get_screen_coordinates;
 use crate::station::platform::Platform;
 use crate::station::platformstate::PlatformState;
 use ggez::graphics::{Font, Text};
@@ -41,8 +41,9 @@ impl Station {
         let mut platforms_string = "".to_string();
         for platform in &self.platforms {
             platforms_string.push_str(&format!(
-                "\n Lines: {:?} | Neighbors: {:?} | Direction: {:?} | State: {:?} | Pods: {:?}",
+                "\n Lines: {:?} | Spawns for: {:?} | Neighbors: {:?} | Direction: {:?} | State: {:?} | Pods: {:?}",
                 platform.lines_using_this,
+                platform.can_spawn_for,
                 platform.edges_to,
                 platform.direction,
                 platform.state,

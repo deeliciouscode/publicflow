@@ -2,7 +2,7 @@ use crate::config::structs::Config;
 use crate::control::action::SetAction;
 use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;
-use crate::helper::helper::{calc_graph, get_screen_coordinates};
+use crate::helper::functions::{calc_graph, get_screen_coordinates};
 use crate::line::line::Line;
 use crate::station::platform::Platform;
 use crate::station::station::Station;

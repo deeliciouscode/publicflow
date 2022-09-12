@@ -1,5 +1,5 @@
 use crate::control::action::SetAction;
-use crate::helper::helper::parse_make_arg_to_line_and_direction;
+use crate::helper::functions::parse_str_to_line_and_directions;
 use std::str::FromStr;
 
 pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
@@ -20,8 +20,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
             for arg in &input_list[4..] {
                 match input_list[2] {
                     "operational" | "op" => {
-                        let (line, directions) =
-                            parse_make_arg_to_line_and_direction(&arg.to_string());
+                        let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformOperational {
                                 station_id: station_id,
@@ -31,8 +30,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                         }
                     }
                     "passable" | "pass" => {
-                        let (line, directions) =
-                            parse_make_arg_to_line_and_direction(&arg.to_string());
+                        let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformPassable {
                                 station_id: station_id,
@@ -42,8 +40,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                         }
                     }
                     "queuable" | "qu" => {
-                        let (line, directions) =
-                            parse_make_arg_to_line_and_direction(&arg.to_string());
+                        let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformQueuable {
                                 station_id: station_id,

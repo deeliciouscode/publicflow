@@ -135,9 +135,7 @@ pub fn transform_line_name_to_enum(line_name: &str) -> LineName {
     }
 }
 
-pub fn parse_make_arg_to_line_and_direction(
-    line_and_direction: &str,
-) -> (LineName, Vec<Direction>) {
+pub fn parse_str_to_line_and_directions(line_and_direction: &str) -> (LineName, Vec<Direction>) {
     let line_name_str = line_and_direction.replace(&['+', '-'][..], "");
     let line_name = transform_line_name_to_enum(&line_name_str);
     let mut directions = vec![];

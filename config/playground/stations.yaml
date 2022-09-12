@@ -19,7 +19,7 @@
   lat: 11.025
   lon: 48.025
   name: Hundred
-  entrypoint_for: ["u3"]
+  entrypoint_for: ["u3+-"]
 - city: PlayCity
   id: 1000
   lat: 11.00

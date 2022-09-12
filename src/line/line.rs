@@ -1,7 +1,7 @@
 use crate::config::structs::Config;
 use crate::connection::{Connection, YieldTuple};
 use crate::helper::enums::LineName;
-use crate::helper::helper::get_screen_coordinates;
+use crate::helper::functions::get_screen_coordinates;
 use crate::network::Network;
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;

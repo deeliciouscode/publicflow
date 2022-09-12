@@ -4,7 +4,7 @@ use crate::config::constants::{
 use crate::config::structs::{Config, LogicConfig, NetworkConfig, VisualConfig};
 use crate::connection::Connection;
 use crate::helper::enums::LineName;
-use crate::helper::helper::transform_line_name_to_enum;
+use crate::helper::functions::transform_line_name_to_enum;
 use crate::line::line::Line;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;

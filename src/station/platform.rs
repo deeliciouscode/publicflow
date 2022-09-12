@@ -1,5 +1,6 @@
 use crate::config::structs::Config;
 use crate::helper::enums::{Direction, LineName};
+use crate::helper::functions::parse_str_to_line_and_directions;
 use crate::station::platformstate::PlatformState;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -8,6 +9,7 @@ use std::collections::VecDeque;
 pub struct Platform {
     pub direction: Direction,
     pub since_last_pod: i32,
+    pub can_spawn_for: HashSet<LineName>,
     pub seconds_between_pods: i32,
     pub edges_to: HashSet<i32>,
     pub lines_using_this: HashSet<LineName>,
@@ -23,9 +25,19 @@ impl Platform {
         edges_to: &HashSet<i32>,
         lines_using_this: &HashSet<LineName>,
     ) -> Self {
+        let mut can_spawn_for: HashSet<LineName> = HashSet::new();
+        for line_name_direction_string in entrypoint_for {
+            let (line_name, directions) =
+                parse_str_to_line_and_directions(line_name_direction_string);
+            if lines_using_this.contains(&line_name) && directions.contains(&direction) {
+                can_spawn_for.insert(line_name);
+            }
+        }
+
         Platform {
             direction: direction,
             since_last_pod: 0,
+            can_spawn_for: can_spawn_for,
             seconds_between_pods: 3600 / config.logic.pods_per_hour,
             edges_to: edges_to.clone(),
             lines_using_this: lines_using_this.clone(),

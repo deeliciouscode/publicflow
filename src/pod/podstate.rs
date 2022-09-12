@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::helper::helper::get_screen_coordinates;
+use crate::helper::functions::get_screen_coordinates;
 use crate::network::Network;
 use crate::pod::pod::Pod;
 

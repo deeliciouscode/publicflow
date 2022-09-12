@@ -1,6 +1,6 @@
 use crate::config::structs::Config;
 use crate::control::action::SetAction;
-use crate::helper::helper::{get_random_station_id, get_screen_coordinates};
+use crate::helper::functions::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::person::personstate::PersonState;
