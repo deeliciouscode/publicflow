@@ -13,12 +13,15 @@ use std::sync::mpsc;
 
 // TODO: implement all actions for all entities if possible to match text in Thesis
 
-pub fn run_cli(tx: mpsc::Sender<Actions>) -> Result<()> {
+pub fn run_cli(tx: mpsc::Sender<Actions>, command_on_start: String) -> Result<()> {
     // `()` can be used when no completer is required
     let mut rl = Editor::<()>::new()?;
     if rl.load_history(".meta/history.txt").is_err() {
         println!("No previous history.");
     }
+    let input_list = command_on_start.split(" ").collect();
+    let actions = parse_input(&input_list);
+    let _res = tx.send(actions);
     loop {
         let readline = rl.readline(">> ");
         match readline {

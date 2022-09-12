@@ -155,6 +155,7 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
 // TODO: introduce a validator that panics if yaml is incorrectly formatted.
 pub fn parse_config(raw_config: &Yaml) -> Config {
     let mut town = String::default();
+    let mut command_on_start = String::default();
     let mut overide_general = false;
 
     if let Yaml::Hash(hash) = raw_config {
@@ -163,6 +164,11 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("town"))) {
                     if let Yaml::String(value) = yaml {
                         town = value.to_string();
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("command_on_start"))) {
+                    if let Yaml::String(value) = yaml {
+                        command_on_start = value.to_string();
                     }
                 }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("override"))) {
@@ -185,6 +191,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     // println!("{:?}", network_config);
 
     let mut logic_config = LogicConfig {
+        command_on_start: command_on_start,
         number_of_people: i32::default(),
         number_of_pods: number_of_pods,
         pod_capacity: i32::default(),

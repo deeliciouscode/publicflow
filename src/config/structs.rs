@@ -14,6 +14,7 @@ pub struct NetworkConfig {
 #[derive(Debug, Clone)]
 pub struct LogicConfig {
     pub number_of_people: i32,
+    pub command_on_start: String,
     pub number_of_pods: i32,
     pub pod_capacity: i32,
     pub transition_time: i32,

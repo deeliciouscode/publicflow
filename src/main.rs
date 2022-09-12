@@ -22,19 +22,20 @@ use std::thread;
 
 fn main() {
     println!("start simulation...");
+    let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);
+    let config = parse_config(&config_yaml);
+
     let (proxy_tx, proxy_rx) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
 
+    let command_on_start = config.logic.command_on_start.clone();
     thread::spawn(|| {
-        let _res = run_cli(proxy_tx);
+        let _res = run_cli(proxy_tx, command_on_start);
     });
 
     thread::spawn(|| {
         run_emmiter(proxy_rx, tx);
     });
-
-    let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);
-    let config = parse_config(&config_yaml);
 
     // Make a Context.
     let (ctx, event_loop) = ContextBuilder::new("PublicFlow", "David Schmider")

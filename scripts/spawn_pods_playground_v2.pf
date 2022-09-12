@@ -1,0 +1,36 @@
+spawn pod 1 u1+
+spawn pod 1000 u1-
+sleep 1
+spawn pod 2 u2+
+spawn pod 2000 u2-
+sleep 1
+spawn pod 3 u4+
+spawn pod 3000 u4-
+sleep 1
+spawn pod 100 u3
+
+sleep 5
+
+spawn pod 1 u1+
+spawn pod 1000 u1-
+sleep 1
+spawn pod 2 u2+
+spawn pod 2000 u2-
+sleep 1
+spawn pod 3 u4+
+spawn pod 3000 u4-
+sleep 1
+spawn pod 100 u3
+
+sleep 5
+
+spawn pod 1 u1+
+spawn pod 1000 u1-
+sleep 1
+spawn pod 2 u2+
+spawn pod 2000 u2-
+sleep 1
+spawn pod 3 u4+
+spawn pod 3000 u4-
+sleep 1
+spawn pod 100 u3
