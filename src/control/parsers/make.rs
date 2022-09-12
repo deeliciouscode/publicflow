@@ -24,7 +24,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformOperational {
                                 station_id: station_id,
-                                line: line.clone(),
+                                line_name: line.clone(),
                                 direction: direction,
                             })
                         }
@@ -34,7 +34,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformPassable {
                                 station_id: station_id,
-                                line: line.clone(),
+                                line_name: line.clone(),
                                 direction: direction,
                             })
                         }
@@ -44,7 +44,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<SetAction> {
                         for direction in directions {
                             set_actions.push(SetAction::MakePlatformQueuable {
                                 station_id: station_id,
-                                line: line.clone(),
+                                line_name: line.clone(),
                                 direction: direction,
                             })
                         }

@@ -36,13 +36,14 @@ impl State {
             println!("set_actions: {:?}", set_actions);
         }
 
-        self.network.update(&set_actions);
+        self.network
+            .update(&set_actions, &mut self.pods_box, &self.config);
         self.pods_box
             .update(&mut self.network, &set_actions, &self.config);
         self.people_box.update(
+            &set_actions,
             &mut self.pods_box,
             &mut self.network,
-            &set_actions,
             &self.config,
         );
     }
@@ -243,6 +244,7 @@ impl State {
             for abstract_platform in abstract_platforms {
                 platforms.push(Platform::new(
                     &config,
+                    *station_id,
                     entrypoint_for,
                     Direction::Pos,
                     &abstract_platform.0,
@@ -250,6 +252,7 @@ impl State {
                 ));
                 platforms.push(Platform::new(
                     &config,
+                    *station_id,
                     entrypoint_for,
                     Direction::Neg,
                     &abstract_platform.0,
@@ -292,7 +295,7 @@ impl State {
         return state;
     }
 
-    pub fn add_pods(mut self) -> Self {
+    pub fn _add_pods(mut self) -> Self {
         // let mut stations_occupied: Vec<i32> = vec![];
         let calc_line_state = |pod_id: &i32| -> LineState {
             let mut rng = rand::thread_rng();

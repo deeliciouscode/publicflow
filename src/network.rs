@@ -4,6 +4,7 @@ use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;
 use crate::helper::functions::{calc_graph, get_screen_coordinates};
 use crate::line::line::Line;
+use crate::pod::podsbox::PodsBox;
 use crate::station::platform::Platform;
 use crate::station::station::Station;
 use ggez::Context;
@@ -30,7 +31,12 @@ impl Network {
         network
     }
 
-    pub fn update(&mut self, set_actions: &Vec<SetAction>) {
+    pub fn update(
+        &mut self,
+        set_actions: &Vec<SetAction>,
+        pods_box: &mut PodsBox,
+        config: &Config,
+    ) {
         if set_actions.len() != 0 {
             let mut recalculate_graph = false;
             for action in set_actions {
@@ -70,36 +76,36 @@ impl Network {
                     }
                     SetAction::MakePlatformOperational {
                         station_id,
-                        line,
+                        line_name,
                         direction,
                     } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_operational(line, direction);
+                                station.make_operational(line_name, direction);
                                 recalculate_graph = true;
                             }
                         }
                     }
                     SetAction::MakePlatformPassable {
                         station_id,
-                        line,
+                        line_name,
                         direction,
                     } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_passable(line, direction);
+                                station.make_passable(line_name, direction);
                                 recalculate_graph = true;
                             }
                         }
                     }
                     SetAction::MakePlatformQueuable {
                         station_id,
-                        line,
+                        line_name,
                         direction,
                     } => {
                         for station in &mut self.stations {
                             if station.id == *station_id {
-                                station.make_queuable(line, direction);
+                                station.make_queuable(line_name, direction);
                                 recalculate_graph = true;
                             }
                         }
@@ -113,7 +119,7 @@ impl Network {
         }
         // TODO: make something useful with this
         for station in &mut self.stations {
-            station.update();
+            station.update(set_actions, pods_box, &self.lines, config);
         }
     }
 

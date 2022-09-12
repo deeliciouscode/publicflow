@@ -1,12 +1,16 @@
 use crate::config::structs::Config;
+use crate::control::action::SetAction;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::parse_str_to_line_and_directions;
+use crate::line::line::Line;
+use crate::pod::podsbox::PodsBox;
 use crate::station::platformstate::PlatformState;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
 pub struct Platform {
+    pub station_id: i32,
     pub direction: Direction,
     pub since_last_pod: i32,
     pub can_spawn_for: HashSet<LineName>,
@@ -20,6 +24,7 @@ pub struct Platform {
 impl Platform {
     pub fn new(
         config: &Config,
+        station_id: i32,
         entrypoint_for: &Vec<String>, // TODO: continue here. One idea would be that podsbox requests new pods from a platform
         direction: Direction,
         edges_to: &HashSet<i32>,
@@ -35,6 +40,7 @@ impl Platform {
         }
 
         Platform {
+            station_id: station_id,
             direction: direction,
             since_last_pod: 0,
             can_spawn_for: can_spawn_for,
@@ -49,7 +55,31 @@ impl Platform {
     }
 
     // TODO: choose sensible rate at which a platform can let pods through
-    pub fn update(&mut self) {
+    pub fn update(
+        &mut self,
+        set_actions: &Vec<SetAction>,
+        pods_box: &mut PodsBox,
+        lines: &Vec<Line>,
+        config: &Config,
+    ) {
+        for action in set_actions {
+            match action {
+                // TODO: differentiate between permament and not
+                SetAction::SpawnPod {
+                    station_id,
+                    line_name,
+                    direction,
+                } => {
+                    if station_id == &self.station_id
+                        && self.lines_using_this.contains(line_name)
+                        && direction == &self.direction
+                    {
+                        pods_box.add_pod(line_name, direction, lines, config);
+                    }
+                }
+                _ => {}
+            }
+        }
         self.since_last_pod += 1;
         // if self.edges_to == HashSet::from([1, 0]) && self.direction == Direction::Pos {
         //     println!("Since last pod: {} | seconds between: {}", self.since_last_pod, self.seconds_between_pods);

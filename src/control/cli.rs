@@ -3,7 +3,8 @@ use crate::control::parsers::block::{parse_block, parse_unblock};
 use crate::control::parsers::get::parse_get;
 use crate::control::parsers::make::parse_make;
 use crate::control::parsers::route::parse_route;
-use crate::control::parsers::viusualize::{parse_hide, parse_visualize};
+use crate::control::parsers::spawn::parse_spawn;
+use crate::control::parsers::visualize::{parse_hide, parse_visualize};
 use crate::helper::functions::read_lines;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
@@ -76,6 +77,9 @@ fn parse_input(input_list: &Vec<&str>) -> Actions {
         }
         "make" | "m" => {
             actions.set_actions = parse_make(&input_list); // make platform op 0 u1 -> make platform 0 u1 - op
+        }
+        "spawn" | "sp" => {
+            actions.set_actions = parse_spawn(&input_list); // make platform op 0 u1 -> make platform 0 u1 - op
         }
         "run" => actions = run_script(&input_list),
         _ => {}

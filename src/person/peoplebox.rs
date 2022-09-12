@@ -28,9 +28,9 @@ impl PeopleBox {
 
     pub fn update(
         &mut self,
+        set_actions: &Vec<SetAction>,
         pods_box: &mut PodsBox,
         network: &mut Network,
-        set_actions: &Vec<SetAction>,
         config: &Config,
     ) {
         for action in set_actions {

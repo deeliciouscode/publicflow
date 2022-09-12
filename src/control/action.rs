@@ -32,17 +32,22 @@ pub enum SetAction {
     },
     MakePlatformOperational {
         station_id: i32,
-        line: LineName,
+        line_name: LineName,
         direction: Direction,
     },
     MakePlatformPassable {
         station_id: i32,
-        line: LineName,
+        line_name: LineName,
         direction: Direction,
     },
     MakePlatformQueuable {
         station_id: i32,
-        line: LineName,
+        line_name: LineName,
+        direction: Direction,
+    },
+    SpawnPod {
+        station_id: i32,
+        line_name: LineName,
         direction: Direction,
     },
     ShowPerson {
