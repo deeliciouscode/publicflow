@@ -1,6 +1,6 @@
 use crate::config::structs::Config;
-use crate::control::action::{Actions, DoAction, GetAction, SetAction};
-use crate::control::cli::recv_queries;
+use crate::control::action::{Action, Actions};
+use crate::control::proxy::recv_actions;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::{apply_zoom, format_seconds};
 use crate::line::line::Line;
@@ -19,6 +19,7 @@ use rand::Rng;
 use std::collections::HashSet;
 use std::process::exit;
 use std::sync::mpsc;
+use std::thread;
 
 #[derive(Debug)]
 pub struct State {
@@ -31,31 +32,33 @@ pub struct State {
 }
 
 impl State {
-    pub fn update(&mut self, set_actions: Vec<SetAction>) {
-        if set_actions.len() != 0 {
-            println!("set_actions: {:?}", set_actions);
+    pub fn update(&mut self, effect_actions: &Vec<Action>) {
+        if effect_actions.len() != 0 {
+            println!("effect_actions: {:?}", effect_actions);
         }
 
         self.network
-            .update(&set_actions, &mut self.pods_box, &self.config);
+            .update(effect_actions, &mut self.pods_box, &self.config);
         self.pods_box
-            .update(&mut self.network, &set_actions, &self.config);
+            .update(&mut self.network, effect_actions, &self.config);
         self.people_box.update(
-            &set_actions,
+            effect_actions,
             &mut self.pods_box,
             &mut self.network,
             &self.config,
         );
     }
 
-    fn handle_get_actions(&self, get_actions: Vec<GetAction>) {
-        // if get_actions.len() != 0 {
-        //     println!("get_actions: {:?}", get_actions);
-        // }
-
-        for get_action in get_actions {
-            match get_action {
-                GetAction::GetStation { id } => {
+    fn handle_actions(&self, action: Actions) {
+        for action in action.actions {
+            if action != Action::NoAction {
+                println!("{:?}", action);
+            }
+            match action {
+                // The special case where nothing is done, used for debugging purposes
+                Action::NoAction => {}
+                // Actions that just retrieve something
+                Action::GetStation { id } => {
                     let maybe_station = self.network.try_get_station_by_id_unmut(id);
                     match maybe_station {
                         Some(station) => {
@@ -79,7 +82,7 @@ impl State {
                         }
                     }
                 }
-                GetAction::GetPerson { id } => {
+                Action::GetPerson { id } => {
                     let maybe_person = self.people_box.try_get_person_by_id_unmut(id);
                     match maybe_person {
                         Some(person) => {
@@ -94,7 +97,7 @@ impl State {
                         }
                     }
                 }
-                GetAction::GetPod { id } => {
+                Action::GetPod { id } => {
                     let maybe_pod = self.pods_box.try_get_pod_by_id_unmut(id);
                     match maybe_pod {
                         Some(pod) => {
@@ -118,15 +121,49 @@ impl State {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    fn handle_do_actions(&self, do_actions: Vec<DoAction>) {
-        for do_action in do_actions {
-            match do_action {
-                DoAction::KillSimulation { code } => {
+                // Actions with effect on the state
+                Action::BlockStation { id } => {}
+                Action::UnblockStation { id } => {}
+                Action::BlockPlatform { station_id, line } => {}
+                Action::UnblockPlatform { station_id, line } => {}
+                Action::BlockConnection { ids } => {}
+                Action::UnblockConnection { ids } => {}
+                Action::MakePlatformOperational {
+                    station_id,
+                    line_name,
+                    direction,
+                } => {}
+                Action::MakePlatformPassable {
+                    station_id,
+                    line_name,
+                    direction,
+                } => {}
+                Action::MakePlatformQueuable {
+                    station_id,
+                    line_name,
+                    direction,
+                } => {}
+                Action::SpawnPod {
+                    station_id,
+                    line_name,
+                    direction,
+                } => {}
+                Action::ShowPerson { id, follow } => {}
+                Action::HidePerson { id } => {}
+                Action::ShowPod { id, permanent } => {}
+                Action::HidePod { id } => {}
+                Action::ShowStation { id, permanent } => {}
+                Action::HideStation { id: i32 } => {}
+                Action::RoutePerson {
+                    id,
+                    station_id,
+                    random_station,
+                } => {}
+                Action::KillSimulation { code } => {
                     exit(code);
+                }
+                Action::Sleep { duration } => {
+                    thread::sleep(duration);
                 }
             }
         }
@@ -437,14 +474,12 @@ impl EventHandler for State {
         // Update code here...
         while timer::check_update_time(ctx, self.config.visual.desired_fps) {
             // println!("fps: {}", timer::fps(ctx));
-            let actions = recv_queries(&self.rx);
-
-            self.handle_get_actions(actions.get_actions);
-            self.handle_do_actions(actions.do_actions);
+            let actions = recv_actions(&self.rx);
+            self.handle_actions(actions);
 
             if !self.config.logic.on_pause {
                 self.time_passed += 1;
-                self.update(actions.set_actions);
+                // self.update();
             }
         }
         Ok(())

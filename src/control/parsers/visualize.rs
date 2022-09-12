@@ -1,11 +1,11 @@
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::control::parsers::shared::parse_id_list_and_ranges;
 
-pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
-    let mut set_actions: Vec<SetAction> = vec![];
+pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<Action> {
+    let mut effect_actions: Vec<Action> = vec![];
     if input_list.len() < 2 {
         println!("Visualize what??");
-        return set_actions;
+        return effect_actions;
     }
 
     // TODO: viuslize all entities
@@ -13,7 +13,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
         "person" | "people" | "ps" => {
             if input_list.len() < 3 {
                 println!("Visualize which person/people??");
-                return set_actions;
+                return effect_actions;
             }
             let mut follow = false;
             for arg in &input_list[2..] {
@@ -24,7 +24,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            set_actions.push(SetAction::ShowPerson {
+                            effect_actions.push(Action::ShowPerson {
                                 id: id,
                                 follow: follow,
                             })
@@ -36,7 +36,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
         "pod" | "pods" => {
             if input_list.len() < 3 {
                 println!("Visualize which pod/pods??");
-                return set_actions;
+                return effect_actions;
             }
             let mut permanent = false;
             for arg in &input_list[2..] {
@@ -47,7 +47,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            set_actions.push(SetAction::ShowPod {
+                            effect_actions.push(Action::ShowPod {
                                 id: id,
                                 permanent: permanent,
                             })
@@ -59,7 +59,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
         "station" | "stations" | "st" => {
             if input_list.len() < 3 {
                 println!("Visualize which person/people??");
-                return set_actions;
+                return effect_actions;
             }
             let mut permanent = false;
             for arg in &input_list[2..] {
@@ -70,7 +70,7 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            set_actions.push(SetAction::ShowStation {
+                            effect_actions.push(Action::ShowStation {
                                 id: id,
                                 permanent: permanent,
                             })
@@ -84,27 +84,27 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<SetAction> {
         }
     }
 
-    return set_actions;
+    return effect_actions;
 }
 
-pub fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
-    let mut set_actions: Vec<SetAction> = vec![];
+pub fn parse_hide(input_list: &Vec<&str>) -> Vec<Action> {
+    let mut effect_actions: Vec<Action> = vec![];
     if input_list.len() < 2 {
         println!("Hide what??");
-        return set_actions;
+        return effect_actions;
     }
 
     match input_list[1] {
         "person" | "people" | "p" => {
             if input_list.len() < 3 {
                 println!("Hide which person/people??");
-                return set_actions;
+                return effect_actions;
             }
             for arg in &input_list[2..] {
                 {
                     let ids = parse_id_list_and_ranges(arg);
                     for id in ids {
-                        set_actions.push(SetAction::HidePerson { id: id })
+                        effect_actions.push(Action::HidePerson { id: id })
                     }
                 }
             }
@@ -112,13 +112,13 @@ pub fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
         "pod" | "pods" => {
             if input_list.len() < 3 {
                 println!("Hide which pod/pods??");
-                return set_actions;
+                return effect_actions;
             }
             for arg in &input_list[2..] {
                 {
                     let ids = parse_id_list_and_ranges(arg);
                     for id in ids {
-                        set_actions.push(SetAction::HidePod { id: id })
+                        effect_actions.push(Action::HidePod { id: id })
                     }
                 }
             }
@@ -126,13 +126,13 @@ pub fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
         "station" | "stations" | "st" => {
             if input_list.len() < 3 {
                 println!("Hide which station/stations??");
-                return set_actions;
+                return effect_actions;
             }
             for arg in &input_list[2..] {
                 {
                     let ids = parse_id_list_and_ranges(arg);
                     for id in ids {
-                        set_actions.push(SetAction::HideStation { id: id })
+                        effect_actions.push(Action::HideStation { id: id })
                     }
                 }
             }
@@ -142,5 +142,5 @@ pub fn parse_hide(input_list: &Vec<&str>) -> Vec<SetAction> {
         }
     }
 
-    return set_actions;
+    return effect_actions;
 }

@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::get_screen_coordinates;
 use crate::line::line::Line;
@@ -27,13 +27,13 @@ pub struct Station {
 impl Station {
     pub fn update(
         &mut self,
-        set_actions: &Vec<SetAction>,
+        effect_actions: &Vec<Action>,
         pods_box: &mut PodsBox,
         lines: &Vec<Line>,
         config: &Config,
     ) {
         for platform in &mut self.platforms {
-            platform.update(set_actions, pods_box, lines, config);
+            platform.update(effect_actions, pods_box, lines, config);
         }
     }
 

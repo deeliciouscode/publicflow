@@ -1,15 +1,20 @@
 use crate::helper::enums::{Direction, LineName};
 use std::collections::HashSet;
+use std::time::Duration;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum GetAction {
-    GetStation { id: i32 },
-    GetPerson { id: i32 },
-    GetPod { id: i32 },
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum SetAction {
+#[derive(Debug, Clone, PartialEq, Default)]
+pub enum Action {
+    #[default]
+    NoAction,
+    GetStation {
+        id: i32,
+    },
+    GetPerson {
+        id: i32,
+    },
+    GetPod {
+        id: i32,
+    },
     BlockStation {
         id: i32,
     },
@@ -76,26 +81,26 @@ pub enum SetAction {
         station_id: u32,
         random_station: bool,
     },
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum DoAction {
-    KillSimulation { code: i32 },
+    KillSimulation {
+        code: i32,
+    },
+    Sleep {
+        duration: Duration,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Actions {
-    pub get_actions: Vec<GetAction>,
-    pub set_actions: Vec<SetAction>,
-    pub do_actions: Vec<DoAction>,
+    pub actions: Vec<Action>,
 }
 
 impl Actions {
     pub fn new() -> Self {
         Actions {
-            get_actions: Vec::default(),
-            set_actions: Vec::default(),
-            do_actions: Vec::default(),
+            actions: Vec::default(),
         }
+    }
+    pub fn from(actions: Vec<Action>) -> Self {
+        Actions { actions: actions }
     }
 }

@@ -15,7 +15,7 @@ visual:
   radius_station: 10.0
   radius_pod: 5.0
   width_line: 2.0
-  desired_fps: 60 # TODO: decouple game speed from draw rate
+  desired_fps: 10 # TODO: decouple game speed from draw rate
   vsync: true
 logic:
   number_of_people: 2000

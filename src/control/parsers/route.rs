@@ -1,11 +1,11 @@
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::control::parsers::shared::parse_id_list_and_ranges;
 
-pub fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
-    let mut set_actions: Vec<SetAction> = vec![];
+pub fn parse_route(input_list: &Vec<&str>) -> Vec<Action> {
+    let mut effect_actions: Vec<Action> = vec![];
     if input_list.len() < 2 {
         println!("Route what??");
-        return set_actions;
+        return effect_actions;
     }
 
     match input_list[1] {
@@ -14,7 +14,7 @@ pub fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
                 println!("Route which person/people to where??");
                 println!("Syntax: route person [--random | -r] [id id | lower..upper | id lower..upper] to_station");
                 println!("If --random is used, no to_station is needed.");
-                return set_actions;
+                return effect_actions;
             }
 
             let mut random_station = false;
@@ -38,7 +38,7 @@ pub fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
             for arg in &input_list[first_id_index..last_id_index] {
                 let ids = parse_id_list_and_ranges(arg);
                 for id in ids {
-                    set_actions.push(SetAction::RoutePerson {
+                    effect_actions.push(Action::RoutePerson {
                         id: id,
                         station_id: station_id,
                         random_station: random_station,
@@ -51,5 +51,5 @@ pub fn parse_route(input_list: &Vec<&str>) -> Vec<SetAction> {
         }
     }
 
-    return set_actions;
+    return effect_actions;
 }

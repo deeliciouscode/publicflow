@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::line::line::Line;
 use crate::line::linestate::LineState;
@@ -118,11 +118,11 @@ impl PodsBox {
         }
     }
 
-    pub fn update(&mut self, network: &mut Network, set_actions: &Vec<SetAction>, config: &Config) {
-        for action in set_actions {
+    pub fn update(&mut self, network: &mut Network, effect_actions: &Vec<Action>, config: &Config) {
+        for action in effect_actions {
             match action {
                 // TODO: differentiate between permament and not
-                SetAction::ShowPod { id, permanent } => {
+                Action::ShowPod { id, permanent } => {
                     for pod in &mut self.pods {
                         if pod.id == *id {
                             if *permanent {
@@ -133,20 +133,20 @@ impl PodsBox {
                         }
                     }
                 }
-                SetAction::HidePod { id } => {
+                Action::HidePod { id } => {
                     for pod in &mut self.pods {
                         if pod.id == *id {
                             pod.visualize = false;
                         }
                     }
                 }
-                SetAction::BlockConnection { ids } => {
+                Action::BlockConnection { ids } => {
                     let ids_ref = &ids;
                     for pod in &mut self.pods {
                         pod.line_state.line.block_connection(ids_ref);
                     }
                 }
-                SetAction::UnblockConnection { ids } => {
+                Action::UnblockConnection { ids } => {
                     let ids_ref = &ids;
                     for pod in &mut self.pods {
                         pod.line_state.line.unblock_connection(ids_ref);

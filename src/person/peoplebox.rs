@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::network::Network;
 use crate::person::person::Person;
 use crate::pod::podsbox::PodsBox;
@@ -28,15 +28,15 @@ impl PeopleBox {
 
     pub fn update(
         &mut self,
-        set_actions: &Vec<SetAction>,
+        actions: &Vec<Action>,
         pods_box: &mut PodsBox,
         network: &mut Network,
         config: &Config,
     ) {
-        for action in set_actions {
+        for action in actions {
             match action {
                 // TODO: differentiate between follow and not
-                SetAction::ShowPerson { id, follow } => {
+                Action::ShowPerson { id, follow } => {
                     for person in &mut self.people {
                         if person.id == *id {
                             if *follow {
@@ -47,14 +47,14 @@ impl PeopleBox {
                         }
                     }
                 }
-                SetAction::HidePerson { id } => {
+                Action::HidePerson { id } => {
                     for person in &mut self.people {
                         if person.id == *id {
                             person.visualize = false;
                         }
                     }
                 }
-                SetAction::RoutePerson {
+                Action::RoutePerson {
                     id,
                     station_id: _,
                     random_station: _,

@@ -13,6 +13,7 @@ mod station;
 use crate::config::constants::{CONFIG_NAME, CONFIG_ROOT};
 use crate::config::processing::{load_yaml, parse_config};
 use crate::control::cli::run_cli;
+use crate::control::proxy::run_emmiter;
 use crate::state::State;
 use ggez::event::{self};
 use ggez::ContextBuilder;
@@ -21,10 +22,15 @@ use std::thread;
 
 fn main() {
     println!("start simulation...");
+    let (proxy_tx, proxy_rx) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(|| {
-        let _res = run_cli(tx);
+        let _res = run_cli(proxy_tx);
+    });
+
+    thread::spawn(|| {
+        run_emmiter(proxy_rx, tx);
     });
 
     let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);

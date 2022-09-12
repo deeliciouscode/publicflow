@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::helper::functions::{get_random_station_id, get_screen_coordinates};
 use crate::network::Network;
 use crate::pathstate::PathState;
@@ -17,7 +17,7 @@ pub struct Person {
     pub real_coordinates: (f32, f32),
     pub state: PersonState,
     pub path_state: PathState,
-    pub action_on_arrival: Option<SetAction>,
+    pub action_on_arrival: Option<Action>,
 }
 
 impl Person {
@@ -139,7 +139,7 @@ impl Person {
     ) {
         match &self.action_on_arrival {
             Some(action) => match action {
-                SetAction::RoutePerson {
+                Action::RoutePerson {
                     id: _,
                     station_id,
                     random_station,

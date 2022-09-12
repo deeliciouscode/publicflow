@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::helper::enums::{Direction, LineName};
 use crate::helper::functions::parse_str_to_line_and_directions;
 use crate::line::line::Line;
@@ -57,15 +57,15 @@ impl Platform {
     // TODO: choose sensible rate at which a platform can let pods through
     pub fn update(
         &mut self,
-        set_actions: &Vec<SetAction>,
+        effect_actions: &Vec<Action>,
         pods_box: &mut PodsBox,
         lines: &Vec<Line>,
         config: &Config,
     ) {
-        for action in set_actions {
+        for action in effect_actions {
             match action {
                 // TODO: differentiate between permament and not
-                SetAction::SpawnPod {
+                Action::SpawnPod {
                     station_id,
                     line_name,
                     direction,

@@ -1,5 +1,5 @@
 use crate::config::structs::Config;
-use crate::control::action::SetAction;
+use crate::control::action::Action;
 use crate::helper::enums::Direction;
 use crate::helper::enums::LineName;
 use crate::helper::functions::{calc_graph, get_screen_coordinates};
@@ -33,16 +33,16 @@ impl Network {
 
     pub fn update(
         &mut self,
-        set_actions: &Vec<SetAction>,
+        effect_actions: &Vec<Action>,
         pods_box: &mut PodsBox,
         config: &Config,
     ) {
-        if set_actions.len() != 0 {
+        if effect_actions.len() != 0 {
             let mut recalculate_graph = false;
-            for action in set_actions {
+            for action in effect_actions {
                 match action {
                     // TODO: differentiate between permament and not
-                    SetAction::ShowStation { id, permanent } => {
+                    Action::ShowStation { id, permanent } => {
                         for station in &mut self.stations {
                             if station.id == *id {
                                 if *permanent {
@@ -53,28 +53,28 @@ impl Network {
                             }
                         }
                     }
-                    SetAction::HideStation { id } => {
+                    Action::HideStation { id } => {
                         for station in &mut self.stations {
                             if station.id == *id {
                                 station.visualize = false;
                             }
                         }
                     }
-                    SetAction::BlockConnection { ids } => {
+                    Action::BlockConnection { ids } => {
                         let ids_ref = &ids;
                         for line in &mut self.lines {
                             line.block_connection(ids_ref);
                         }
                         recalculate_graph = true;
                     }
-                    SetAction::UnblockConnection { ids } => {
+                    Action::UnblockConnection { ids } => {
                         let ids_ref = &ids;
                         for line in &mut self.lines {
                             line.unblock_connection(ids_ref);
                         }
                         recalculate_graph = true;
                     }
-                    SetAction::MakePlatformOperational {
+                    Action::MakePlatformOperational {
                         station_id,
                         line_name,
                         direction,
@@ -86,7 +86,7 @@ impl Network {
                             }
                         }
                     }
-                    SetAction::MakePlatformPassable {
+                    Action::MakePlatformPassable {
                         station_id,
                         line_name,
                         direction,
@@ -98,7 +98,7 @@ impl Network {
                             }
                         }
                     }
-                    SetAction::MakePlatformQueuable {
+                    Action::MakePlatformQueuable {
                         station_id,
                         line_name,
                         direction,
@@ -119,7 +119,7 @@ impl Network {
         }
         // TODO: make something useful with this
         for station in &mut self.stations {
-            station.update(set_actions, pods_box, &self.lines, config);
+            station.update(effect_actions, pods_box, &self.lines, config);
         }
     }
 
