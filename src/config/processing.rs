@@ -524,7 +524,8 @@ fn calc_connections(
     fn get_travel_time(line_name: &LineName, distances: &Vec<i32>, i: usize) -> i32 {
         let travel_time;
         match line_name {
-            LineName::U(_) => travel_time = distances[i] / 22, // 80 kmh ~= 22 m/s
+            LineName::S(_) => travel_time = distances[i] / 24, // 87 kmh ~= 24 m/s
+            LineName::U(_) => travel_time = distances[i] / 20, // 72 kmh ~= 20 m/s
             LineName::T(_) => travel_time = distances[i] / 12, // 43 kmh ~= 12 m/s
             _ => {
                 panic!("Placeholder is not covered here. LineName should never be placeholder at exectution of the Simulation.")

@@ -125,6 +125,7 @@ pub fn transform_line_name_to_enum(line_name: &str) -> LineName {
         Ok(id) => match mode {
             'U' | 'u' => return LineName::U(id),
             'T' | 't' => return LineName::T(id),
+            'S' | 's' => return LineName::S(id),
             _ => {
                 panic!("{} can not be transformed into an enum.", line_name)
             }

@@ -1,9 +1,86 @@
+# s1
+- city: BenjaminTown
+  id: 11
+  lat: 0.5
+  lon: 5.0
+  name: NoName
+  entrypoint_for: ["s1+", "s2+"]
+- city: BenjaminTown
+  id: 12
+  lat: 1.5
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 13
+  lat: 3.0
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 14
+  lat: 4.0
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 15
+  lat: 5.8
+  lon: 5.0
+  name: NoName
+# id: 5
+- city: BenjaminTown
+  id: 16
+  lat: 6.5
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 17
+  lat: 7.5
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 18
+  lat: 9.0
+  lon: 5.0
+  name: NoName
+- city: BenjaminTown
+  id: 19
+  lat: 11.0
+  lon: 5.0
+  name: NoName
+  entrypoint_for: ["s1-"]
+
+# s2
+# id: 11
+# id: 12
+# id: 13
+# id: 14
+# id: 5
+# id: 15
+# id: 16
+# id: 17
+- city: BenjaminTown
+  id: 53
+  lat: 8.5
+  lon: 3.5
+  name: NoName
+- city: BenjaminTown
+  id: 52
+  lat: 10.0
+  lon: 3.0
+  name: NoName
+- city: BenjaminTown
+  id: 51
+  lat: 11.0
+  lon: 3.0
+  name: NoName
+  entrypoint_for: ["s2-"]
+
 # u1
 - city: BenjaminTown
   id: 1
   lat: 1.0
   lon: 1.0
   name: NoName
+  entrypoint_for: ["u1+"]
 - city: BenjaminTown
   id: 2
   lat: 2.0
@@ -49,61 +126,15 @@
   lat: 11.0
   lon: 9.5
   name: NoName
+  entrypoint_for: ["u1-"]
 
 # u2
-- city: BenjaminTown
-  id: 11
-  lat: 0.5
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 12
-  lat: 1.5
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 13
-  lat: 3.0
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 14
-  lat: 4.0
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 15
-  lat: 5.8
-  lon: 5.0
-  name: NoName
-# id: 5
-- city: BenjaminTown
-  id: 16
-  lat: 6.5
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 17
-  lat: 7.5
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 18
-  lat: 9.0
-  lon: 5.0
-  name: NoName
-- city: BenjaminTown
-  id: 19
-  lat: 11.0
-  lon: 5.0
-  name: NoName
-
-# u3
 - city: BenjaminTown
   id: 21
   lat: 5.5
   lon: 0.5
   name: NoName
+  entrypoint_for: ["u2+", "u3+"]
 - city: BenjaminTown
   id: 22
   lat: 5.5
@@ -141,8 +172,9 @@
   lat: 0.5
   lon: 9.5
   name: NoName
+  entrypoint_for: ["u2-", "u3-", "u4-"]
 
-# u4
+# u3
 # id: 21
 # id: 22
 - city: BenjaminTown
@@ -175,12 +207,13 @@
 # id: 27
 # id: 28
 
-# u5
+# u4
 - city: BenjaminTown
   id: 41
   lat: 10.0
   lon: 0.5
   name: NoName
+  entrypoint_for: ["u4+"]
 - city: BenjaminTown
   id: 42
   lat: 9.0
@@ -209,38 +242,13 @@
 # id: 27
 # id: 28
 
-# u6
-- city: BenjaminTown
-  id: 51
-  lat: 11.0
-  lon: 3.0
-  name: NoName
-- city: BenjaminTown
-  id: 52
-  lat: 10.0
-  lon: 3.0
-  name: NoName
-- city: BenjaminTown
-  id: 53
-  lat: 8.5
-  lon: 3.5
-  name: NoName
-# id: 16
-# id: 15
-# id: 5
-# id: 1
-# id: 24
-# id: 25
-# id: 26
-# id: 27
-# id: 28
-
-# u7
+# u5
 - city: BenjaminTown
   id: 61
   lat: 3.0
   lon: 0.5
   name: NoName
+  entrypoint_for: ["u5+"]
 - city: BenjaminTown
   id: 62
   lat: 3.5
@@ -271,6 +279,7 @@
   lat: 9.5
   lon: 10.5
   name: NoName
+  entrypoint_for: ["u5-"]
 
 # t11 -> Ringline
 - city: BenjaminTown
@@ -278,6 +287,7 @@
   lat: 5.3
   lon: 6.2
   name: NoName
+  entrypoint_for: ["t11+-"]
 # id: 6
 # id: 15
 # id: 32
@@ -294,6 +304,7 @@
   lat: 7.5
   lon: 1.0
   name: NoName
+  entrypoint_for: ["t12+-"]
 # id: 21
 # id: 62
 # id: 3
