@@ -1,6 +1,6 @@
 use crate::config::structs::Config;
 use crate::connection::YieldTriple;
-use crate::helper::enums::{Direction, LineName};
+use crate::helper::enums::{Direction, LineName, Operation};
 use crate::line::line::Line;
 use crate::network::Network;
 use geoutils::Location;
@@ -174,9 +174,56 @@ pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
     graph
 }
 
+pub fn interpolate(command: &String, config: &Config) -> String {
+    let ix_expr_start = command.find("$(");
+    match ix_expr_start {
+        Some(ix) => {
+            let ix_expr_end = command.rfind(")").unwrap();
+            let expr = &command.as_str()[ix + 2..ix_expr_end];
+            return format!(
+                "{}{}{}",
+                command[..ix].to_string(),
+                interpolate_expression(&expr.to_string(), config),
+                command[ix_expr_end + 1..].to_string()
+            );
+        }
+        None => {}
+    }
+    if command.contains("$") {
+        interpolate_dollar_vars(command, config)
+    } else {
+        command.clone()
+    }
+}
+
+pub fn interpolate_expression(command: &String, config: &Config) -> String {
+    let ix;
+    let op;
+    if command.contains("+") {
+        ix = command.find("+").unwrap();
+        op = Operation::Plus;
+    } else if command.contains("-") {
+        ix = command.find("-").unwrap();
+        op = Operation::Minus;
+    } else if command.contains("*") {
+        ix = command.find("*").unwrap();
+        op = Operation::Multiply;
+    } else if command.contains("/") {
+        ix = command.find("/").unwrap();
+        op = Operation::Divide;
+    } else {
+        panic!("You are using expressions wrong, only +-*/ are supported.");
+    }
+    let fst = &command[..ix];
+    let snd = &command[ix + 1..];
+    let fst_interpolated = interpolate_dollar_vars(&String::from(fst), config);
+    let snd_interpolated = interpolate_dollar_vars(&String::from(snd), config);
+
+    calculate(fst_interpolated, snd_interpolated, op)
+}
+
 pub fn interpolate_dollar_vars(command: &String, config: &Config) -> String {
     // $config.logic.transition_time
-
     let input_list: Vec<&str> = command.split(" ").collect();
     let mut new_input_list: Vec<String> = Vec::default();
     // let mut interpolated_arg;
@@ -190,10 +237,6 @@ pub fn interpolate_dollar_vars(command: &String, config: &Config) -> String {
             None => {}
         }
     }
-
-    // println!("input_list: {:?}", input_list);
-    // println!("new_input_list: {:?}", new_input_list);
-
     return new_input_list.join(" ");
 }
 
@@ -205,9 +248,25 @@ pub fn interpolate_arg(arg: &str, config: &Config) -> String {
         if let "logic" = input_list[1] {
             if let "transition_time" = input_list[2] {
                 value = String::from(format!("{}", config.logic.transition_time));
+            } else if let "pods_per_hour" = input_list[2] {
+                value = String::from(format!("{}", config.logic.pods_per_hour));
+            } else {
+                println!("You tried to access a key from config.logic that is not yet implemented.")
             }
+        } else {
+            println!("You tried to access a key from config that is not yet implemented.")
         }
     }
-
     return value;
+}
+
+pub fn calculate(fst: String, snd: String, op: Operation) -> String {
+    let fst_i64: i64 = FromStr::from_str(&fst).unwrap();
+    let snd_i64: i64 = FromStr::from_str(&snd).unwrap();
+    match op {
+        Operation::Plus => format!("{}", fst_i64 + snd_i64),
+        Operation::Minus => format!("{}", fst_i64 - snd_i64),
+        Operation::Multiply => format!("{}", fst_i64 * snd_i64),
+        Operation::Divide => format!("{}", fst_i64 / snd_i64),
+    }
 }
