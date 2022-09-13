@@ -28,9 +28,9 @@ fn main() {
     let (proxy_tx, proxy_rx) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
 
-    let command_on_start = config.logic.command_on_start.clone();
+    let config_for_cli = config.clone();
     thread::spawn(|| {
-        let _res = run_cli(proxy_tx, command_on_start);
+        let _res = run_cli(proxy_tx, config_for_cli);
     });
 
     thread::spawn(|| {

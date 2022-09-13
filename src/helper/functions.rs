@@ -173,3 +173,41 @@ pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
     let graph = UnGraph::from_edges(edges);
     graph
 }
+
+pub fn interpolate_dollar_vars(command: &String, config: &Config) -> String {
+    // $config.logic.transition_time
+
+    let input_list: Vec<&str> = command.split(" ").collect();
+    let mut new_input_list: Vec<String> = Vec::default();
+    // let mut interpolated_arg;
+    for arg in &input_list {
+        match arg.chars().next() {
+            Some('$') => {
+                let interpolated_arg = interpolate_arg(*arg, config);
+                new_input_list.push(interpolated_arg);
+            }
+            Some(_) => new_input_list.push(arg.to_string()),
+            None => {}
+        }
+    }
+
+    // println!("input_list: {:?}", input_list);
+    // println!("new_input_list: {:?}", new_input_list);
+
+    return new_input_list.join(" ");
+}
+
+pub fn interpolate_arg(arg: &str, config: &Config) -> String {
+    let config_path = arg.replace(&['$'][..], "");
+    let input_list: Vec<&str> = config_path.split(".").collect();
+    let mut value = String::default();
+    if let "config" = input_list[0] {
+        if let "logic" = input_list[1] {
+            if let "transition_time" = input_list[2] {
+                value = String::from(format!("{}", config.logic.transition_time));
+            }
+        }
+    }
+
+    return value;
+}

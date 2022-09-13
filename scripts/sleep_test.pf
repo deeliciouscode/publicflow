@@ -1,0 +1,9 @@
+get person 1
+sleep 10 real
+get person 1
+sleep 10 sim
+get person 1
+sleep 3 real
+get person 1
+sleep 3 sim
+get person 1

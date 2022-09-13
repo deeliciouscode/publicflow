@@ -3,10 +3,10 @@ use crate::helper::functions::parse_str_to_line_and_directions;
 use std::str::FromStr;
 
 pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
-    let mut effect_actions: Vec<Action> = vec![];
+    let mut actions: Vec<Action> = vec![];
     if input_list.len() < 2 {
         println!("Make what??");
-        return effect_actions;
+        return actions;
     }
 
     // make platform op 0 u1 -> make platform op 0 u1+-
@@ -14,7 +14,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
         "platform" | "pl" => {
             if input_list.len() < 5 {
                 println!("Too few arguments, make what with platform??");
-                return effect_actions;
+                return actions;
             }
             let station_id: i32 = FromStr::from_str(input_list[3]).unwrap();
             for arg in &input_list[4..] {
@@ -22,7 +22,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
                     "operational" | "op" => {
                         let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
-                            effect_actions.push(Action::MakePlatformOperational {
+                            actions.push(Action::MakePlatformOperational {
                                 station_id: station_id,
                                 line_name: line.clone(),
                                 direction: direction,
@@ -32,7 +32,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
                     "passable" | "pass" => {
                         let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
-                            effect_actions.push(Action::MakePlatformPassable {
+                            actions.push(Action::MakePlatformPassable {
                                 station_id: station_id,
                                 line_name: line.clone(),
                                 direction: direction,
@@ -42,7 +42,7 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
                     "queuable" | "qu" => {
                         let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
-                            effect_actions.push(Action::MakePlatformQueuable {
+                            actions.push(Action::MakePlatformQueuable {
                                 station_id: station_id,
                                 line_name: line.clone(),
                                 direction: direction,
@@ -63,5 +63,5 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
         }
     }
 
-    return effect_actions;
+    return actions;
 }
