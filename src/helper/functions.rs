@@ -176,6 +176,7 @@ pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
 }
 
 pub fn interpolate(command: &String, config: &Config) -> String {
+    let command = command.trim().to_string();
     let ix_expr_start = command.find("$(");
     match ix_expr_start {
         Some(ix) => {
@@ -191,7 +192,7 @@ pub fn interpolate(command: &String, config: &Config) -> String {
         None => {}
     }
     if command.contains("$") {
-        interpolate_dollar_vars(command, config)
+        interpolate_dollar_vars(&command, config)
     } else {
         command.clone()
     }

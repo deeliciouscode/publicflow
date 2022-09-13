@@ -188,7 +188,7 @@ impl Station {
         // let radius = self.people_in_station.len() as f32 / 10.;
         let fair_share = config.logic.number_of_people as f32 / config.network.n_stations as f32;
         let large_share = fair_share * 3.;
-        let max_radius = config.visual.radius_station * 5.;
+        let max_radius = config.visual.radius_station * 10.;
         let min_radius = config.visual.radius_station;
         let calculated_radius =
             min_radius + (self.people_in_station.len() as f32 / large_share) * max_radius;
