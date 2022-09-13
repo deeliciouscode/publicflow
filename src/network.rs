@@ -26,12 +26,10 @@ impl Network {
             graph: calc_graph(&lines),
             lines: lines,
         };
-        // network.print_state();
         network
     }
 
     pub fn update(&mut self) {
-        // TODO: make something useful with this
         for station in &mut self.stations {
             station.update();
         }
