@@ -22,7 +22,6 @@ pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
         println!("No previous history.");
     }
     let interpolated_cmd = interpolate(&config.logic.command_on_start, &config);
-    println!("interpolated_cmd: {}", interpolated_cmd);
     let input_list = interpolated_cmd.split(" ").collect();
     let actions = parse_input(&input_list, &config);
     let _res = tx.send(actions);
@@ -32,7 +31,6 @@ pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
                 let interpolated_cmd = interpolate(&line, &config);
-                println!("interpolated_cmd: {}", interpolated_cmd);
                 let input_list: Vec<&str> = interpolated_cmd.split(" ").collect();
                 let actions = parse_input(&input_list, &config);
                 let _res = tx.send(actions);
@@ -105,7 +103,6 @@ fn run_script(input_list: &Vec<&str>, config: &Config) -> Actions {
             for line in lines {
                 if let Ok(command) = line {
                     let interpolated_cmd = interpolate(&command, &config);
-                    println!("interpolated_cmd: {}", interpolated_cmd);
                     let input_list = interpolated_cmd.split(" ").collect();
                     let command_actions = parse_input(&input_list, config);
                     actions.actions.extend(command_actions.actions);
