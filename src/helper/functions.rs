@@ -6,6 +6,7 @@ use crate::network::Network;
 use geoutils::Location;
 use petgraph::graph::UnGraph;
 use rand::Rng;
+use rhai::{Engine, EvalAltResult};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -175,7 +176,7 @@ pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
     graph
 }
 
-pub fn interpolate(command: &String, config: &Config) -> String {
+pub fn interpolate(command: &String, config: &Config, engine: &Engine) -> String {
     let command = command.trim().to_string();
     let ix_expr_start = command.find("$(");
     match ix_expr_start {
@@ -185,7 +186,7 @@ pub fn interpolate(command: &String, config: &Config) -> String {
             return format!(
                 "{}{}{}",
                 command[..ix].to_string(),
-                interpolate_expression(&expr.to_string(), config),
+                interpolate_expression(&expr.to_string(), config, engine),
                 command[ix_expr_end + 1..].to_string()
             );
         }
@@ -198,30 +199,17 @@ pub fn interpolate(command: &String, config: &Config) -> String {
     }
 }
 
-pub fn interpolate_expression(command: &String, config: &Config) -> String {
-    let ix;
-    let op;
-    if command.contains("+") {
-        ix = command.find("+").unwrap();
-        op = Operation::Plus;
-    } else if command.contains("-") {
-        ix = command.find("-").unwrap();
-        op = Operation::Minus;
-    } else if command.contains("*") {
-        ix = command.find("*").unwrap();
-        op = Operation::Multiply;
-    } else if command.contains("/") {
-        ix = command.find("/").unwrap();
-        op = Operation::Divide;
-    } else {
-        panic!("You are using expressions wrong, only +-*/ are supported.");
-    }
-    let fst = &command[..ix];
-    let snd = &command[ix + 1..];
-    let fst_interpolated = interpolate_dollar_vars(&String::from(fst), config);
-    let snd_interpolated = interpolate_dollar_vars(&String::from(snd), config);
+pub fn interpolate_expression(command: &String, config: &Config, engine: &Engine) -> String {
+    let test = interpolate_dollar_vars(command, config);
+    let res = engine.eval::<i64>(&test);
 
-    calculate(fst_interpolated, snd_interpolated, op)
+    match res {
+        Ok(int) => return format!("{int}"),
+        Err(e) => {
+            println!("Could not be evalued: {} - returning 0", e);
+            return "0".into();
+        }
+    }
 }
 
 pub fn interpolate_dollar_vars(command: &String, config: &Config) -> String {
@@ -260,15 +248,4 @@ pub fn interpolate_arg(arg: &str, config: &Config) -> String {
         }
     }
     return value;
-}
-
-pub fn calculate(fst: String, snd: String, op: Operation) -> String {
-    let fst_i64: i64 = FromStr::from_str(&fst).unwrap();
-    let snd_i64: i64 = FromStr::from_str(&snd).unwrap();
-    match op {
-        Operation::Plus => format!("{}", fst_i64 + snd_i64),
-        Operation::Minus => format!("{}", fst_i64 - snd_i64),
-        Operation::Multiply => format!("{}", fst_i64 * snd_i64),
-        Operation::Divide => format!("{}", fst_i64 / snd_i64),
-    }
 }

@@ -9,6 +9,7 @@ use crate::control::parsers::spawn::parse_spawn;
 use crate::control::parsers::visualize::{parse_hide, parse_visualize};
 use crate::helper::functions::interpolate;
 use crate::helper::functions::read_lines;
+use rhai::Engine;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use std::sync::mpsc;
@@ -16,23 +17,25 @@ use std::sync::mpsc;
 // TODO: implement all actions for all entities if possible to match text in Thesis
 
 pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
+    let engine = Engine::new();
     // `()` can be used when no completer is required
     let mut rl = Editor::<()>::new()?;
     if rl.load_history(".meta/history.txt").is_err() {
         println!("No previous history.");
     }
-    let interpolated_cmd = interpolate(&config.logic.command_on_start, &config);
+    let interpolated_cmd = interpolate(&config.logic.command_on_start, &config, &engine);
     let input_list = interpolated_cmd.split(" ").collect();
-    let actions = parse_input(&input_list, &config);
+    let actions = parse_input(&input_list, &config, &engine);
     let _res = tx.send(actions);
+
     loop {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                let interpolated_cmd = interpolate(&line, &config);
+                let interpolated_cmd = interpolate(&line, &config, &engine);
                 let input_list: Vec<&str> = interpolated_cmd.split(" ").collect();
-                let actions = parse_input(&input_list, &config);
+                let actions = parse_input(&input_list, &config, &engine);
                 let _res = tx.send(actions);
             }
             Err(ReadlineError::Interrupted) => {
@@ -59,7 +62,7 @@ pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
     rl.save_history(".meta/history.txt")
 }
 
-fn parse_input(input_list: &Vec<&str>, config: &Config) -> Actions {
+fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Actions {
     let mut actions = Actions::new();
     match input_list[0] {
         "get" | "g" => {
@@ -89,22 +92,22 @@ fn parse_input(input_list: &Vec<&str>, config: &Config) -> Actions {
         "sleep" | "sl" => {
             actions.actions = parse_sleep(&input_list, config);
         }
-        "run" => actions = run_script(&input_list, config),
+        "run" => actions = run_script(&input_list, config, &engine),
         _ => {}
     }
     actions
 }
 
-fn run_script(input_list: &Vec<&str>, config: &Config) -> Actions {
+fn run_script(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Actions {
     let mut actions = Actions::new();
     let lines_res = read_lines(input_list[1]);
     match lines_res {
         Ok(lines) => {
             for line in lines {
                 if let Ok(command) = line {
-                    let interpolated_cmd = interpolate(&command, &config);
+                    let interpolated_cmd = interpolate(&command, &config, &engine);
                     let input_list = interpolated_cmd.split(" ").collect();
-                    let command_actions = parse_input(&input_list, config);
+                    let command_actions = parse_input(&input_list, config, &engine);
                     actions.actions.extend(command_actions.actions);
                 }
             }
