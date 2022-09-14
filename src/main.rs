@@ -3,6 +3,7 @@ mod connection;
 mod control;
 mod helper;
 mod line;
+mod metrics;
 mod network;
 mod pathstate;
 mod person;
