@@ -68,7 +68,7 @@ impl PeopleBox {
     pub fn apply_route_person(&mut self, id: i32, action: Action) {
         for person in &mut self.people {
             if person.id == id {
-                person.action_on_arrival = Some(action.clone())
+                person.action_to_process = Some(action.clone())
             }
         }
     }

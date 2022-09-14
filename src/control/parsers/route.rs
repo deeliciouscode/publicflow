@@ -17,12 +17,17 @@ pub fn parse_route(input_list: &Vec<&str>) -> Vec<Action> {
                 return actions;
             }
 
+            let mut stay_there = false;
             let mut random_station = false;
             let mut first_id_index = 2;
             let mut last_id_index = input_list.len() - 1;
-            if let "--random" | "-r" = input_list[2] {
+            if input_list.contains(&"--stay") {
+                stay_there = true;
+                first_id_index += 1;
+            }
+            if input_list.contains(&"--random") {
                 random_station = true;
-                first_id_index = 3;
+                first_id_index += 1;
                 last_id_index = input_list.len();
             }
 
@@ -41,6 +46,7 @@ pub fn parse_route(input_list: &Vec<&str>) -> Vec<Action> {
                     actions.push(Action::RoutePerson {
                         id: id,
                         station_id: station_id,
+                        stay_there: stay_there,
                         random_station: random_station,
                     })
                 }

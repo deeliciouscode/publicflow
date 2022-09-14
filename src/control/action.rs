@@ -65,6 +65,7 @@ pub enum Action {
     RoutePerson {
         id: i32,
         station_id: u32,
+        stay_there: bool,
         random_station: bool,
     },
     KillSimulation {

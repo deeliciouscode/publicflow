@@ -20,10 +20,10 @@ visual:
   desired_fps: 50 # TODO: decouple game speed from draw rate
   vsync: true
 logic:
-  number_of_people: 1000
+  number_of_people: 2000
   pod_capacity: 20
   transition_time: 30
   pod_in_station_seconds: 30
-  pods_per_hour: 60
+  pods_per_hour: 40
   shuffle_people: true
 

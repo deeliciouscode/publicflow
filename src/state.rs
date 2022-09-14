@@ -114,6 +114,7 @@ impl State {
                 Action::HideStation { id } => self.network.apply_hide_station(id),
                 Action::RoutePerson {
                     id,
+                    stay_there: _,
                     station_id: _,
                     random_station: _,
                 } => self.people_box.apply_route_person(id, action),

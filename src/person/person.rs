@@ -16,8 +16,9 @@ pub struct Person {
     transition_time: i32,
     pub real_coordinates: (f32, f32),
     pub state: PersonState,
+    pub stay_at_station_id: Option<u32>,
     pub path_state: PathState,
-    pub action_on_arrival: Option<Action>,
+    pub action_to_process: Option<Action>,
 }
 
 impl Person {
@@ -39,8 +40,9 @@ impl Person {
                 previous_pod_id: -1,
                 time_in_station: transition_time - 1,
             },
+            stay_at_station_id: None,
             path_state: PathState::new(&network.graph, start as u32, finish as u32, network),
-            action_on_arrival: None,
+            action_to_process: None,
         };
         person.set_coordinates_of_station(
             person.path_state.try_get_current_station_id().unwrap() as i32,
@@ -131,20 +133,22 @@ impl Person {
         }
     }
 
-    fn process_action_on_arrival(
+    fn try_process_action(
         &mut self,
         current_station_id: u32,
         network: &mut Network,
         config: &Config,
     ) {
-        match &self.action_on_arrival {
+        match &mut self.action_to_process {
             Some(action) => match action {
                 Action::RoutePerson {
                     id: _,
                     station_id,
+                    stay_there,
                     random_station,
                 } => {
                     if *random_station {
+                        self.stay_at_station_id = None;
                         let random_station_id = get_random_station_id(config);
                         self.new_path(
                             &network.graph,
@@ -153,14 +157,20 @@ impl Person {
                             network,
                         )
                     } else {
+                        if *stay_there {
+                            self.stay_at_station_id = Some(*station_id);
+                        } else {
+                            self.stay_at_station_id = None;
+                        }
                         let station_id_finish = *station_id;
                         self.new_path(
                             &network.graph,
                             current_station_id,
                             station_id_finish,
                             network,
-                        )
+                        );
                     }
+                    self.action_to_process = None;
                 }
                 _ => {}
             },
@@ -203,6 +213,13 @@ impl Person {
         station_id: i32,
         config: &Config,
     ) {
+        if let Some(station_id_stay) = self.stay_at_station_id {
+            if station_id as u32 == station_id_stay {
+                self.try_process_action(station_id_stay, network, config);
+                return;
+            }
+        }
+
         let maybe_next_station_id = self.path_state.try_get_next_station_id();
         match maybe_next_station_id {
             Some(next_station_id) => {
@@ -286,7 +303,7 @@ impl Person {
         match maybe_next_station_id {
             Some(desired_next_station_id) => {
                 if line_next_station_id != desired_next_station_id as i32
-                    || self.action_on_arrival.is_some()
+                    || self.action_to_process.is_some()
                 {
                     self.state = self.state.to_transitioning();
                     let station = network
@@ -295,7 +312,7 @@ impl Person {
                     station.register_person(self.id);
                     let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
                     pod.deregister_person(&self.id);
-                    self.process_action_on_arrival(station.id as u32, network, config);
+                    self.try_process_action(station.id as u32, network, config);
                 } else {
                     self.state = self.state.to_riding(pod_id);
                 }
@@ -313,7 +330,7 @@ impl Person {
                     station.register_person(self.id);
                     let pod = pods_box.try_get_pod_by_id_mut(pod_id).unwrap();
                     pod.deregister_person(&self.id);
-                    self.process_action_on_arrival(station.id as u32, network, config);
+                    self.try_process_action(station.id as u32, network, config);
                 }
             }
         }
