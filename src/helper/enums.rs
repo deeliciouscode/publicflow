@@ -37,11 +37,3 @@ pub enum Direction {
     Pos,
     Neg,
 }
-
-#[derive(Debug, Clone)]
-pub enum Operation {
-    Plus,
-    Minus,
-    Divide,
-    Multiply,
-}

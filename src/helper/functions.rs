@@ -1,12 +1,12 @@
 use crate::config::structs::Config;
 use crate::connection::YieldTriple;
-use crate::helper::enums::{Direction, LineName, Operation};
+use crate::helper::enums::{Direction, LineName};
 use crate::line::line::Line;
 use crate::network::Network;
 use geoutils::Location;
 use petgraph::graph::UnGraph;
 use rand::Rng;
-use rhai::{Engine, EvalAltResult};
+use rhai::Engine;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
