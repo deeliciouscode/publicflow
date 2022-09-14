@@ -16,6 +16,7 @@ use crate::control::cli::run_cli;
 use crate::control::proxy::run_emmiter;
 use crate::state::State;
 use ggez::event::{self};
+use ggez::graphics::set_window_title;
 use ggez::ContextBuilder;
 use std::sync::mpsc;
 use std::thread;
@@ -47,6 +48,8 @@ fn main() {
         )
         .build()
         .expect("aieee, could not create ggez context!");
+
+    set_window_title(&ctx, "PublicFlow");
 
     // let state = State::new(config, rx).add_pods().add_people();
     let state = State::new(config, rx).add_people();
