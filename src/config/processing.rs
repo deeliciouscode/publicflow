@@ -234,6 +234,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     // println!("{:?}", visual_config);
 
     Config {
+        timestamp_run: None,
         network: network_config,
         logic: logic_config,
         visual: visual_config,

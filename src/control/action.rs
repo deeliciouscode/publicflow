@@ -74,6 +74,10 @@ pub enum Action {
     Sleep {
         duration: Duration,
     },
+    DumpMetricsPerson {
+        person_id: i32,
+    },
+    DumpAvgMetricsPerson,
 }
 
 #[derive(Debug, Clone, PartialEq)]

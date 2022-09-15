@@ -130,6 +130,12 @@ impl State {
                     // Also this should never be reached since the proxy thread
                     // is not supposed to send it.
                 }
+                Action::DumpMetricsPerson { person_id } => {
+                    self.people_box.dump_metrics(person_id, &self.config);
+                }
+                Action::DumpAvgMetricsPerson => {
+                    self.people_box.dump_avg_metrics(&self.config);
+                }
             }
         }
         if recalculate_graph {

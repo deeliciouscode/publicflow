@@ -24,4 +24,6 @@ Cargo.lock
 /.vscode/
 /.meta/
 /.meta/*
+/metrics/
+/metrics/*
 

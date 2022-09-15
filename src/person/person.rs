@@ -67,6 +67,10 @@ impl Person {
         time_passed: u32,
     ) {
         // println!("person state: {:?}", self.state);
+        self.metrics.increase_time_in_station();
+        self.metrics.increase_time_in_pods();
+        self.metrics.increase_number_of_pods();
+        self.metrics.increase_meters_traveled(10);
         self.time_series
             .add_timestamp(time_passed, self.metrics.clone());
         match &self.state {

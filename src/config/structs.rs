@@ -1,5 +1,6 @@
 use crate::helper::enums::LineName;
 use crate::line::line::Line;
+use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
@@ -44,7 +45,14 @@ pub struct VisualConfig {
 
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub timestamp_run: Option<DateTime<Utc>>,
     pub network: NetworkConfig,
     pub logic: LogicConfig,
     pub visual: VisualConfig,
+}
+
+impl Config {
+    pub fn add_timestamp_run(&mut self, timstamp: DateTime<Utc>) {
+        self.timestamp_run = Some(timstamp)
+    }
 }

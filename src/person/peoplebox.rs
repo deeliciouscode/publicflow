@@ -8,6 +8,10 @@ use rand::rngs::mock::StepRng;
 // use shuffle::irs::Irs; // Turned out to slow down execution too much
 use shuffle::fy::FisherYates;
 use shuffle::shuffler::Shuffler;
+use std::fs::File;
+use std::fs::*;
+use std::io::prelude::*;
+use std::path::Path;
 // use crate::person::person::Person;
 
 // TODO: implement destinations
@@ -86,4 +90,43 @@ impl PeopleBox {
             }
         }
     }
+
+    pub fn dump_metrics(&self, person_id: i32, config: &Config) {
+        if let Some(timestamp_run) = config.timestamp_run {
+            let timestamp = timestamp_run
+                .naive_utc()
+                .format("%Y.%m.%d %H:%M:%S")
+                .to_string()
+                .replace(" ", "_");
+            println!("timestamp_run: {:?}", timestamp);
+
+            let path_str = format!("{}/{}/{}/{}.txt", "metrics", timestamp, "people", person_id);
+            let path = Path::new(&path_str);
+            let parent = path.parent().unwrap();
+            create_dir_all(parent);
+            let res = File::create(path);
+            // let res = File::create(format!("{}.txt", person_id));
+            match res {
+                Ok(mut file) => {
+                    let res = file.write_all(b"Hello, world!");
+                    match res {
+                        Ok(_) => {
+                            println!("written file");
+                        }
+                        Err(e) => {
+                            println!("error writing file: {}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("error opening file: {}", e);
+                }
+            }
+        }
+        for person in &self.people {
+            if person.id == person_id {}
+        }
+    }
+
+    pub fn dump_avg_metrics(&self, config: &Config) {}
 }

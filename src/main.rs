@@ -16,16 +16,19 @@ use crate::config::processing::{load_yaml, parse_config};
 use crate::control::cli::run_cli;
 use crate::control::proxy::run_emmiter;
 use crate::state::State;
+use chrono::DateTime;
 use ggez::event::{self};
 use ggez::graphics::set_window_title;
 use ggez::ContextBuilder;
 use std::sync::mpsc;
 use std::thread;
+use std::time::SystemTime;
 
 fn main() {
     println!("start simulation...");
     let config_yaml = load_yaml(CONFIG_ROOT, CONFIG_NAME);
-    let config = parse_config(&config_yaml);
+    let mut config = parse_config(&config_yaml);
+    config.add_timestamp_run(DateTime::from(SystemTime::now()));
 
     let (proxy_tx, proxy_rx) = mpsc::channel();
     let (tx, rx) = mpsc::channel();
