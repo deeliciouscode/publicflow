@@ -26,7 +26,13 @@ impl PeopleBox {
         None
     }
 
-    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
+    pub fn update(
+        &mut self,
+        pods_box: &mut PodsBox,
+        network: &mut Network,
+        config: &Config,
+        time_passed: u32,
+    ) {
         for person in &mut self.people {
             person.get_out_if_needed(pods_box, network, config);
         }
@@ -40,7 +46,7 @@ impl PeopleBox {
         }
 
         for person in &mut self.people {
-            person.update(pods_box, network, config);
+            person.update(pods_box, network, config, time_passed);
         }
     }
 

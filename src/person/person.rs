@@ -1,6 +1,8 @@
 use crate::config::structs::Config;
 use crate::control::action::Action;
 use crate::helper::functions::{get_random_station_id, get_screen_coordinates};
+use crate::metrics::person::metrics::PersonMetrics;
+use crate::metrics::person::timeseries::PersonTimeSeries;
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::person::personstate::PersonState;
@@ -14,6 +16,8 @@ pub struct Person {
     pub id: i32,
     pub visualize: bool,
     transition_time: i32,
+    pub metrics: PersonMetrics,
+    pub time_series: PersonTimeSeries,
     pub real_coordinates: (f32, f32),
     pub state: PersonState,
     pub stay_at_station_id: Option<u32>,
@@ -34,6 +38,8 @@ impl Person {
             id: id,
             visualize: false,
             transition_time: transition_time,
+            time_series: PersonTimeSeries::new(),
+            metrics: PersonMetrics::new(),
             real_coordinates: (0., 0.),
             state: PersonState::Transitioning {
                 station_id: start,
@@ -53,8 +59,16 @@ impl Person {
         person
     }
 
-    pub fn update(&mut self, pods_box: &mut PodsBox, network: &mut Network, config: &Config) {
+    pub fn update(
+        &mut self,
+        pods_box: &mut PodsBox,
+        network: &mut Network,
+        config: &Config,
+        time_passed: u32,
+    ) {
         // println!("person state: {:?}", self.state);
+        self.time_series
+            .add_timestamp(time_passed, self.metrics.clone());
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
                 // println!("person in ready state");

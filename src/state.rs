@@ -36,8 +36,12 @@ impl State {
     pub fn update(&mut self) {
         self.network.update();
         self.pods_box.update(&mut self.network, &self.config);
-        self.people_box
-            .update(&mut self.pods_box, &mut self.network, &self.config);
+        self.people_box.update(
+            &mut self.pods_box,
+            &mut self.network,
+            &self.config,
+            self.time_passed,
+        );
     }
 
     fn handle_actions(&mut self, action: Actions) {
