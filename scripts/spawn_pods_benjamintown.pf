@@ -221,3 +221,9 @@ spawn pod 11 s1+
 spawn pod 21 u2+
 
 spawn pod 28 u4-
+
+
+sleep 3600 sim
+
+dump people --avg
+kill

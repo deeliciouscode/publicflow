@@ -42,8 +42,6 @@ pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
             Err(ReadlineError::Interrupted) => {
                 let mut actions = Actions::new();
                 actions.actions.push(Action::KillSimulation { code: 0 });
-                // .push(EffectAction::KillSimulation { code: 0 });
-
                 let _res = tx.send(actions);
                 break;
             }
@@ -66,6 +64,9 @@ pub fn run_cli(tx: mpsc::Sender<Actions>, config: Config) -> Result<()> {
 fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Actions {
     let mut actions = Actions::new();
     match input_list[0] {
+        "kill" => {
+            actions.actions = vec![Action::KillSimulation { code: 0 }];
+        }
         "get" | "g" => {
             actions.actions = parse_get(&input_list);
         }

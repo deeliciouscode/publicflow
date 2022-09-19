@@ -10,6 +10,7 @@ ipython==8.5.0
 jedi==0.18.1
 jsonschema==4.16.0
 jupyter-core==4.11.1
+matplotlib==3.6.0
 matplotlib-inline==0.1.6
 nbformat==5.4.0
 numpy==1.23.3
@@ -17,7 +18,6 @@ pandas==1.4.4
 parso==0.8.3
 pexpect==4.8.0
 pickleshare==0.7.5
-pip==22.0.4
 prompt-toolkit==3.0.31
 ptyprocess==0.7.0
 pure-eval==0.2.2

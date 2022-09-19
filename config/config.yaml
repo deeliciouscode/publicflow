@@ -25,6 +25,6 @@ logic:
   pod_capacity: 20
   transition_time: 30
   pod_in_station_seconds: 30
-  pods_per_hour: 60
+  pods_per_hour: 50
   shuffle_people: true
 
