@@ -178,24 +178,31 @@ pub fn calc_graph(lines: &Vec<Line>) -> UnGraph<u32, u32> {
 
 pub fn interpolate(command: &String, config: &Config, engine: &Engine) -> String {
     let command = command.trim().to_string();
-    let ix_expr_start = command.find("$(");
+    let mut command_without_comment = command;
+    if command_without_comment.starts_with("#") {
+        return "".to_string();
+    } else if command_without_comment.contains("#") {
+        let split_at_hash: Vec<&str> = command_without_comment.split("#").collect();
+        command_without_comment = split_at_hash[0].to_string();
+    }
+    let ix_expr_start = command_without_comment.find("$(");
     match ix_expr_start {
         Some(ix) => {
-            let ix_expr_end = command.rfind(")").unwrap();
-            let expr = &command.as_str()[ix + 2..ix_expr_end];
+            let ix_expr_end = command_without_comment.rfind(")").unwrap();
+            let expr = &command_without_comment.as_str()[ix + 2..ix_expr_end];
             return format!(
                 "{}{}{}",
-                command[..ix].to_string(),
+                command_without_comment[..ix].to_string(),
                 interpolate_expression(&expr.to_string(), config, engine),
-                command[ix_expr_end + 1..].to_string()
+                command_without_comment[ix_expr_end + 1..].to_string()
             );
         }
         None => {}
     }
-    if command.contains("$") {
-        interpolate_dollar_vars(&command, config)
+    if command_without_comment.contains("$") {
+        interpolate_dollar_vars(&command_without_comment, config)
     } else {
-        command.clone()
+        command_without_comment.clone()
     }
 }
 

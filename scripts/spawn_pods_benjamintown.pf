@@ -222,7 +222,7 @@ spawn pod 21 u2+
 
 spawn pod 28 u4-
 
-
+# sleep $( 3600 - ( 11 * ( 3600 / $config.logic.pods_per_hour ))) sim
 sleep 3600 sim
 
 dump people --avg
