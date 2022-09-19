@@ -13,4 +13,16 @@ impl Timespamp {
             metrics: metrics,
         }
     }
+
+    pub fn add_metrics(&mut self, other: &Self) {
+        self.metrics.add(&other.metrics);
+    }
+
+    pub fn normalize_by(&mut self, number_of_people: u32) {
+        self.metrics.normalize_by(number_of_people)
+    }
+
+    pub fn format_to_string(&self) -> String {
+        format!("{},{}", self.ts, self.metrics.format_to_string())
+    }
 }

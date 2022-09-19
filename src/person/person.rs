@@ -67,21 +67,17 @@ impl Person {
         time_passed: u32,
     ) {
         // println!("person state: {:?}", self.state);
-        self.metrics.increase_time_in_station();
-        self.metrics.increase_time_in_pods();
-        self.metrics.increase_number_of_pods();
-        self.metrics.increase_meters_traveled(10);
-        self.time_series
-            .add_timestamp(time_passed, self.metrics.clone());
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
                 // println!("person in ready state");
                 // Assign first instead of using directly because:
                 // https://github.com/rust-lang/rust/issues/59159
                 let station_id_deref = *station_id;
+                self.metrics.increase_time_in_station();
                 self.try_to_take_next_pod(pods_box, network, station_id_deref, config);
             }
             PersonState::RidingPod { pod_id } => {
+                self.metrics.increase_time_in_pods();
                 // println!("person in riding state");
                 let pod_id_deref = *pod_id;
                 self.ride_pod(pods_box, pod_id_deref);
@@ -95,6 +91,7 @@ impl Person {
                 previous_pod_id: _,
                 time_in_station,
             } => {
+                self.metrics.increase_time_in_station();
                 if *time_in_station < self.transition_time {
                     // println!("person in transitioning state and not ready.");
                     self.state = self.state.wait_a_sec();
@@ -107,6 +104,8 @@ impl Person {
                 panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
             }
         }
+        self.time_series
+            .add_timestamp(time_passed, self.metrics.clone());
     }
 
     pub fn new_path(
@@ -207,6 +206,8 @@ impl Person {
                 pod_id,
                 station_id: _,
             } => {
+                // TODO: meters increase dependent on connection
+                self.metrics.increase_meters_traveled(1000.);
                 let pod_id_deref = *pod_id;
                 self.decide_on_arrival(pods_box, network, pod_id_deref, config);
                 let maybe_station_id = self.try_get_station_id();
@@ -263,6 +264,7 @@ impl Person {
                                 let got_in = pod.try_register_person(self.id);
                                 // println!("got_in: {}", got_in);
                                 if got_in {
+                                    self.metrics.increase_number_of_pods();
                                     // println!("Getting into pod with id: {} now", pod_id);
                                     self.state = self.state.to_riding(pod_id);
                                     let station =
