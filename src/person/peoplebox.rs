@@ -6,7 +6,8 @@ use crate::pod::podsbox::PodsBox;
 use ggez::Context;
 use rand::rngs::mock::StepRng;
 // use shuffle::irs::Irs; // Turned out to slow down execution too much
-use crate::metrics::person::timeseries::PersonTimeSeries;
+use crate::metrics::timeseries::TimeSeries;
+use crate::metrics::traits::Series;
 use shuffle::fy::FisherYates;
 use shuffle::shuffler::Shuffler;
 use std::fs::File;
@@ -113,7 +114,9 @@ impl PeopleBox {
                     let res = File::create(path);
                     match res {
                         Ok(mut file) => {
-                            let txt = person.time_series.format_to_string();
+                            let txt = person.time_series.format_to_file(String::from(
+                                "ts,number_of_pods,time_in_station,time_in_pods,meters_traveled\n",
+                            ));
                             let res = file.write_all(txt.as_bytes());
                             match res {
                                 Ok(_) => {
@@ -135,7 +138,7 @@ impl PeopleBox {
     }
 
     pub fn dump_avg_metrics(&self, config: &Config) {
-        let mut timeseries_accumulator = PersonTimeSeries::new();
+        let mut timeseries_accumulator = TimeSeries::new();
         for person in &self.people {
             timeseries_accumulator.add_layer(&person.time_series);
         }
@@ -157,7 +160,9 @@ impl PeopleBox {
             let res = File::create(path);
             match res {
                 Ok(mut file) => {
-                    let txt = timeseries_accumulator.format_to_string();
+                    let txt = timeseries_accumulator.format_to_file(String::from(
+                        "ts,number_of_pods,time_in_station,time_in_pods,meters_traveled\n",
+                    ));
                     let res = file.write_all(txt.as_bytes());
                     match res {
                         Ok(_) => {

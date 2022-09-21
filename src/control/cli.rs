@@ -89,7 +89,7 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
             actions.actions = parse_make(&input_list); // make platform op 0 u1 -> make platform 0 u1 - op
         }
         "spawn" | "sp" => {
-            actions.actions = parse_spawn(&input_list); // make platform op 0 u1 -> make platform 0 u1 - op
+            actions.actions = parse_spawn(&input_list);
         }
         "sleep" | "sl" => {
             actions.actions = parse_sleep(&input_list, config);

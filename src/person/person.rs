@@ -1,8 +1,8 @@
 use crate::config::structs::Config;
 use crate::control::action::Action;
 use crate::helper::functions::{get_random_station_id, get_screen_coordinates};
-use crate::metrics::person::metrics::PersonMetrics;
-use crate::metrics::person::timeseries::PersonTimeSeries;
+use crate::metrics::components::person::PersonMetrics;
+use crate::metrics::timeseries::TimeSeries;
 use crate::network::Network;
 use crate::pathstate::PathState;
 use crate::person::personstate::PersonState;
@@ -17,7 +17,7 @@ pub struct Person {
     pub visualize: bool,
     transition_time: i32,
     pub metrics: PersonMetrics,
-    pub time_series: PersonTimeSeries,
+    pub time_series: TimeSeries<PersonMetrics>,
     pub real_coordinates: (f32, f32),
     pub state: PersonState,
     pub stay_at_station_id: Option<u32>,
@@ -38,7 +38,7 @@ impl Person {
             id: id,
             visualize: false,
             transition_time: transition_time,
-            time_series: PersonTimeSeries::new(),
+            time_series: TimeSeries::new(),
             metrics: PersonMetrics::new(),
             real_coordinates: (0., 0.),
             state: PersonState::Transitioning {

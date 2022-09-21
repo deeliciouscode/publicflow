@@ -1,3 +1,5 @@
+use crate::metrics::traits::Metrics;
+
 #[derive(Clone, Debug, Default)]
 pub struct PersonMetrics {
     pub number_of_pods: f32,
@@ -18,20 +20,6 @@ impl PersonMetrics {
         }
     }
 
-    pub fn add(&mut self, other: &Self) {
-        self.number_of_pods += other.number_of_pods;
-        self.time_in_station += other.time_in_station;
-        self.time_in_pods += other.time_in_pods;
-        self.meters_traveled += other.meters_traveled;
-    }
-
-    pub fn normalize_by(&mut self, number_of_people: u32) {
-        self.number_of_pods /= number_of_people as f32;
-        self.time_in_station /= number_of_people as f32;
-        self.time_in_pods /= number_of_people as f32;
-        self.meters_traveled /= number_of_people as f32;
-    }
-
     pub fn increase_number_of_pods(&mut self) {
         self.number_of_pods += 1.;
     }
@@ -47,8 +35,24 @@ impl PersonMetrics {
     pub fn increase_meters_traveled(&mut self, meters: f32) {
         self.meters_traveled += meters;
     }
+}
 
-    pub fn format_to_string(&self) -> String {
+impl Metrics for PersonMetrics {
+    fn add_metrics(&mut self, other: &PersonMetrics) {
+        self.number_of_pods += other.number_of_pods;
+        self.time_in_station += other.time_in_station;
+        self.time_in_pods += other.time_in_pods;
+        self.meters_traveled += other.meters_traveled;
+    }
+
+    fn normalize_by(&mut self, number_of_people: u32) {
+        self.number_of_pods /= number_of_people as f32;
+        self.time_in_station /= number_of_people as f32;
+        self.time_in_pods /= number_of_people as f32;
+        self.meters_traveled /= number_of_people as f32;
+    }
+
+    fn format_to_string(&self) -> String {
         format!(
             "{},{},{},{}",
             self.number_of_pods, self.time_in_station, self.time_in_pods, self.meters_traveled
