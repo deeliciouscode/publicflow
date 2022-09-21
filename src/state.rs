@@ -1,16 +1,13 @@
 use crate::config::structs::Config;
 use crate::control::action::{Action, Actions};
 use crate::control::proxy::recv_actions;
-use crate::helper::enums::{Direction, LineName};
+use crate::helper::enums::Direction;
 use crate::helper::functions::calc_graph;
 use crate::helper::functions::{apply_zoom, format_seconds};
 use crate::helper::printer::{print_get_person, print_get_pod, print_get_station};
-use crate::line::line::Line;
-use crate::line::linestate::LineState;
 use crate::network::Network;
 use crate::person::peoplebox::PeopleBox;
 use crate::person::person::Person;
-use crate::pod::pod::Pod;
 use crate::pod::podsbox::PodsBox;
 use crate::station::platform::Platform;
 use crate::station::station::Station;
@@ -35,7 +32,8 @@ pub struct State {
 impl State {
     pub fn update(&mut self) {
         self.network.update();
-        self.pods_box.update(&mut self.network, &self.config);
+        self.pods_box
+            .update(&mut self.network, &self.config, self.time_passed);
         self.people_box.update(
             &mut self.pods_box,
             &mut self.network,
@@ -106,6 +104,7 @@ impl State {
                         direction,
                         &mut self.pods_box,
                         &self.config,
+                        self.time_passed,
                     );
                 }
                 Action::ShowPerson { id, follow } => self.people_box.apply_show_person(id, follow),
@@ -133,8 +132,11 @@ impl State {
                 Action::DumpMetricsPerson { person_id } => {
                     self.people_box.dump_metrics(person_id, &self.config);
                 }
-                Action::DumpAvgMetricsPerson => {
+                Action::DumpAvgMetricsPeople => {
                     self.people_box.dump_avg_metrics(&self.config);
+                }
+                Action::DumpAvgMetricsPods => {
+                    self.pods_box.dump_avg_metrics(&self.config);
                 }
             }
         }
@@ -306,71 +308,71 @@ impl State {
         return state;
     }
 
-    pub fn _add_pods(mut self) -> Self {
-        // let mut stations_occupied: Vec<i32> = vec![];
-        let calc_line_state = |pod_id: &i32| -> LineState {
-            let mut rng = rand::thread_rng();
-            let mut n_stations_skipped = 0;
-            // default, needed so Line can never be nothing
-            let mut line: Line = Line {
-                name: LineName::Placeholder,
-                stations: vec![],
-                distances: vec![],
-                circular: true,
-                connections: vec![],
-            };
-            let mut line_ix: i32 = -1;
-            // let mut station_id: i32 = -1;
-            let mut direction: i32 = 1;
+    // pub fn _add_pods(mut self) -> Self {
+    //     // let mut stations_occupied: Vec<i32> = vec![];
+    //     let calc_line_state = |pod_id: &i32| -> LineState {
+    //         let mut rng = rand::thread_rng();
+    //         let mut n_stations_skipped = 0;
+    //         // default, needed so Line can never be nothing
+    //         let mut line: Line = Line {
+    //             name: LineName::Placeholder,
+    //             stations: vec![],
+    //             distances: vec![],
+    //             circular: true,
+    //             connections: vec![],
+    //         };
+    //         let mut line_ix: i32 = -1;
+    //         // let mut station_id: i32 = -1;
+    //         let mut direction: i32 = 1;
 
-            for lineref in &self.network.lines {
-                // println!("{}, {}", pod_id, n_stations_skipped);
-                if *pod_id > n_stations_skipped + (lineref.stations.len() as i32 - 1) {
-                    n_stations_skipped += lineref.stations.len() as i32;
-                    continue;
-                }
+    //         for lineref in &self.network.lines {
+    //             // println!("{}, {}", pod_id, n_stations_skipped);
+    //             if *pod_id > n_stations_skipped + (lineref.stations.len() as i32 - 1) {
+    //                 n_stations_skipped += lineref.stations.len() as i32;
+    //                 continue;
+    //             }
 
-                line_ix = pod_id - n_stations_skipped;
-                line = lineref.clone();
-                // station_id = lineref.stations[line_ix as usize];
-                direction = if rng.gen_bool(0.5) { 1 } else { -1 };
-                break;
-            }
+    //             line_ix = pod_id - n_stations_skipped;
+    //             line = lineref.clone();
+    //             // station_id = lineref.stations[line_ix as usize];
+    //             direction = if rng.gen_bool(0.5) { 1 } else { -1 };
+    //             break;
+    //         }
 
-            if line.stations.is_empty() {
-                panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
-            }
+    //         if line.stations.is_empty() {
+    //             panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
+    //         }
 
-            let mut line_state = LineState {
-                line: line,
-                line_ix: line_ix,
-                next_ix: -1,
-                direction: direction,
-            };
+    //         let mut line_state = LineState {
+    //             line: line,
+    //             line_ix: line_ix,
+    //             next_ix: -1,
+    //             direction: direction,
+    //         };
 
-            line_state.set_next_station_ix();
+    //         line_state.set_next_station_ix();
 
-            // println!("-------------> {:?}", line_state);
+    //         // println!("-------------> {:?}", line_state);
 
-            return line_state;
-        };
+    //         return line_state;
+    //     };
 
-        let mut pods: Vec<Pod> = vec![];
-        for pod_id in 0..self.config.logic.number_of_pods {
-            pods.push(Pod::new(
-                pod_id,
-                self.config.logic.pod_in_station_seconds,
-                self.config.logic.pod_capacity,
-                calc_line_state(&pod_id),
-            ));
-        }
+    //     let mut pods: Vec<Pod> = vec![];
+    //     for pod_id in 0..self.config.logic.number_of_pods {
+    //         pods.push(Pod::new(
+    //             pod_id,
+    //             self.config.logic.pod_in_station_seconds,
+    //             self.config.logic.pod_capacity,
+    //             calc_line_state(&pod_id),
+    //         ));
+    //     }
 
-        let pods_box = PodsBox { pods: pods };
+    //     let pods_box = PodsBox { pods: pods };
 
-        self.pods_box = pods_box;
+    //     self.pods_box = pods_box;
 
-        self
-    }
+    //     self
+    // }
 
     pub fn add_people(mut self) -> Self {
         let mut rng = rand::thread_rng();

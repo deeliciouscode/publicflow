@@ -46,6 +46,7 @@ pub struct VisualConfig {
 #[derive(Debug, Clone)]
 pub struct Config {
     pub timestamp_run: Option<DateTime<Utc>>,
+    pub mode: String,
     pub network: NetworkConfig,
     pub logic: LogicConfig,
     pub visual: VisualConfig,

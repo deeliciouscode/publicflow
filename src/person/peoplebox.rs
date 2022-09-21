@@ -153,7 +153,10 @@ impl PeopleBox {
                 .replace(" ", "_");
             println!("timestamp_run: {:?}", timestamp);
 
-            let path_str = format!("{}/{}/{}/{}.txt", "metrics", timestamp, "people", "avg");
+            let path_str = format!(
+                "{}/{}/{}/{}/{}.txt",
+                "metrics", config.mode, timestamp, "people", "avg"
+            );
             let path = Path::new(&path_str);
             let parent = path.parent().unwrap();
             let _res = create_dir_all(parent);

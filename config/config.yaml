@@ -1,4 +1,5 @@
 general:
+  mode: dev # used for data gathering subfolder
   town: "benchmark"
   override: true
   # command_on_start: "run scripts/spawn_pods_playground_v3.pf"
@@ -22,7 +23,7 @@ visual:
   vsync: true
 logic:
   number_of_people: 1000
-  pod_capacity: 20
+  pod_capacity: 10
   transition_time: 30
   pod_in_station_seconds: 30
   pods_per_hour: 50

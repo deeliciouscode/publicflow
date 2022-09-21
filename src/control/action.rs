@@ -77,7 +77,8 @@ pub enum Action {
     DumpMetricsPerson {
         person_id: i32,
     },
-    DumpAvgMetricsPerson,
+    DumpAvgMetricsPeople,
+    DumpAvgMetricsPods,
 }
 
 #[derive(Debug, Clone, PartialEq)]

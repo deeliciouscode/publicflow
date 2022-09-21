@@ -9,14 +9,14 @@ pub fn parse_dump(input_list: &Vec<&str>) -> Vec<Action> {
     }
 
     match input_list[1] {
-        "person" | "people" | "p" => {
+        "person" | "people" => {
             let mut avg = false;
             if input_list.contains(&"--avg") {
                 avg = true;
             }
 
             if avg {
-                actions.push(Action::DumpAvgMetricsPerson);
+                actions.push(Action::DumpAvgMetricsPeople);
                 return actions;
             }
 
@@ -27,6 +27,25 @@ pub fn parse_dump(input_list: &Vec<&str>) -> Vec<Action> {
                     actions.push(Action::DumpMetricsPerson { person_id: id })
                 }
             }
+        }
+        "pod" | "pods" => {
+            let mut avg = false;
+            if input_list.contains(&"--avg") {
+                avg = true;
+            }
+
+            if avg {
+                actions.push(Action::DumpAvgMetricsPods);
+                return actions;
+            }
+            // else
+            unimplemented!();
+            // for arg in &input_list[2..] {
+            //     let ids = parse_id_list_and_ranges(arg);
+            //     for id in ids {
+            //         actions.push(Action::DumpMetricsPerson { person_id: id })
+            //     }
+            // }
         }
         _ => {
             println!("Can't dump: {}, not implemented.", input_list[1])

@@ -56,7 +56,7 @@ impl Metrics for PodMetrics {
         self.utilization /= number_of_pods as f32;
         self.time_in_station /= number_of_pods as f32;
         self.time_in_queue /= number_of_pods as f32;
-        self.time_in_station /= number_of_pods as f32;
+        self.time_driving /= number_of_pods as f32;
         self.meters_traveled /= number_of_pods as f32;
     }
 

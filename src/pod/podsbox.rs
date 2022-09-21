@@ -2,10 +2,16 @@ use crate::config::structs::Config;
 use crate::helper::enums::{Direction, LineName};
 use crate::line::line::Line;
 use crate::line::linestate::LineState;
+use crate::metrics::timeseries::TimeSeries;
+use crate::metrics::traits::Series;
 use crate::network::Network;
 use crate::pod::pod::Pod;
 use ggez::Context;
 use std::collections::HashSet;
+use std::fs::File;
+use std::fs::*;
+use std::io::prelude::*;
+use std::path::Path;
 
 #[derive(Clone, Debug)]
 pub struct PodsBox {
@@ -13,9 +19,9 @@ pub struct PodsBox {
 }
 
 impl PodsBox {
-    pub fn update(&mut self, network: &mut Network, config: &Config) {
+    pub fn update(&mut self, network: &mut Network, config: &Config, time_passed: u32) {
         for pod in &mut self.pods {
-            pod.update(network, config)
+            pod.update(network, config, time_passed)
         }
         // TODO: figure out a way to do this in parralel, maybe with message queues or something.
         // self.pods.par_iter_mut().for_each(|pod| pod.update(network, config));
@@ -35,6 +41,7 @@ impl PodsBox {
         direction: &Direction,
         lines: &Vec<Line>,
         config: &Config,
+        time_passed: u32,
     ) {
         let id = self.get_highest_id() + 1;
         for line in lines {
@@ -73,6 +80,7 @@ impl PodsBox {
                     config.logic.pod_in_station_seconds,
                     config.logic.pod_capacity,
                     line_state,
+                    time_passed,
                 );
                 self.pods.push(pod);
             }
@@ -156,6 +164,52 @@ impl PodsBox {
         let ids_ref = &ids;
         for pod in &mut self.pods {
             pod.line_state.line.unblock_connection(ids_ref);
+        }
+    }
+
+    pub fn dump_avg_metrics(&self, config: &Config) {
+        let mut timeseries_accumulator = TimeSeries::new();
+        for pod in &self.pods {
+            timeseries_accumulator.add_layer(&pod.time_series);
+        }
+
+        timeseries_accumulator.normalize_by(self.pods.len() as u32);
+
+        if let Some(timestamp_run) = config.timestamp_run {
+            let timestamp = timestamp_run
+                .naive_utc()
+                .format("%Y.%m.%d %H:%M:%S")
+                .to_string()
+                .replace(" ", "_");
+            println!("timestamp_run: {:?}", timestamp);
+
+            let path_str = format!(
+                "{}/{}/{}/{}/{}.txt",
+                "metrics", config.mode, timestamp, "pods", "avg"
+            );
+            let path = Path::new(&path_str);
+            let parent = path.parent().unwrap();
+            let _res = create_dir_all(parent);
+            let res = File::create(path);
+            match res {
+                Ok(mut file) => {
+                    let txt = timeseries_accumulator.format_to_file(String::from(
+                        "ts,utilization,time_in_station,time_in_queue,time_driving,meters_traveled\n",
+                    ));
+                    let res = file.write_all(txt.as_bytes());
+                    match res {
+                        Ok(_) => {
+                            println!("written file");
+                        }
+                        Err(e) => {
+                            println!("error writing file: {}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("error opening file: {}", e);
+                }
+            }
         }
     }
 }

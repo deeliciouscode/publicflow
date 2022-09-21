@@ -115,10 +115,18 @@ impl Network {
         direction: Direction,
         pods_box: &mut PodsBox,
         config: &Config,
+        time_passed: u32,
     ) {
         for station in &mut self.stations {
             if station.id == station_id {
-                station.spawn_pod(&line_name, &direction, pods_box, &self.lines, config);
+                station.spawn_pod(
+                    &line_name,
+                    &direction,
+                    pods_box,
+                    &self.lines,
+                    config,
+                    time_passed,
+                );
             }
         }
     }

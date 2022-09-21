@@ -156,6 +156,7 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
 pub fn parse_config(raw_config: &Yaml) -> Config {
     let mut town = String::default();
     let mut command_on_start = String::default();
+    let mut mode = String::from("dev");
     let mut overide_general = false;
 
     if let Yaml::Hash(hash) = raw_config {
@@ -174,6 +175,11 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("override"))) {
                     if let Yaml::Boolean(value) = yaml {
                         overide_general = *value;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("mode"))) {
+                    if let Yaml::String(value) = yaml {
+                        mode = value.to_string();
                     }
                 }
             }
@@ -235,6 +241,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
 
     Config {
         timestamp_run: None,
+        mode: mode,
         network: network_config,
         logic: logic_config,
         visual: visual_config,

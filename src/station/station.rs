@@ -37,11 +37,12 @@ impl Station {
         pods_box: &mut PodsBox,
         lines: &Vec<Line>,
         config: &Config,
+        time_passed: u32,
     ) {
         for platform in &mut self.platforms {
             // if platform.can_spawn_for
             if platform.lines_using_this.contains(&line_name) && direction == &platform.direction {
-                pods_box.add_pod(&line_name, &direction, lines, config);
+                pods_box.add_pod(&line_name, &direction, lines, config, time_passed);
             }
         }
     }

@@ -1,6 +1,8 @@
 use crate::config::structs::Config;
 use crate::helper::enums::LineName;
 use crate::line::linestate::LineState;
+use crate::metrics::components::pod::PodMetrics;
+use crate::metrics::timeseries::TimeSeries;
 use crate::network::Network;
 use crate::pod::podstate::PodState;
 use ggez::{graphics, Context, GameResult};
@@ -11,6 +13,8 @@ use std::collections::HashSet;
 pub struct Pod {
     pub id: i32,
     pub visualize: bool,
+    pub metrics: PodMetrics,
+    pub time_series: TimeSeries<PodMetrics>,
     pub in_station_for: i32,
     pub capacity: i32,
     pub people_in_pod: HashSet<i32>,
@@ -19,11 +23,20 @@ pub struct Pod {
 }
 
 impl Pod {
-    pub fn new(id: i32, in_station_for: i32, capacity: i32, line_state: LineState) -> Self {
+    pub fn new(
+        id: i32,
+        in_station_for: i32,
+        capacity: i32,
+        line_state: LineState,
+        time_passed: u32,
+    ) -> Self {
         let station_id = line_state.get_station_id();
+        let time_series = TimeSeries::from(time_passed);
         Pod {
             id: id,
             visualize: false,
+            metrics: PodMetrics::new(),
+            time_series: time_series,
             in_station_for: in_station_for,
             capacity: capacity,
             people_in_pod: HashSet::new(),
@@ -37,7 +50,9 @@ impl Pod {
     }
 
     // TODO: remove unused stuff
-    pub fn update(&mut self, network: &mut Network, config: &Config) {
+    pub fn update(&mut self, network: &mut Network, config: &Config, time_passed: u32) {
+        self.metrics
+            .set_utilization(self.people_in_pod.len() as f32 / self.capacity as f32);
         match &self.state {
             PodState::BetweenStations {
                 station_id_from: _,
@@ -45,6 +60,7 @@ impl Pod {
                 time_to_next_station,
                 coordinates: _,
             } => {
+                self.metrics.increase_time_driving();
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
                     self.state = self.state.drive_a_sec(self, network, config);
@@ -56,6 +72,8 @@ impl Pod {
                 station_id: _,
                 coordinates: _,
             } => {
+                // TODO: use actual distance in network
+                self.metrics.increase_meters_traveled(1000.);
                 // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
             }
@@ -64,6 +82,7 @@ impl Pod {
                 time_in_station,
                 coordinates: _,
             } => {
+                self.metrics.increase_time_in_station();
                 // if self.id == 0 {
                 //     println!("Pod 0 in InStation state {}, {}", self.in_station_for, time_in_station);
                 // }
@@ -77,12 +96,22 @@ impl Pod {
                 station_id,
                 coordinates: _,
             } => {
+                self.metrics.increase_time_in_queue();
                 self.check_if_in_station(network, *station_id);
             }
             PodState::InvalidState { reason } => {
                 panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
             }
         }
+        self.time_series
+            .add_timestamp(time_passed, self.metrics.clone());
+
+        // if self.id == 1 || self.id == 150 {
+        //     println!(
+        //         "Pod ID: {}, time_passed: {}, metrics: {:?}",
+        //         self.id, time_passed, self.metrics
+        //     );
+        // }
     }
 
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {
