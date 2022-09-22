@@ -40,6 +40,7 @@ pub enum Action {
         station_id: i32,
         line_name: LineName,
         direction: Direction,
+        force: bool,
     },
     ShowPerson {
         id: i32,

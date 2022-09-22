@@ -39,6 +39,7 @@ impl PodsBox {
         &mut self,
         line_name: &LineName,
         direction: &Direction,
+        station_id: &i32,
         lines: &Vec<Line>,
         config: &Config,
         time_passed: u32,
@@ -46,33 +47,60 @@ impl PodsBox {
         let id = self.get_highest_id() + 1;
         for line in lines {
             if &line.name == line_name {
+                let mut line_ix = 0;
+                for (i, st_id) in line.stations.iter().enumerate() {
+                    if st_id == station_id {
+                        line_ix = i as i32;
+                    }
+                }
+                // println!("line_ix: {}", line_ix);
+                // println!("lines: {:?}", lines);
                 let line_max_ix = line.stations.len() as i32 - 1;
                 let line_state;
                 match direction {
                     Direction::Pos => {
+                        let next_ix;
+                        let direction;
+                        if line.circular && line_ix == line_max_ix {
+                            next_ix = 0;
+                            direction = 1;
+                        } else if line_ix == line_max_ix {
+                            // this is basically just turning around
+                            next_ix = line_ix - 1;
+                            direction = -1;
+                        } else {
+                            next_ix = line_ix + 1;
+                            direction = 1;
+                        }
+
                         line_state = LineState {
                             line: line.clone(),
-                            line_ix: 0,
-                            next_ix: 1,
-                            direction: 1,
+                            line_ix: line_ix,
+                            next_ix: next_ix,
+                            direction: direction,
                         };
                     }
                     Direction::Neg => {
-                        if line.circular {
-                            line_state = LineState {
-                                line: line.clone(),
-                                line_ix: 0,
-                                next_ix: line_max_ix,
-                                direction: -1,
-                            };
+                        let next_ix;
+                        let direction;
+                        if line.circular && line_ix == 0 {
+                            next_ix = line_max_ix;
+                            direction = -1;
+                        } else if line_ix == 0 {
+                            // this is basically just turning around
+                            next_ix = line_ix + 1;
+                            direction = 1;
                         } else {
-                            line_state = LineState {
-                                line: line.clone(),
-                                line_ix: line_max_ix,
-                                next_ix: line_max_ix - 1,
-                                direction: -1,
-                            };
+                            next_ix = line_ix - 1;
+                            direction = -1;
                         }
+
+                        line_state = LineState {
+                            line: line.clone(),
+                            line_ix: line_ix,
+                            next_ix: next_ix,
+                            direction: direction,
+                        };
                     }
                 }
                 let pod = Pod::new(

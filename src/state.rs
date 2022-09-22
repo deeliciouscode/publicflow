@@ -100,11 +100,13 @@ impl State {
                     station_id,
                     line_name,
                     direction,
+                    force,
                 } => {
                     self.network.apply_spawn_pod(
                         station_id,
                         line_name,
                         direction,
+                        force,
                         &mut self.pods_box,
                         &self.config,
                         self.time_passed,

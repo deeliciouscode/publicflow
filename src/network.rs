@@ -113,6 +113,7 @@ impl Network {
         station_id: i32,
         line_name: LineName,
         direction: Direction,
+        force: bool,
         pods_box: &mut PodsBox,
         config: &Config,
         time_passed: u32,
@@ -122,6 +123,7 @@ impl Network {
                 station.spawn_pod(
                     &line_name,
                     &direction,
+                    force,
                     pods_box,
                     &self.lines,
                     config,
