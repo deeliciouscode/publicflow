@@ -47,6 +47,7 @@ pub fn parse_dump(input_list: &Vec<&str>) -> Vec<Action> {
             //     }
             // }
         }
+        "config" => actions.push(Action::DumpConfig),
         _ => {
             println!("Can't dump: {}, not implemented.", input_list[1])
         }

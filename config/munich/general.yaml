@@ -12,7 +12,6 @@ visual:
   radius_station: 10.0
   radius_pod: 5.0
   width_line: 2.0
-  desired_fps: 20
   vsync: true
 logic:
   number_of_people: 1000

@@ -1,3 +1,4 @@
+use crate::config::constants::{CONFIG_NAME, CONFIG_ROOT};
 use crate::config::structs::Config;
 use crate::control::action::{Action, Actions};
 use crate::control::proxy::recv_actions;
@@ -16,6 +17,8 @@ use ggez::graphics::{self, Color, DrawParam, Font, PxScale, Text};
 use ggez::{timer, Context, GameResult};
 use rand::Rng;
 use std::collections::HashSet;
+use std::fs;
+use std::path::Path;
 use std::process::exit;
 use std::sync::mpsc;
 
@@ -137,6 +140,9 @@ impl State {
                 }
                 Action::DumpAvgMetricsPods => {
                     self.pods_box.dump_avg_metrics(&self.config);
+                }
+                Action::DumpConfig => {
+                    self.dump_config();
                 }
             }
         }
@@ -308,71 +314,26 @@ impl State {
         return state;
     }
 
-    // pub fn _add_pods(mut self) -> Self {
-    //     // let mut stations_occupied: Vec<i32> = vec![];
-    //     let calc_line_state = |pod_id: &i32| -> LineState {
-    //         let mut rng = rand::thread_rng();
-    //         let mut n_stations_skipped = 0;
-    //         // default, needed so Line can never be nothing
-    //         let mut line: Line = Line {
-    //             name: LineName::Placeholder,
-    //             stations: vec![],
-    //             distances: vec![],
-    //             circular: true,
-    //             connections: vec![],
-    //         };
-    //         let mut line_ix: i32 = -1;
-    //         // let mut station_id: i32 = -1;
-    //         let mut direction: i32 = 1;
+    pub fn dump_config(&self) {
+        if let Some(timestamp_run) = self.config.timestamp_run {
+            let timestamp = timestamp_run
+                .naive_utc()
+                .format("%Y.%m.%d %H:%M:%S")
+                .to_string()
+                .replace(" ", "_");
+            println!("timestamp_run: {:?}", timestamp);
 
-    //         for lineref in &self.network.lines {
-    //             // println!("{}, {}", pod_id, n_stations_skipped);
-    //             if *pod_id > n_stations_skipped + (lineref.stations.len() as i32 - 1) {
-    //                 n_stations_skipped += lineref.stations.len() as i32;
-    //                 continue;
-    //             }
-
-    //             line_ix = pod_id - n_stations_skipped;
-    //             line = lineref.clone();
-    //             // station_id = lineref.stations[line_ix as usize];
-    //             direction = if rng.gen_bool(0.5) { 1 } else { -1 };
-    //             break;
-    //         }
-
-    //         if line.stations.is_empty() {
-    //             panic!("Something went wrong, stations should not be empty. Probably the number of pods does not match the expected number.")
-    //         }
-
-    //         let mut line_state = LineState {
-    //             line: line,
-    //             line_ix: line_ix,
-    //             next_ix: -1,
-    //             direction: direction,
-    //         };
-
-    //         line_state.set_next_station_ix();
-
-    //         // println!("-------------> {:?}", line_state);
-
-    //         return line_state;
-    //     };
-
-    //     let mut pods: Vec<Pod> = vec![];
-    //     for pod_id in 0..self.config.logic.number_of_pods {
-    //         pods.push(Pod::new(
-    //             pod_id,
-    //             self.config.logic.pod_in_station_seconds,
-    //             self.config.logic.pod_capacity,
-    //             calc_line_state(&pod_id),
-    //         ));
-    //     }
-
-    //     let pods_box = PodsBox { pods: pods };
-
-    //     self.pods_box = pods_box;
-
-    //     self
-    // }
+            let source_path_str = format!("{}/{}", CONFIG_ROOT, CONFIG_NAME);
+            let dest_path_str = format!(
+                "{}/{}/{}/{}.yaml",
+                "metrics", self.config.environment, timestamp, "config"
+            );
+            let path = Path::new(&dest_path_str);
+            let parent = path.parent().unwrap();
+            let _res = fs::create_dir_all(parent);
+            let _res = fs::copy(source_path_str, dest_path_str);
+        }
+    }
 
     pub fn add_people(mut self) -> Self {
         let mut rng = rand::thread_rng();
@@ -448,7 +409,7 @@ impl EventHandler for State {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Update code here...
-        while timer::check_update_time(ctx, self.config.visual.desired_fps) {
+        while timer::check_update_time(ctx, self.config.logic.speed_multiplier) {
             // println!("fps: {}", timer::fps(ctx));
             let actions = recv_actions(&self.rx);
             self.handle_actions(actions);
@@ -464,12 +425,10 @@ impl EventHandler for State {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         let bg_color = Color::new(0.15, 0.15, 0.15, 1.0);
         graphics::clear(ctx, bg_color);
-
         self.network.draw(ctx, &self.config);
         self.pods_box.draw(ctx, &self.config);
         self.people_box.draw(ctx);
         self.draw(ctx);
-
         graphics::present(ctx)
     }
 }

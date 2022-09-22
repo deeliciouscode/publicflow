@@ -22,7 +22,7 @@ pub fn parse_sleep(input_list: &Vec<&str>, config: &Config) -> Vec<Action> {
             } else if timing == "sim" {
                 actions = vec![Action::Sleep {
                     duration: Duration::from_millis(
-                        (seconds * 1000) / config.visual.desired_fps as u64,
+                        (seconds * 1000) / config.logic.speed_multiplier as u64,
                     ),
                 }];
             }

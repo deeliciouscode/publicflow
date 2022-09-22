@@ -4,6 +4,12 @@ use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone)]
+pub enum ExecutionMode {
+    Headless,
+    Visual,
+}
+
+#[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub n_stations: i32,
     pub coordinates_map_stations: HashMap<i32, (String, Vec<String>, String, (f32, f32))>,
@@ -23,6 +29,7 @@ pub struct LogicConfig {
     pub pods_per_hour: i32,
     pub shuffle_people: bool,
     pub on_pause: bool,
+    pub speed_multiplier: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -36,7 +43,6 @@ pub struct VisualConfig {
     pub radius_station: f32,
     pub radius_pod: f32,
     pub width_line: f32,
-    pub desired_fps: u32,
     pub vsync: bool,
     pub last_mouse: (f32, f32),
     pub last_mouse_while_zooming_relative: (f32, f32),
@@ -46,7 +52,8 @@ pub struct VisualConfig {
 #[derive(Debug, Clone)]
 pub struct Config {
     pub timestamp_run: Option<DateTime<Utc>>,
-    pub mode: String,
+    pub mode: ExecutionMode,
+    pub environment: String,
     pub network: NetworkConfig,
     pub logic: LogicConfig,
     pub visual: VisualConfig,

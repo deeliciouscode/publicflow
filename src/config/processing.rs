@@ -1,7 +1,7 @@
 use crate::config::constants::{
     CONFIG_ROOT, GENERAL_CONFIG_NAME, LINES_CONFIG_NAME, STATIONS_CONFIG_NAME,
 };
-use crate::config::structs::{Config, LogicConfig, NetworkConfig, VisualConfig};
+use crate::config::structs::{Config, ExecutionMode, LogicConfig, NetworkConfig, VisualConfig};
 use crate::connection::Connection;
 use crate::helper::enums::LineName;
 use crate::helper::functions::transform_line_name_to_enum;
@@ -94,11 +94,6 @@ pub fn parse_or_override_visual_config(raw_config: &Yaml, visual_config: &mut Vi
                         visual_config.width_line = float as f32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("desired_fps"))) {
-                    if let Yaml::Integer(value) = yaml {
-                        visual_config.desired_fps = *value as u32;
-                    }
-                }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("vsync"))) {
                     if let Yaml::Boolean(value) = yaml {
                         visual_config.vsync = *value;
@@ -144,6 +139,11 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
                         logic_config.shuffle_people = *value;
                     }
                 }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("speed_multiplier"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        logic_config.speed_multiplier = *value as u32;
+                    }
+                }
             }
         }
     }
@@ -156,7 +156,8 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
 pub fn parse_config(raw_config: &Yaml) -> Config {
     let mut town = String::default();
     let mut command_on_start = String::default();
-    let mut mode = String::from("dev");
+    let mut environment = String::from("dev");
+    let mut mode = ExecutionMode::Visual;
     let mut overide_general = false;
 
     if let Yaml::Hash(hash) = raw_config {
@@ -179,7 +180,18 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
                 }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("mode"))) {
                     if let Yaml::String(value) = yaml {
-                        mode = value.to_string();
+                        match value.as_str() {
+                            "headless" => mode = ExecutionMode::Headless,
+                            "visual" => mode = ExecutionMode::Visual,
+                            other => {
+                                panic!("Execution Mode {} invalid", other);
+                            }
+                        }
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("environment"))) {
+                    if let Yaml::String(value) = yaml {
+                        environment = value.to_string();
                     }
                 }
             }
@@ -206,6 +218,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         pods_per_hour: i32::default(),
         shuffle_people: false,
         on_pause: false,
+        speed_multiplier: 1,
     };
 
     parse_or_override_logic_config(&raw_general, &mut logic_config);
@@ -225,7 +238,6 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         radius_station: f32::default(),
         radius_pod: f32::default(),
         width_line: f32::default(),
-        desired_fps: u32::default(),
         vsync: bool::default(),
         last_mouse: (0., 0.),
         last_mouse_while_zooming_relative: (0., 0.),
@@ -242,6 +254,7 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     Config {
         timestamp_run: None,
         mode: mode,
+        environment: environment,
         network: network_config,
         logic: logic_config,
         visual: visual_config,

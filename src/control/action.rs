@@ -79,6 +79,7 @@ pub enum Action {
     },
     DumpAvgMetricsPeople,
     DumpAvgMetricsPods,
+    DumpConfig,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -185,7 +185,7 @@ impl PodsBox {
 
             let path_str = format!(
                 "{}/{}/{}/{}/{}.txt",
-                "metrics", config.mode, timestamp, "pods", "avg"
+                "metrics", config.environment, timestamp, "pods", "avg"
             );
             let path = Path::new(&path_str);
             let parent = path.parent().unwrap();

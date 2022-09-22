@@ -155,7 +155,7 @@ impl PeopleBox {
 
             let path_str = format!(
                 "{}/{}/{}/{}/{}.txt",
-                "metrics", config.mode, timestamp, "people", "avg"
+                "metrics", config.environment, timestamp, "people", "avg"
             );
             let path = Path::new(&path_str);
             let parent = path.parent().unwrap();
