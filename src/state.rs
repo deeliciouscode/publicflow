@@ -141,7 +141,12 @@ impl State {
                 Action::DumpConfig => {
                     self.dump_config();
                 }
-                Action::Sleep { duration: _ } | Action::Loop { n: _ } | Action::Endloop => {
+                Action::Sleep { duration: _ }
+                | Action::Loop { n: _ }
+                | Action::Endloop
+                | Action::StartConcurency
+                | Action::DoConcurrently
+                | Action::EndConcurency => {
                     // Do Nothing, these are handled in the action proxy
                     // Also this should never be reached since the proxy thread
                     // is not supposed to send these actions forward.

@@ -85,6 +85,9 @@ pub enum Action {
         n: u32,
     },
     Endloop,
+    StartConcurency,
+    DoConcurrently,
+    EndConcurency,
 }
 
 #[derive(Debug, Clone, PartialEq)]

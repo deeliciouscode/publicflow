@@ -1,12 +1,15 @@
 use crate::control::action::{Action, Actions};
 use std::sync::mpsc;
+use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 
-pub fn run_emmiter(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
+pub fn run_proxy(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
     let mut action_buffer = Actions::new();
     let mut loop_buffer = Actions::new();
+    let mut conc_buffer = Actions::new();
     let mut in_loop = false;
+    let mut in_conc = false;
     let mut loop_n = 1;
     loop {
         sleep(Duration::from_millis(10)); // This doesn't make a difference in terms of use but saves the thread some work
@@ -25,9 +28,35 @@ pub fn run_emmiter(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
                     for _ in 0..loop_n {
                         action_buffer.actions.extend(loop_buffer.actions.clone());
                     }
+                    send_actions(tx.clone(), action_buffer.clone());
+                    action_buffer = Actions::new();
+                    loop_buffer = Actions::new();
+                    in_loop = false;
+                    loop_n = 1;
+                }
+                Action::StartConcurency => {
+                    send_actions(tx.clone(), action_buffer.clone());
+                    action_buffer = Actions::new();
+                    conc_buffer = Actions::new();
+                    in_conc = true;
+                }
+                Action::DoConcurrently => {
+                    if in_conc {
+                        send_actions_conc(tx.clone(), conc_buffer);
+                        conc_buffer = Actions::new();
+                    }
+                }
+                Action::EndConcurency => {
+                    if in_conc {
+                        send_actions_conc(tx.clone(), conc_buffer);
+                        conc_buffer = Actions::new();
+                        in_conc = false;
+                    }
                 }
                 action => {
-                    if in_loop {
+                    if in_conc {
+                        conc_buffer.actions.push(action);
+                    } else if in_loop {
                         loop_buffer.actions.push(action);
                     } else {
                         action_buffer.actions.push(action);
@@ -38,6 +67,10 @@ pub fn run_emmiter(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
         send_actions(tx.clone(), action_buffer.clone());
         action_buffer = Actions::new();
     }
+}
+
+fn send_actions_conc(tx: mpsc::Sender<Actions>, actions: Actions) {
+    thread::spawn(|| send_actions(tx, actions));
 }
 
 fn send_actions(tx: mpsc::Sender<Actions>, actions: Actions) {

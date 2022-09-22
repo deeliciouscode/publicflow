@@ -129,9 +129,14 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
                         logic_config.pod_in_station_seconds = *value as i32;
                     }
                 }
-                if let Some(yaml) = hash.get(&Yaml::String(String::from("pods_per_hour"))) {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("line_pods_per_hour"))) {
                     if let Yaml::Integer(value) = yaml {
-                        logic_config.pods_per_hour = *value as i32;
+                        logic_config.line_pods_per_hour = *value as i32;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("station_pods_per_hour"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        logic_config.station_pods_per_hour = *value as i32;
                     }
                 }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("shuffle_people"))) {
@@ -215,7 +220,8 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
         pod_capacity: i32::default(),
         transition_time: i32::default(),
         pod_in_station_seconds: i32::default(),
-        pods_per_hour: i32::default(),
+        line_pods_per_hour: i32::default(),
+        station_pods_per_hour: i32::default(),
         shuffle_people: false,
         on_pause: false,
         speed_multiplier: 1,

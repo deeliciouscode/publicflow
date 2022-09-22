@@ -14,7 +14,7 @@ mod station;
 use crate::config::constants::{CONFIG_NAME, CONFIG_ROOT};
 use crate::config::processing::{load_yaml, parse_config};
 use crate::control::cli::run_cli;
-use crate::control::proxy::run_emmiter;
+use crate::control::proxy::run_proxy;
 use crate::state::State;
 use chrono::DateTime;
 use ggez::event::{self};
@@ -39,7 +39,7 @@ fn main() {
     });
 
     thread::spawn(|| {
-        run_emmiter(proxy_rx, tx);
+        run_proxy(proxy_rx, tx);
     });
 
     // Make a Context.

@@ -245,8 +245,8 @@ pub fn interpolate_arg(arg: &str, config: &Config) -> String {
         if let "logic" = input_list[1] {
             if let "transition_time" = input_list[2] {
                 value = String::from(format!("{}", config.logic.transition_time));
-            } else if let "pods_per_hour" = input_list[2] {
-                value = String::from(format!("{}", config.logic.pods_per_hour));
+            } else if let "line_pods_per_hour" = input_list[2] {
+                value = String::from(format!("{}", config.logic.line_pods_per_hour));
             } else {
                 println!("You tried to access a key from config.logic that is not yet implemented.")
             }

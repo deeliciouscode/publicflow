@@ -39,9 +39,9 @@ impl Platform {
         Platform {
             station_id: station_id,
             direction: direction,
-            since_last_pod: 0,
+            since_last_pod: 10000, // something high so that pods can immediately enter
             can_spawn_for: can_spawn_for,
-            seconds_between_pods: 3600 / config.logic.pods_per_hour,
+            seconds_between_pods: 3600 / config.logic.station_pods_per_hour,
             edges_to: edges_to.clone(),
             lines_using_this: lines_using_this.clone(),
             pods_at_platform: HashSet::new(),
