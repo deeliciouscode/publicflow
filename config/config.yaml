@@ -3,8 +3,8 @@ general:
   town: "benjamintown"
   mode: "visual" # "visual" | "headless" # this is not implemented since it would require a lot of extra work right now 
   override: true # if false everything has to be set in the config of the town
-  # command_on_start: "run config/benjamintown/spawn_pods.pf"
-  command_on_start: "sleep 1 sim"
+  command_on_start: "run config/benjamintown/spawn_pods.pf"
+  # command_on_start: "sleep 1 sim"
 visual:
   vsync: true
 logic:

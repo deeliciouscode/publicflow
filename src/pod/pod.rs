@@ -1,5 +1,6 @@
 use crate::config::structs::Config;
 use crate::helper::enums::LineName;
+use crate::helper::functions::get_screen_coordinates;
 use crate::line::linestate::LineState;
 use crate::metrics::components::pod::PodMetrics;
 use crate::metrics::timeseries::TimeSeries;
@@ -18,6 +19,7 @@ pub struct Pod {
     pub in_station_for: i32,
     pub capacity: i32,
     pub people_in_pod: HashSet<i32>,
+    pub coordinates: (f32, f32),
     pub line_state: LineState,
     pub state: PodState,
 }
@@ -40,17 +42,18 @@ impl Pod {
             in_station_for: in_station_for,
             capacity: capacity,
             people_in_pod: HashSet::new(),
+            coordinates: (0., 0.),
             line_state: line_state,
             state: PodState::InStation {
                 station_id: station_id,
                 time_in_station: in_station_for,
-                coordinates: (0., 0.),
             },
         }
     }
 
     // TODO: remove unused stuff
     pub fn update(&mut self, network: &mut Network, config: &Config, time_passed: u32) {
+        self.set_coordinates(network, config);
         self.metrics
             .set_utilization(self.people_in_pod.len() as f32 / self.capacity as f32);
         match &self.state {
@@ -58,20 +61,16 @@ impl Pod {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station,
-                coordinates: _,
             } => {
                 self.metrics.increase_time_driving();
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
-                    self.state = self.state.drive_a_sec(self, network, config);
+                    self.state = self.state.drive_a_sec();
                 } else {
                     self.arrive_in_station(network);
                 }
             }
-            PodState::JustArrived {
-                station_id: _,
-                coordinates: _,
-            } => {
+            PodState::JustArrived { station_id: _ } => {
                 // TODO: use actual distance in network
                 self.metrics.increase_meters_traveled(1000.);
                 // println!("Pod in JustArrived State");
@@ -80,7 +79,6 @@ impl Pod {
             PodState::InStation {
                 station_id: _,
                 time_in_station,
-                coordinates: _,
             } => {
                 self.metrics.increase_time_in_station();
                 // if self.id == 0 {
@@ -92,10 +90,7 @@ impl Pod {
                     self.depart_from_station(network);
                 }
             }
-            PodState::InQueue {
-                station_id,
-                coordinates: _,
-            } => {
+            PodState::InQueue { station_id } => {
                 self.metrics.increase_time_in_queue();
                 self.check_if_in_station(network, *station_id);
             }
@@ -271,8 +266,7 @@ impl Pod {
     }
 
     pub fn get_coordinates(&self) -> (f32, f32) {
-        let coordinates = self.state.try_get_coordinates().unwrap();
-        return coordinates;
+        return self.coordinates;
     }
 
     pub fn deregister_person(&mut self, person_id: &i32) {
@@ -281,11 +275,55 @@ impl Pod {
 
     pub fn is_in_just_arrived_state(&self) -> bool {
         match self.state {
-            PodState::JustArrived {
-                station_id: _,
-                coordinates: _,
-            } => true,
+            PodState::JustArrived { station_id: _ } => true,
             _ => false,
+        }
+    }
+
+    pub fn set_coordinates(&mut self, network: &Network, config: &Config) {
+        match self.state {
+            PodState::BetweenStations {
+                station_id_from,
+                station_id_to,
+                time_to_next_station,
+            } => {
+                let travel_time = self
+                    .line_state
+                    .try_get_connection(station_id_from, station_id_to)
+                    .unwrap()
+                    .travel_time;
+                let station_from = network
+                    .try_get_station_by_id_unmut(station_id_from)
+                    .unwrap();
+                let station_to = network.try_get_station_by_id_unmut(station_id_to).unwrap();
+                let coordinates_from = get_screen_coordinates(station_from.coordinates, config);
+                let coordinates_to = get_screen_coordinates(station_to.coordinates, config);
+                let x = coordinates_from.0
+                    + (coordinates_to.0 - coordinates_from.0)
+                        * ((travel_time as f32 - time_to_next_station as f32) / travel_time as f32);
+                let y = coordinates_from.1
+                    + (coordinates_to.1 - coordinates_from.1)
+                        * ((travel_time as f32 - time_to_next_station as f32) / travel_time as f32);
+                let real_x = x;
+                let real_y = y;
+                self.coordinates = (real_x, real_y);
+            }
+            PodState::InQueue { station_id } => {
+                let station = network.try_get_station_by_id_unmut(station_id).unwrap();
+                self.coordinates = get_screen_coordinates(station.coordinates, config);
+            }
+            PodState::InStation {
+                station_id,
+                time_in_station: _,
+            } => {
+                let station = network.try_get_station_by_id_unmut(station_id).unwrap();
+                self.coordinates = get_screen_coordinates(station.coordinates, config);
+            }
+            PodState::JustArrived { station_id } => {
+                let station = network.try_get_station_by_id_unmut(station_id).unwrap();
+                self.coordinates = get_screen_coordinates(station.coordinates, config);
+            }
+            _ => {}
         }
     }
 
