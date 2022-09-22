@@ -13,6 +13,7 @@ use std::collections::HashSet;
 #[derive(Clone, Debug)]
 pub struct Pod {
     pub id: i32,
+    pub needs_initialization: bool,
     pub visualize: bool,
     pub metrics: PodMetrics,
     pub time_series: TimeSeries<PodMetrics>,
@@ -36,6 +37,7 @@ impl Pod {
         let time_series = TimeSeries::from(time_passed);
         Pod {
             id: id,
+            needs_initialization: true,
             visualize: false,
             metrics: PodMetrics::new(),
             time_series: time_series,
@@ -52,6 +54,9 @@ impl Pod {
 
     // TODO: remove unused stuff
     pub fn update(&mut self, network: &mut Network, config: &Config, time_passed: u32) {
+        if self.needs_initialization {
+            self.initialize(network)
+        }
         self.set_coordinates(network, config);
         self.metrics
             .set_utilization(self.people_in_pod.len() as f32 / self.capacity as f32);
@@ -173,6 +178,32 @@ impl Pod {
             _ => return [0.6, 0.6, 0.6, 1.0], // TODO: color for trams
                                               // any => panic!("The line: {} is not defined.", any),
         };
+    }
+
+    pub fn initialize(&mut self, net: &mut Network) {
+        let station_id = self.state.get_station_id();
+        let maybe_platform = net.try_get_platform(
+            station_id,
+            &self.line_state.line.name,
+            self.line_state.get_direction(),
+        );
+
+        match maybe_platform {
+            Some(platform) => {
+                if platform.is_passable() {
+                    println!("Passable is not yet implemented so the behaviour is the same as for operational.")
+                } else {
+                    let is_at_platform = platform.register_pod(self.id);
+                    if is_at_platform {
+                        self.state = self.state.to_just_arrived();
+                    }
+                    self.needs_initialization = false;
+                }
+            }
+            None => {
+                println!("Got no platform back")
+            }
+        }
     }
 
     fn arrive_in_station(&mut self, net: &mut Network) {

@@ -58,7 +58,7 @@ impl PodState {
                 station_id: *station_id_to,
             },
             _ => PodState::InvalidState {
-                reason: String::from("Pod can only arrive if in BetweenStations state."),
+                reason: String::from("Pod can only go in queue if in BetweenStations state."),
             },
         }
     }
@@ -127,14 +127,13 @@ impl PodState {
 
     pub fn get_station_id(&self) -> i32 {
         match self {
-            PodState::JustArrived {
-                station_id,
-            } => *station_id,
+            PodState::JustArrived { station_id } => *station_id,
+            PodState::InQueue { station_id } => *station_id,
             PodState::InStation {
                 time_in_station: _,
                 station_id,
             } => *station_id,
-            _ => panic!("Can only get id of station in which pod arrives if in JustArrived or InStation state")
+            _ => panic!("Can only get id of stationif in JustArrived, InQueue or InStation state"),
         }
     }
 
