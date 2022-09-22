@@ -3,6 +3,7 @@ use crate::control::action::{Action, Actions};
 use crate::control::parsers::block::{parse_block, parse_unblock};
 use crate::control::parsers::dump::parse_dump;
 use crate::control::parsers::get::parse_get;
+use crate::control::parsers::loops::parse_loop;
 use crate::control::parsers::make::parse_make;
 use crate::control::parsers::route::parse_route;
 use crate::control::parsers::sleep::parse_sleep;
@@ -96,6 +97,12 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         }
         "dump" | "d" => {
             actions.actions = parse_dump(&input_list);
+        }
+        "loop" | "l" => {
+            actions.actions = parse_loop(&input_list);
+        }
+        "endloop" | "el" => {
+            actions.actions = vec![Action::Endloop];
         }
         "run" => actions = run_script(&input_list, config, &engine),
         _ => {}

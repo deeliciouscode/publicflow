@@ -44,9 +44,8 @@ impl Pod {
             people_in_pod: HashSet::new(),
             coordinates: (0., 0.),
             line_state: line_state,
-            state: PodState::InStation {
+            state: PodState::InQueue {
                 station_id: station_id,
-                time_in_station: in_station_for,
             },
         }
     }

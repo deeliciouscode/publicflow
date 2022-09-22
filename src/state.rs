@@ -129,11 +129,6 @@ impl State {
                 Action::KillSimulation { code } => {
                     exit(code);
                 }
-                Action::Sleep { duration: _ } => {
-                    // Do Nothing, sleep is handled in the action proxy
-                    // Also this should never be reached since the proxy thread
-                    // is not supposed to send it.
-                }
                 Action::DumpMetricsPerson { person_id } => {
                     self.people_box.dump_metrics(person_id, &self.config);
                 }
@@ -145,6 +140,11 @@ impl State {
                 }
                 Action::DumpConfig => {
                     self.dump_config();
+                }
+                Action::Sleep { duration: _ } | Action::Loop { n: _ } | Action::Endloop => {
+                    // Do Nothing, these are handled in the action proxy
+                    // Also this should never be reached since the proxy thread
+                    // is not supposed to send these actions forward.
                 }
             }
         }

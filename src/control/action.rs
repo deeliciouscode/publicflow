@@ -81,6 +81,10 @@ pub enum Action {
     DumpAvgMetricsPeople,
     DumpAvgMetricsPods,
     DumpConfig,
+    Loop {
+        n: u32,
+    },
+    Endloop,
 }
 
 #[derive(Debug, Clone, PartialEq)]
