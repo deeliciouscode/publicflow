@@ -250,6 +250,22 @@ pub fn interpolate_arg(arg: &str, config: &Config) -> String {
             } else {
                 println!("You tried to access a key from config.logic that is not yet implemented.")
             }
+        } else if let "network" = input_list[1] {
+            if let "lines" = input_list[2] {
+                let name_str = input_list[3];
+                let line_name = transform_line_name_to_enum(name_str);
+                for line in &config.network.lines {
+                    if line.name == line_name {
+                        if input_list[4] == "len()" {
+                            value = String::from(format!("{}", line.stations.len()));
+                        }
+                    }
+                }
+            } else {
+                println!(
+                    "You tried to access a key from config.network that is not yet implemented."
+                )
+            }
         } else {
             println!("You tried to access a key from config that is not yet implemented.")
         }
