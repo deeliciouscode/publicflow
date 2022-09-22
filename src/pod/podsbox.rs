@@ -206,7 +206,7 @@ impl PodsBox {
         if let Some(timestamp_run) = config.timestamp_run {
             let timestamp = timestamp_run
                 .naive_utc()
-                .format("%Y.%m.%d %H:%M:%S")
+                .format("%Y.%m.%d %H:%M")
                 .to_string()
                 .replace(" ", "_");
             println!("timestamp_run: {:?}", timestamp);

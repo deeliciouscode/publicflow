@@ -73,6 +73,7 @@ impl Pod {
             PodState::JustArrived { station_id: _ } => {
                 // TODO: use actual distance in network
                 self.metrics.increase_meters_traveled(1000.);
+                self.metrics.increase_time_in_station();
                 // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
             }
