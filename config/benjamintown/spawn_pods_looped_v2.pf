@@ -1,0 +1,29 @@
+concurrently
+    spawn pods fill s1+-
+    <&>
+    spawn pods fill s2+-
+    <&>
+    spawn pods fill u1+-
+    <&>
+    spawn pods fill u2+-
+    <&>
+    spawn pods fill u3+-
+    <&>
+    spawn pods fill u4+-
+    <&>
+    spawn pods fill u5+-
+    <&>
+    spawn pods fill t11+-
+    <&>
+    spawn pods fill t12+-
+endconcurrency
+
+# sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
+
+sleep 7200 sim
+
+dump people --avg
+dump pods --avg
+dump config
+
+kill

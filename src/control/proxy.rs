@@ -87,9 +87,8 @@ fn send_actions(tx: mpsc::Sender<Actions>, actions: Actions) {
                 sleep(duration);
             }
             Action::KillSimulation { code: _ } => {
-                let mut only_kill_action = Actions::new();
-                only_kill_action.actions.push(action);
-                let _res = tx.send(only_kill_action.clone());
+                action_buffer.actions.push(action);
+                let _res = tx.send(action_buffer.clone());
                 break;
             }
             action => {
