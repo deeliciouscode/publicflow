@@ -1,12 +1,9 @@
 general:
   environment: dev # used for data gathering subfolder
-  town: "benchmark"
+  town: "benjamintown"
   mode: "visual" # "visual" | "headless" # this is not implemented since it would require a lot of extra work right now 
   override: true # if false everything has to be set in the config of the town
-  # command_on_start: "run scripts/spawn_pods_playground_v3.pf"
-  # command_on_start: "run scripts/spawn_pods_benjamintown.pf"
-  command_on_start: "run config/benchmark/spawn_pods_benjamintown.pf"
-  # command_on_start: "sleep $(3600 / $config.logic.pods_per_hour) sim"
+  command_on_start: "run config/benjamintown/spawn_pods.pf"
 visual:
   vsync: true
 logic:
