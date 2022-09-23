@@ -108,6 +108,16 @@ pub fn parse_or_override_logic_config(raw_config: &Yaml, logic_config: &mut Logi
     if let Yaml::Hash(hash) = raw_config {
         if let Some(yaml) = hash.get(&Yaml::String(String::from("logic"))) {
             if let Yaml::Hash(hash) = yaml {
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("use_earth_coordinates"))) {
+                    if let Yaml::Boolean(value) = yaml {
+                        logic_config.use_earth_coordinates = *value;
+                    }
+                }
+                if let Some(yaml) = hash.get(&Yaml::String(String::from("distance_factor"))) {
+                    if let Yaml::Integer(value) = yaml {
+                        logic_config.distance_factor = *value as i32;
+                    }
+                }
                 if let Some(yaml) = hash.get(&Yaml::String(String::from("number_of_people"))) {
                     if let Yaml::Integer(value) = yaml {
                         logic_config.number_of_people = *value as i32;
@@ -214,6 +224,8 @@ pub fn parse_config(raw_config: &Yaml) -> Config {
     // println!("{:?}", network_config);
 
     let mut logic_config = LogicConfig {
+        use_earth_coordinates: false,
+        distance_factor: 1000,
         command_on_start: command_on_start,
         number_of_people: i32::default(),
         number_of_pods: number_of_pods,

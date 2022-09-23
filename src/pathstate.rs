@@ -1,3 +1,4 @@
+use crate::config::structs::Config;
 use crate::helper::functions::get_air_travel_time;
 use crate::network::Network;
 use petgraph::algo::astar;
@@ -11,14 +12,22 @@ pub struct PathState {
 }
 
 impl PathState {
-    pub fn new(graph: &UnGraph<u32, u32>, start: u32, end: u32, network: &Network) -> Self {
+    pub fn new(
+        graph: &UnGraph<u32, u32>,
+        start: u32,
+        end: u32,
+        network: &Network,
+        config: &Config,
+    ) -> Self {
         // println!("{:?}", graph);
+        // println!("start: {}, end: {}", start, end);
+        // println!("air_travel_time: {}", get_air_travel_time(start, end, network, config));
         let maybe_path = astar(
             graph,
             NodeIndex::new(start as usize),
             |finish| finish == NodeIndex::new(end as usize),
             |e| *e.weight(),
-            |_| get_air_travel_time(start, end, network), // use air distance as heuristik
+            |_| get_air_travel_time(start, end, network, config), // use air distance as heuristik
         );
 
         match maybe_path {

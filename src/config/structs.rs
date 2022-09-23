@@ -20,6 +20,8 @@ pub struct NetworkConfig {
 
 #[derive(Debug, Clone)]
 pub struct LogicConfig {
+    pub use_earth_coordinates: bool,
+    pub distance_factor: i32,
     pub number_of_people: i32,
     pub command_on_start: String,
     pub number_of_pods: i32,

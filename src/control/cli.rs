@@ -92,11 +92,11 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         "spawn" | "sp" => {
             actions.actions = parse_spawn(&input_list, config);
         }
-        "sleep" | "sl" => {
-            actions.actions = parse_sleep(&input_list, config);
-        }
         "dump" | "d" => {
             actions.actions = parse_dump(&input_list);
+        }
+        "sleep" | "sl" => {
+            actions.actions = parse_sleep(&input_list, config);
         }
         "loop" | "l" => {
             actions.actions = parse_loop(&input_list);
@@ -104,13 +104,13 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         "endloop" | "el" => {
             actions.actions = vec![Action::Endloop];
         }
-        "concurrently" | "conc" => {
+        "conc" => {
             actions.actions = vec![Action::StartConcurency];
         }
         "<&>" => {
             actions.actions = vec![Action::DoConcurrently];
         }
-        "endconcurrency" | "endconc" => {
+        "endconc" => {
             actions.actions = vec![Action::EndConcurency];
         }
         "run" => actions = run_script(&input_list, config, &engine),

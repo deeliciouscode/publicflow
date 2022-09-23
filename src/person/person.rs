@@ -47,7 +47,13 @@ impl Person {
                 time_in_station: transition_time - 1,
             },
             stay_at_station_id: None,
-            path_state: PathState::new(&network.graph, start as u32, finish as u32, network),
+            path_state: PathState::new(
+                &network.graph,
+                start as u32,
+                finish as u32,
+                network,
+                config,
+            ),
             action_to_process: None,
         };
         person.set_coordinates_of_station(
@@ -114,8 +120,9 @@ impl Person {
         start: u32,
         finish: u32,
         network: &Network,
+        config: &Config,
     ) {
-        self.path_state = PathState::new(graph, start, finish, network);
+        self.path_state = PathState::new(graph, start, finish, network, config);
         // println!("{:?}", self.path_state);
     }
 
@@ -172,6 +179,7 @@ impl Person {
                             current_station_id,
                             random_station_id,
                             network,
+                            config,
                         )
                     } else {
                         if *stay_there {
@@ -185,6 +193,7 @@ impl Person {
                             current_station_id,
                             station_id_finish,
                             network,
+                            config,
                         );
                     }
                     self.action_to_process = None;
@@ -280,7 +289,7 @@ impl Person {
             }
             None => {
                 let finish = get_random_station_id(config);
-                self.new_path(&network.graph, station_id as u32, finish, network);
+                self.new_path(&network.graph, station_id as u32, finish, network, config);
                 // println!(
                 //     "person {} is at {} and will go to {} next, taking path {:?}.",
                 //     self.id,

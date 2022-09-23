@@ -86,7 +86,7 @@ pub fn get_random_station_id(config: &Config) -> u32 {
     *station_ids[end_ix] as u32
 }
 
-pub fn get_air_travel_time(start: u32, end: u32, network: &Network) -> u32 {
+pub fn get_air_travel_time(start: u32, end: u32, network: &Network, config: &Config) -> u32 {
     let mut start_coords: (f32, f32) = (0., 0.);
     let mut end_coords: (f32, f32) = (0., 0.);
 
@@ -107,13 +107,25 @@ pub fn get_air_travel_time(start: u32, end: u32, network: &Network) -> u32 {
     //     println!("Coords: {:?} - {:?}", start_coords, end_coords);
     // }
 
-    let start = Location::new(start_coords.0, start_coords.1);
-    let end = Location::new(end_coords.0, end_coords.1);
-    let distance = start.distance_to(&end).unwrap();
-    // println!("Distance = {}", distance.meters());
-    let travel_time = distance.meters() / 25.;
+    if config.logic.use_earth_coordinates {
+        let start = Location::new(start_coords.0, start_coords.1);
+        let end = Location::new(end_coords.0, end_coords.1);
+        let distance = start.distance_to(&end).unwrap();
+        // println!("Distance = {}", distance.meters());
+        let travel_time = distance.meters() / 25.;
 
-    return travel_time as u32;
+        return travel_time as u32;
+    } else {
+        let x_delta = start_coords.0 - end_coords.0;
+        let y_delta = start_coords.1 - end_coords.1;
+
+        let dist = (f32::powf(x_delta, 2.) + f32::powf(y_delta, 2.)).sqrt()
+            * config.logic.distance_factor as f32;
+
+        let travel_time = dist / 25.;
+
+        travel_time as u32
+    }
 }
 
 // Experiment: Compare 0 heuristic vs air distance
