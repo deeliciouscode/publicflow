@@ -3,14 +3,14 @@ general:
   town: "benjamintown"
   mode: "visual" # "visual" | "headless" # this is not implemented since it would require a lot of extra work right now 
   override: true # if false everything has to be set in the config of the town
-  command_on_start: "run config/benjamintown/spawn_pods_conc_route.pf"
+  command_on_start: "run config/benjamintown/spawn_pods_conc.pf"
   # command_on_start: "sleep 1 sim"
 visual:
   vsync: true
 logic:
   number_of_people: 2000
-  pod_capacity: 25
-  line_pods_per_hour: 24
+  pod_capacity: 50
+  line_pods_per_hour: 12
   station_pods_per_hour: 40 # TODO: use this as a hard limit for the stations
   speed_multiplier: 100
   transition_time: 30
