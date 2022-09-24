@@ -29,7 +29,7 @@ sleep 7200 sim
 
 
 dump people --avg
-dump pods --avg
+dump pods --all --avg
 dump config
 
 kill

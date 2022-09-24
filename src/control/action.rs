@@ -76,11 +76,20 @@ pub enum Action {
     Sleep {
         duration: Duration,
     },
+    DumpMetricsPeople {
+        all: bool,
+        avg: bool,
+    },
     DumpMetricsPerson {
         person_id: i32,
     },
-    DumpAvgMetricsPeople,
-    DumpAvgMetricsPods,
+    DumpMetricsPods {
+        all: bool,
+        avg: bool,
+    },
+    DumpMetricsPod {
+        pod_id: i32,
+    },
     DumpConfig,
     Loop {
         n: u32,

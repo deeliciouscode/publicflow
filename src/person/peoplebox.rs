@@ -112,8 +112,10 @@ impl PeopleBox {
                         .replace(" ", "_");
                     println!("timestamp_run: {:?}", timestamp);
 
-                    let path_str =
-                        format!("{}/{}/{}/{}.txt", "metrics", timestamp, "people", person_id);
+                    let path_str = format!(
+                        "{}/{}/{}/{}/{}/{}.txt",
+                        "metrics", config.environment, timestamp, "people", "ids", person_id
+                    );
                     let path = Path::new(&path_str);
                     let parent = path.parent().unwrap();
                     let _res = create_dir_all(parent);
@@ -140,6 +142,12 @@ impl PeopleBox {
                 }
             }
             None => {}
+        }
+    }
+
+    pub fn dump_all_metrics(&self, config: &Config) {
+        for person in &self.people {
+            self.dump_metrics(person.id, config)
         }
     }
 

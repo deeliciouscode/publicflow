@@ -136,11 +136,24 @@ impl State {
                 Action::DumpMetricsPerson { person_id } => {
                     self.people_box.dump_metrics(person_id, &self.config);
                 }
-                Action::DumpAvgMetricsPeople => {
-                    self.people_box.dump_avg_metrics(&self.config);
+                Action::DumpMetricsPeople { all, avg } => {
+                    if avg {
+                        self.people_box.dump_avg_metrics(&self.config);
+                    }
+                    if all {
+                        self.people_box.dump_all_metrics(&self.config);
+                    }
                 }
-                Action::DumpAvgMetricsPods => {
-                    self.pods_box.dump_avg_metrics(&self.config);
+                Action::DumpMetricsPods { all, avg } => {
+                    if avg {
+                        self.pods_box.dump_avg_metrics(&self.config);
+                    }
+                    if all {
+                        self.pods_box.dump_all_metrics(&self.config)
+                    }
+                }
+                Action::DumpMetricsPod { pod_id } => {
+                    self.pods_box.dump_metrics(pod_id, &self.config);
                 }
                 Action::DumpConfig => {
                     self.dump_config();

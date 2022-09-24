@@ -201,6 +201,57 @@ impl PodsBox {
         }
     }
 
+    pub fn dump_metrics(&self, pod_id: i32, config: &Config) {
+        let maybe_pod = self.try_get_pod_by_id_unmut(pod_id);
+        match maybe_pod {
+            Some(pod) => {
+                if let Some(timestamp_run) = config.timestamp_run {
+                    let timestamp = timestamp_run
+                        .naive_utc()
+                        .format("%Y.%m.%d %H:%M")
+                        .to_string()
+                        .replace(" ", "_");
+                    println!("timestamp_run: {:?}", timestamp);
+
+                    let path_str = format!(
+                        "{}/{}/{}/{}/{}/{}.txt",
+                        "metrics", config.environment, timestamp, "pods", "ids", pod_id
+                    );
+                    let path = Path::new(&path_str);
+                    let parent = path.parent().unwrap();
+                    let _res = create_dir_all(parent);
+                    let res = File::create(path);
+                    match res {
+                        Ok(mut file) => {
+                            let txt = pod.time_series.format_to_file(String::from(
+                                "ts,utilization,time_in_station,time_in_queue,time_driving,meters_traveled\n",
+                            ));
+                            let res = file.write_all(txt.as_bytes());
+                            match res {
+                                Ok(_) => {
+                                    println!("written file");
+                                }
+                                Err(e) => {
+                                    println!("error writing file: {}", e);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            println!("error opening file: {}", e);
+                        }
+                    }
+                }
+            }
+            None => {}
+        }
+    }
+
+    pub fn dump_all_metrics(&self, config: &Config) {
+        for pod in &self.pods {
+            self.dump_metrics(pod.id, config)
+        }
+    }
+
     pub fn dump_avg_metrics(&self, config: &Config) {
         let mut timeseries_accumulator = TimeSeries::new();
         for pod in &self.pods {

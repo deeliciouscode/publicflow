@@ -95,6 +95,7 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         "dump" | "d" => {
             actions.actions = parse_dump(&input_list);
         }
+        "run" => actions = run_script(&input_list, config, &engine),
         "gather" => {
             actions.actions = vec![Action::GatherMetrics];
         }
@@ -116,7 +117,6 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         "endconc" => {
             actions.actions = vec![Action::EndConcurency];
         }
-        "run" => actions = run_script(&input_list, config, &engine),
         _ => {}
     }
     actions

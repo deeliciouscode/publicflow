@@ -15,8 +15,13 @@ pub fn parse_dump(input_list: &Vec<&str>) -> Vec<Action> {
                 avg = true;
             }
 
+            let mut all = false;
+            if input_list.contains(&"--all") {
+                all = true;
+            }
+
             if avg {
-                actions.push(Action::DumpAvgMetricsPeople);
+                actions.push(Action::DumpMetricsPeople { all: all, avg: avg });
                 return actions;
             }
 
@@ -34,18 +39,23 @@ pub fn parse_dump(input_list: &Vec<&str>) -> Vec<Action> {
                 avg = true;
             }
 
-            if avg {
-                actions.push(Action::DumpAvgMetricsPods);
+            let mut all = false;
+            if input_list.contains(&"--all") {
+                all = true;
+            }
+
+            if all || avg {
+                actions.push(Action::DumpMetricsPods { all: all, avg: avg });
                 return actions;
             }
+
             // else
-            unimplemented!();
-            // for arg in &input_list[2..] {
-            //     let ids = parse_id_list_and_ranges(arg);
-            //     for id in ids {
-            //         actions.push(Action::DumpMetricsPerson { person_id: id })
-            //     }
-            // }
+            for arg in &input_list[2..] {
+                let ids = parse_id_list_and_ranges(arg);
+                for id in ids {
+                    actions.push(Action::DumpMetricsPod { pod_id: id })
+                }
+            }
         }
         "config" => actions.push(Action::DumpConfig),
         _ => {
