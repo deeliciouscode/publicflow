@@ -44,21 +44,18 @@ pub enum Action {
     },
     ShowPerson {
         id: i32,
-        follow: bool,
     },
     HidePerson {
         id: i32,
     },
     ShowPod {
         id: i32,
-        permanent: bool,
     },
     HidePod {
         id: i32,
     },
     ShowStation {
         id: i32,
-        permanent: bool,
     },
     HideStation {
         id: i32,
@@ -73,9 +70,6 @@ pub enum Action {
         code: i32,
     },
     GatherMetrics,
-    Sleep {
-        duration: Duration,
-    },
     DumpMetricsPeople {
         all: bool,
         avg: bool,
@@ -91,6 +85,9 @@ pub enum Action {
         pod_id: i32,
     },
     DumpConfig,
+    Sleep {
+        duration: Duration,
+    },
     Loop {
         n: u32,
     },

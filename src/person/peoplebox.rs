@@ -64,14 +64,10 @@ impl PeopleBox {
     }
 
     // TODO: differentiate between follow and not
-    pub fn apply_show_person(&mut self, id: i32, follow: bool) {
+    pub fn apply_show_person(&mut self, id: i32) {
         for person in &mut self.people {
             if person.id == id {
-                if follow {
-                    person.visualize = true;
-                } else {
-                    person.visualize = true;
-                }
+                person.visualize = true;
             }
         }
     }

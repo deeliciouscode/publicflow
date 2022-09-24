@@ -15,19 +15,12 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<Action> {
                 println!("Visualize which person/people??");
                 return actions;
             }
-            let mut follow = false;
             for arg in &input_list[2..] {
                 match arg {
-                    &"--follow" | &"-f" => {
-                        follow = true;
-                    }
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            actions.push(Action::ShowPerson {
-                                id: id,
-                                follow: follow,
-                            })
+                            actions.push(Action::ShowPerson { id: id })
                         }
                     }
                 }
@@ -38,19 +31,12 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<Action> {
                 println!("Visualize which pod/pods??");
                 return actions;
             }
-            let mut permanent = false;
             for arg in &input_list[2..] {
                 match arg {
-                    &"--permanent" | &"-p" => {
-                        permanent = true;
-                    }
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            actions.push(Action::ShowPod {
-                                id: id,
-                                permanent: permanent,
-                            })
+                            actions.push(Action::ShowPod { id: id })
                         }
                     }
                 }
@@ -61,19 +47,12 @@ pub fn parse_visualize(input_list: &Vec<&str>) -> Vec<Action> {
                 println!("Visualize which person/people??");
                 return actions;
             }
-            let mut permanent = false;
             for arg in &input_list[2..] {
                 match arg {
-                    &"--permanent" | &"-p" => {
-                        permanent = true;
-                    }
                     id_or_ids => {
                         let ids = parse_id_list_and_ranges(id_or_ids);
                         for id in ids {
-                            actions.push(Action::ShowStation {
-                                id: id,
-                                permanent: permanent,
-                            })
+                            actions.push(Action::ShowStation { id: id })
                         }
                     }
                 }

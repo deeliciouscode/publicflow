@@ -112,13 +112,11 @@ impl State {
                         self.time_passed,
                     );
                 }
-                Action::ShowPerson { id, follow } => self.people_box.apply_show_person(id, follow),
+                Action::ShowPerson { id } => self.people_box.apply_show_person(id),
                 Action::HidePerson { id } => self.people_box.apply_hide_person(id),
-                Action::ShowPod { id, permanent } => self.pods_box.apply_show_pod(id, permanent),
+                Action::ShowPod { id } => self.pods_box.apply_show_pod(id),
                 Action::HidePod { id } => self.pods_box.apply_hide_pod(id),
-                Action::ShowStation { id, permanent } => {
-                    self.network.apply_show_station(id, permanent)
-                }
+                Action::ShowStation { id } => self.network.apply_show_station(id),
                 Action::HideStation { id } => self.network.apply_hide_station(id),
                 Action::RoutePerson {
                     id,

@@ -35,14 +35,10 @@ impl Network {
         }
     }
 
-    pub fn apply_show_station(&mut self, id: i32, permanent: bool) {
+    pub fn apply_show_station(&mut self, id: i32) {
         for station in &mut self.stations {
             if station.id == id {
-                if permanent {
-                    station.visualize = true;
-                } else {
-                    station.visualize = true;
-                }
+                station.visualize = true;
             }
         }
     }

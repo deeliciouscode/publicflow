@@ -61,7 +61,6 @@ impl Pod {
             self.initialize(network)
         }
         if self.gather_metrics {
-            // println!("gather shit");
             self.do_gather_metrics(time_passed)
         }
         self.set_coordinates(network, config);

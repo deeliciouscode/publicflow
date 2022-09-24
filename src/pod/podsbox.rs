@@ -167,14 +167,10 @@ impl PodsBox {
         }
     }
 
-    pub fn apply_show_pod(&mut self, id: i32, permanent: bool) {
+    pub fn apply_show_pod(&mut self, id: i32) {
         for pod in &mut self.pods {
             if pod.id == id {
-                if permanent {
-                    pod.visualize = true;
-                } else {
-                    pod.visualize = true;
-                }
+                pod.visualize = true;
             }
         }
     }

@@ -21,15 +21,15 @@ endconc
 
 # sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
 
-sleep 3600 sim
+# sleep 3600 sim
 
-gather
+# gather
 
-sleep 7200 sim
+# sleep 7200 sim
 
 
-dump people --avg
-dump pods --all --avg
-dump config
+# dump people --avg
+# dump pods --all --avg
+# dump config
 
-kill
+# kill
