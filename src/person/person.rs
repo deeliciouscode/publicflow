@@ -15,6 +15,7 @@ use petgraph::graph::UnGraph;
 pub struct Person {
     pub id: i32,
     pub visualize: bool,
+    pub gather_metrics: bool,
     transition_time: i32,
     pub metrics: PersonMetrics,
     pub time_series: TimeSeries<PersonMetrics>,
@@ -37,6 +38,7 @@ impl Person {
         let mut person = Person {
             id: id,
             visualize: false,
+            gather_metrics: false,
             transition_time: transition_time,
             time_series: TimeSeries::new(),
             metrics: PersonMetrics::new(),
@@ -72,6 +74,10 @@ impl Person {
         config: &Config,
         time_passed: u32,
     ) {
+        if self.gather_metrics {
+            // println!("gather shit");
+            self.do_gather_metrics(time_passed)
+        }
         // println!("person state: {:?}", self.state);
         match &self.state {
             PersonState::ReadyToTakePod { station_id } => {
@@ -79,11 +85,12 @@ impl Person {
                 // Assign first instead of using directly because:
                 // https://github.com/rust-lang/rust/issues/59159
                 let station_id_deref = *station_id;
-                self.metrics.increase_time_in_station();
                 self.try_to_take_next_pod(pods_box, network, station_id_deref, config);
             }
-            PersonState::RidingPod { pod_id } => {
-                self.metrics.increase_time_in_pods();
+            PersonState::RidingPod {
+                pod_id,
+                just_got_in: _,
+            } => {
                 // println!("person in riding state");
                 let pod_id_deref = *pod_id;
                 self.ride_pod(pods_box, pod_id_deref);
@@ -97,7 +104,6 @@ impl Person {
                 previous_pod_id: _,
                 time_in_station,
             } => {
-                self.metrics.increase_time_in_station();
                 if *time_in_station < self.transition_time {
                     // println!("person in transitioning state and not ready.");
                     self.state = self.state.wait_a_sec();
@@ -109,6 +115,40 @@ impl Person {
             PersonState::InvalidState { reason } => {
                 panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
             }
+        }
+    }
+
+    pub fn start_gather_metrics(&mut self) {
+        self.gather_metrics = true;
+    }
+
+    pub fn do_gather_metrics(&mut self, time_passed: u32) {
+        match &self.state {
+            PersonState::ReadyToTakePod { station_id: _ } => {
+                self.metrics.increase_time_in_station();
+            }
+            PersonState::RidingPod {
+                pod_id: _,
+                just_got_in,
+            } => {
+                if *just_got_in {
+                    self.metrics.increase_number_of_pods();
+                    self.state = self.state.remove_just_got_in();
+                }
+                self.metrics.increase_time_in_pods();
+            }
+            PersonState::JustArrived {
+                pod_id: _,
+                station_id: _,
+            } => {} // This case is handled in get out if needed, by necessity
+            PersonState::Transitioning {
+                station_id: _,
+                previous_pod_id: _,
+                time_in_station: _,
+            } => {
+                self.metrics.increase_time_in_station();
+            }
+            _ => {}
         }
         self.time_series
             .add_timestamp(time_passed, self.metrics.clone());
@@ -216,7 +256,9 @@ impl Person {
                 station_id: _,
             } => {
                 // TODO: meters increase dependent on connection
-                self.metrics.increase_meters_traveled(1000.);
+                if self.gather_metrics {
+                    self.metrics.increase_meters_traveled(1000.);
+                }
                 let pod_id_deref = *pod_id;
                 self.decide_on_arrival(pods_box, network, pod_id_deref, config);
                 let maybe_station_id = self.try_get_station_id();
@@ -273,7 +315,6 @@ impl Person {
                                 let got_in = pod.try_register_person(self.id);
                                 // println!("got_in: {}", got_in);
                                 if got_in {
-                                    self.metrics.increase_number_of_pods();
                                     // println!("Getting into pod with id: {} now", pod_id);
                                     self.state = self.state.to_riding(pod_id);
                                     let station =

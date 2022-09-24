@@ -14,6 +14,7 @@ pub enum PersonState {
     },
     RidingPod {
         pod_id: i32,
+        just_got_in: bool,
     },
     JustArrived {
         pod_id: i32,
@@ -39,13 +40,17 @@ impl Default for PersonState {
 impl PersonState {
     pub fn to_riding(&self, pod_id: i32) -> PersonState {
         match self {
-            PersonState::ReadyToTakePod { station_id: _ } => {
-                PersonState::RidingPod { pod_id: pod_id }
-            }
+            PersonState::ReadyToTakePod { station_id: _ } => PersonState::RidingPod {
+                pod_id: pod_id,
+                just_got_in: true,
+            },
             PersonState::JustArrived {
                 pod_id,
                 station_id: _,
-            } => PersonState::RidingPod { pod_id: *pod_id },
+            } => PersonState::RidingPod {
+                pod_id: *pod_id,
+                just_got_in: true,
+            },
             // _ => panic!("Person can only take a pod from ReadyToTakePod state.")
             _ => PersonState::InvalidState {
                 reason: String::from("Person can only take a pod from ReadyToTakePod state."),
@@ -55,7 +60,10 @@ impl PersonState {
 
     pub fn to_just_arrived(&self, station_id: i32) -> PersonState {
         match self {
-            PersonState::RidingPod { pod_id } => PersonState::JustArrived {
+            PersonState::RidingPod {
+                pod_id,
+                just_got_in: _,
+            } => PersonState::JustArrived {
                 pod_id: *pod_id,
                 station_id: station_id,
             },
@@ -94,7 +102,6 @@ impl PersonState {
             },
         }
     }
-
     pub fn wait_a_sec(&self) -> PersonState {
         match self {
             PersonState::Transitioning {
@@ -108,6 +115,27 @@ impl PersonState {
             },
             _ => PersonState::InvalidState {
                 reason: String::from("Person can only wait if in Transitioning state"),
+            },
+        }
+    }
+
+    pub fn remove_just_got_in(&self) -> PersonState {
+        match self {
+            PersonState::RidingPod {
+                pod_id,
+                just_got_in,
+            } => {
+                if *just_got_in {
+                    PersonState::RidingPod {
+                        pod_id: *pod_id,
+                        just_got_in: !just_got_in,
+                    }
+                } else {
+                    panic!("just_got_in has to be true for this function to be applied")
+                }
+            }
+            _ => PersonState::InvalidState {
+                reason: String::from("remove_just_got_in can only be applied to RidingPod State"),
             },
         }
     }

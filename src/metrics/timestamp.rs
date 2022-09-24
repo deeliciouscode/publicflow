@@ -14,7 +14,7 @@ impl<T: Metrics> Timestamp<T> {
         }
     }
 
-    pub fn dummy(ts: u32) -> Timestamp<T> {
+    pub fn _dummy(ts: u32) -> Timestamp<T> {
         Timestamp {
             ts: ts,
             metrics: T::default(),

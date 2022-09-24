@@ -57,6 +57,12 @@ impl PeopleBox {
         }
     }
 
+    pub fn start_gather_metrics(&mut self) {
+        for person in &mut self.people {
+            person.start_gather_metrics();
+        }
+    }
+
     // TODO: differentiate between follow and not
     pub fn apply_show_person(&mut self, id: i32, follow: bool) {
         for person in &mut self.people {

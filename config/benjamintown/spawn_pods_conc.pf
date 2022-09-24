@@ -18,12 +18,18 @@ conc
     spawn pods fill t12+-
 endconc
 
+
 # sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
 
-# sleep 7200 sim
+sleep 3600 sim
 
-# dump people --avg
-# dump pods --avg
-# dump config
+gather
 
-# kill
+sleep 7200 sim
+
+
+dump people --avg
+dump pods --avg
+dump config
+
+kill

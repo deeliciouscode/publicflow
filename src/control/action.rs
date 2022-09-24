@@ -72,6 +72,7 @@ pub enum Action {
     KillSimulation {
         code: i32,
     },
+    GatherMetrics,
     Sleep {
         duration: Duration,
     },

@@ -35,6 +35,12 @@ impl PodsBox {
         return None;
     }
 
+    pub fn start_gather_metrics(&mut self) {
+        for pod in &mut self.pods {
+            pod.start_gather_metrics();
+        }
+    }
+
     pub fn add_pod(
         &mut self,
         line_name: &LineName,

@@ -95,6 +95,9 @@ fn parse_input(input_list: &Vec<&str>, config: &Config, engine: &Engine) -> Acti
         "dump" | "d" => {
             actions.actions = parse_dump(&input_list);
         }
+        "gather" => {
+            actions.actions = vec![Action::GatherMetrics];
+        }
         "sleep" | "sl" => {
             actions.actions = parse_sleep(&input_list, config);
         }

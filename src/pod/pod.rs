@@ -14,6 +14,7 @@ use std::collections::HashSet;
 pub struct Pod {
     pub id: i32,
     pub needs_initialization: bool,
+    pub gather_metrics: bool,
     pub visualize: bool,
     pub metrics: PodMetrics,
     pub time_series: TimeSeries<PodMetrics>,
@@ -31,13 +32,15 @@ impl Pod {
         in_station_for: i32,
         capacity: i32,
         line_state: LineState,
-        time_passed: u32,
+        _time_passed: u32, // This could be used again, if gather command becomes optional
     ) -> Self {
         let station_id = line_state.get_station_id();
-        let time_series = TimeSeries::from(time_passed);
+        // let time_series = TimeSeries::from(time_passed);
+        let time_series = TimeSeries::new();
         Pod {
             id: id,
             needs_initialization: true,
+            gather_metrics: false,
             visualize: false,
             metrics: PodMetrics::new(),
             time_series: time_series,
@@ -57,16 +60,17 @@ impl Pod {
         if self.needs_initialization {
             self.initialize(network)
         }
+        if self.gather_metrics {
+            // println!("gather shit");
+            self.do_gather_metrics(time_passed)
+        }
         self.set_coordinates(network, config);
-        self.metrics
-            .set_utilization(self.people_in_pod.len() as f32 / self.capacity as f32);
         match &self.state {
             PodState::BetweenStations {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station,
             } => {
-                self.metrics.increase_time_driving();
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
                     self.state = self.state.drive_a_sec();
@@ -75,9 +79,6 @@ impl Pod {
                 }
             }
             PodState::JustArrived { station_id: _ } => {
-                // TODO: use actual distance in network
-                self.metrics.increase_meters_traveled(1000.);
-                self.metrics.increase_time_in_station();
                 // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
             }
@@ -85,7 +86,6 @@ impl Pod {
                 station_id: _,
                 time_in_station,
             } => {
-                self.metrics.increase_time_in_station();
                 // if self.id == 0 {
                 //     println!("Pod 0 in InStation state {}, {}", self.in_station_for, time_in_station);
                 // }
@@ -96,22 +96,47 @@ impl Pod {
                 }
             }
             PodState::InQueue { station_id } => {
-                self.metrics.increase_time_in_queue();
                 self.check_if_in_station(network, *station_id);
             }
             PodState::InvalidState { reason } => {
                 panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
             }
         }
+    }
+
+    pub fn start_gather_metrics(&mut self) {
+        self.gather_metrics = true;
+    }
+
+    pub fn do_gather_metrics(&mut self, time_passed: u32) {
+        self.metrics
+            .set_utilization(self.people_in_pod.len() as f32 / self.capacity as f32);
+        match &self.state {
+            PodState::BetweenStations {
+                station_id_from: _,
+                station_id_to: _,
+                time_to_next_station: _,
+            } => {
+                self.metrics.increase_time_driving();
+            }
+            PodState::JustArrived { station_id: _ } => {
+                // TODO: use actual distance in network
+                self.metrics.increase_meters_traveled(1000.);
+                self.metrics.increase_time_in_station();
+            }
+            PodState::InStation {
+                station_id: _,
+                time_in_station: _,
+            } => {
+                self.metrics.increase_time_in_station();
+            }
+            PodState::InQueue { station_id: _ } => {
+                self.metrics.increase_time_in_queue();
+            }
+            PodState::InvalidState { reason: _ } => {}
+        }
         self.time_series
             .add_timestamp(time_passed, self.metrics.clone());
-
-        // if self.id == 1 || self.id == 150 {
-        //     println!(
-        //         "Pod ID: {}, time_passed: {}, metrics: {:?}",
-        //         self.id, time_passed, self.metrics
-        //     );
-        // }
     }
 
     pub fn draw(&self, ctx: &mut Context, config: &Config) -> GameResult<()> {

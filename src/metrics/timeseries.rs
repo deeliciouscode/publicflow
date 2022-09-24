@@ -14,10 +14,10 @@ impl<T: Metrics + std::fmt::Debug> TimeSeries<T> {
         }
     }
 
-    pub fn from(time_passed: u32) -> TimeSeries<T> {
+    pub fn _from(time_passed: u32) -> TimeSeries<T> {
         let mut initial_vec = vec![];
         for i in 1..time_passed + 1 {
-            initial_vec.push(Timestamp::dummy(i));
+            initial_vec.push(Timestamp::_dummy(i));
         }
         // println!("time_passed: {} -> {:?}", time_passed, initial_vec);
         TimeSeries {

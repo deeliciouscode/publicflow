@@ -126,6 +126,10 @@ impl State {
                     station_id: _,
                     random_station: _,
                 } => self.people_box.apply_route_person(id, action),
+                Action::GatherMetrics => {
+                    self.people_box.start_gather_metrics();
+                    self.pods_box.start_gather_metrics();
+                }
                 Action::KillSimulation { code } => {
                     exit(code);
                 }

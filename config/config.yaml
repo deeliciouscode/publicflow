@@ -1,5 +1,5 @@
 general:
-  environment: route # used for data gathering subfolder
+  environment: gather # used for data gathering subfolder
   town: "benjamintown"
   mode: "visual" # "visual" | "headless" # this is not implemented since it would require a lot of extra work right now 
   override: true # if false everything has to be set in the config of the town
@@ -8,13 +8,13 @@ general:
 visual:
   vsync: true
 logic:
+  number_of_people: 5000
+  pod_capacity: 400
+  line_pods_per_hour: 3
+  station_pods_per_hour: 60 # TODO: use this as a hard limit for the stations
+  speed_multiplier: 50
+  transition_time: 60
+  pod_in_station_seconds: 40
+  shuffle_people: true
   use_earth_coordinates: false
   distance_factor: 1000
-  number_of_people: 1
-  pod_capacity: 50
-  line_pods_per_hour: 12
-  station_pods_per_hour: 40 # TODO: use this as a hard limit for the stations
-  speed_multiplier: 50
-  transition_time: 30
-  pod_in_station_seconds: 30
-  shuffle_people: true
