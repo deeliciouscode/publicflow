@@ -122,7 +122,7 @@ impl PodsBox {
     }
 
     pub fn get_highest_id(&self) -> i32 {
-        let mut highest_id = 0;
+        let mut highest_id = -1;
         for pod in &self.pods {
             highest_id = highest_id.max(pod.id);
         }
