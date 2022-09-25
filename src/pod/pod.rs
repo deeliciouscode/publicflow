@@ -51,6 +51,7 @@ impl Pod {
             line_state: line_state,
             state: PodState::InQueue {
                 station_id: station_id,
+                traveled_distance: 0,
             },
         }
     }
@@ -69,6 +70,7 @@ impl Pod {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station,
+                distance_between: _,
             } => {
                 // println!("Pod in BetweenStations State");
                 if *time_to_next_station > 0 {
@@ -77,7 +79,10 @@ impl Pod {
                     self.arrive_in_station(network);
                 }
             }
-            PodState::JustArrived { station_id: _ } => {
+            PodState::JustArrived {
+                station_id: _,
+                traveled_distance: _,
+            } => {
                 // println!("Pod in JustArrived State");
                 self.state = self.state.to_in_station();
             }
@@ -94,7 +99,10 @@ impl Pod {
                     self.depart_from_station(network);
                 }
             }
-            PodState::InQueue { station_id } => {
+            PodState::InQueue {
+                station_id,
+                traveled_distance: _,
+            } => {
                 self.check_if_in_station(network, *station_id);
             }
             PodState::InvalidState { reason } => {
@@ -115,12 +123,16 @@ impl Pod {
                 station_id_from: _,
                 station_id_to: _,
                 time_to_next_station: _,
+                distance_between: _,
             } => {
                 self.metrics.increase_time_driving();
             }
-            PodState::JustArrived { station_id: _ } => {
-                // TODO: use actual distance in network
-                self.metrics.increase_meters_traveled(1000.);
+            PodState::JustArrived {
+                station_id: _,
+                traveled_distance,
+            } => {
+                self.metrics
+                    .increase_meters_traveled(*traveled_distance as f32);
                 self.metrics.increase_time_in_station();
             }
             PodState::InStation {
@@ -129,7 +141,10 @@ impl Pod {
             } => {
                 self.metrics.increase_time_in_station();
             }
-            PodState::InQueue { station_id: _ } => {
+            PodState::InQueue {
+                station_id: _,
+                traveled_distance: _,
+            } => {
                 self.metrics.increase_time_in_queue();
             }
             PodState::InvalidState { reason: _ } => {}
@@ -288,9 +303,9 @@ impl Pod {
         let maybe_connection = self.line_state.try_get_connection(current, next);
         match maybe_connection {
             Some(connection) => {
-                if connection.station_ids == HashSet::from([641, 650]) {
-                    // println!("is blocked: {}", connection.is_blocked)
-                }
+                // if connection.station_ids == HashSet::from([641, 650]) {
+                //     println!("is blocked: {}", connection.is_blocked)
+                // }
                 if !connection.is_blocked {
                     let maybe_platform = net.try_get_platform(
                         current,
@@ -302,7 +317,11 @@ impl Pod {
                         Some(platform) => platform.deregister_pod(self.id),
                         None => panic!("There is no station with id: {}", current),
                     }
-                    self.state = self.state.to_between_stations(next, connection.travel_time);
+                    self.state = self.state.to_between_stations(
+                        next,
+                        connection.travel_time,
+                        connection.distance,
+                    );
                 }
             }
             None => panic!("There is no connection between: {} and {}", current, next),
@@ -330,7 +349,10 @@ impl Pod {
 
     pub fn is_in_just_arrived_state(&self) -> bool {
         match self.state {
-            PodState::JustArrived { station_id: _ } => true,
+            PodState::JustArrived {
+                station_id: _,
+                traveled_distance: _,
+            } => true,
             _ => false,
         }
     }
@@ -341,6 +363,7 @@ impl Pod {
                 station_id_from,
                 station_id_to,
                 time_to_next_station,
+                distance_between: _,
             } => {
                 let travel_time = self
                     .line_state
@@ -363,7 +386,10 @@ impl Pod {
                 let real_y = y;
                 self.coordinates = (real_x, real_y);
             }
-            PodState::InQueue { station_id } => {
+            PodState::InQueue {
+                station_id,
+                traveled_distance: _,
+            } => {
                 let station = network.try_get_station_by_id_unmut(station_id).unwrap();
                 self.coordinates = get_screen_coordinates(station.coordinates, config);
             }
@@ -374,7 +400,10 @@ impl Pod {
                 let station = network.try_get_station_by_id_unmut(station_id).unwrap();
                 self.coordinates = get_screen_coordinates(station.coordinates, config);
             }
-            PodState::JustArrived { station_id } => {
+            PodState::JustArrived {
+                station_id,
+                traveled_distance: _,
+            } => {
                 let station = network.try_get_station_by_id_unmut(station_id).unwrap();
                 self.coordinates = get_screen_coordinates(station.coordinates, config);
             }

@@ -5,6 +5,7 @@ use std::collections::HashSet;
 pub struct Connection {
     pub station_ids: HashSet<i32>,
     pub travel_time: i32,
+    pub distance: i32,
     pub line_name: LineName,
     pub is_blocked: bool,
 }

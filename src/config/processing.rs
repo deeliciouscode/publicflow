@@ -576,9 +576,11 @@ fn calc_connections(
     for i in 0..station_ids.len() {
         if i == station_ids.len() - 1 && circular {
             let travel_time = get_travel_time(line_name, distances, i);
+            let distance = distances[i];
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[0]]),
                 travel_time: travel_time,
+                distance: distance,
                 line_name: line_name.clone(),
                 is_blocked: false,
             });
@@ -587,9 +589,11 @@ fn calc_connections(
             break;
         } else {
             let travel_time = get_travel_time(line_name, distances, i);
+            let distance = distances[i];
             connections.push(Connection {
                 station_ids: HashSet::from([station_ids[i], station_ids[i + 1]]),
                 travel_time: travel_time,
+                distance: distance,
                 line_name: line_name.clone(),
                 is_blocked: false,
             });
