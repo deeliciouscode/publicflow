@@ -176,4 +176,18 @@ impl PodState {
             _ => panic!("Can only get id of station that the pod is driving towards if in BetweenStations state")
         }
     }
+
+    pub fn get_distance_travelled(&self) -> i32 {
+        match self {
+            PodState::InQueue {
+                station_id: _,
+                traveled_distance,
+            } => *traveled_distance,
+            PodState::JustArrived {
+                station_id: _,
+                traveled_distance,
+            } => *traveled_distance,
+            _ => panic!("Can only get distance travelled if in InQueue or JustArrived State."),
+        }
+    }
 }

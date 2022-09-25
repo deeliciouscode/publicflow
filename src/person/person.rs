@@ -98,7 +98,7 @@ impl Person {
             PersonState::JustArrived {
                 pod_id: _,
                 station_id: _,
-            } => {} // This case is handled in get out if needed
+            } => {} // This case is handled in ride_pod (when pod is in just arriced state)
             PersonState::Transitioning {
                 station_id: _,
                 previous_pod_id: _,
@@ -255,10 +255,6 @@ impl Person {
                 pod_id,
                 station_id: _,
             } => {
-                // TODO: meters increase dependent on connection
-                if self.gather_metrics {
-                    self.metrics.increase_meters_traveled(1000.);
-                }
                 let pod_id_deref = *pod_id;
                 self.decide_on_arrival(pods_box, network, pod_id_deref, config);
                 let maybe_station_id = self.try_get_station_id();
@@ -351,6 +347,11 @@ impl Person {
                     self.set_coordinates_of_pod(pod)
                 }
                 if pod.is_in_just_arrived_state() {
+                    // TODO: meters increase dependent on connection
+                    if self.gather_metrics {
+                        self.metrics
+                            .increase_meters_traveled(pod.state.get_distance_travelled() as f32);
+                    }
                     self.state = self.state.to_just_arrived(pod.get_station_id());
                 }
             }
