@@ -25,23 +25,33 @@ pub fn run_proxy(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
                 }
                 Action::Endloop => {
                     // let mut new_action_buffer = Actions::new();
-                    for _ in 0..loop_n {
-                        action_buffer.actions.extend(loop_buffer.actions.clone());
+                    if in_conc {
+                        for _ in 0..loop_n {
+                            conc_buffer.actions.extend(loop_buffer.actions.clone());
+                        }
+                    } else {
+                        for _ in 0..loop_n {
+                            action_buffer.actions.extend(loop_buffer.actions.clone());
+                        }
+                        // send_actions(tx.clone(), action_buffer.clone());
                     }
-                    send_actions(tx.clone(), action_buffer.clone());
-                    action_buffer = Actions::new();
+                    // println!("conc_buffer endloop: {:?}", &conc_buffer);
+                    // println!("loop_buffer endloop: {:?}", &loop_buffer);
+                    // println!("loop_n: {}", loop_n);
+                    // action_buffer = Actions::new();
                     loop_buffer = Actions::new();
                     in_loop = false;
                     loop_n = 1;
                 }
                 Action::StartConcurency => {
-                    send_actions(tx.clone(), action_buffer.clone());
+                    // send_actions(tx.clone(), action_buffer.clone());
                     action_buffer = Actions::new();
                     conc_buffer = Actions::new();
                     in_conc = true;
                 }
                 Action::DoConcurrently => {
                     if in_conc {
+                        println!("conc_buffer: {:?}", &conc_buffer);
                         send_actions_conc(tx.clone(), conc_buffer);
                         conc_buffer = Actions::new();
                     }
@@ -54,10 +64,10 @@ pub fn run_proxy(rx: mpsc::Receiver<Actions>, tx: mpsc::Sender<Actions>) {
                     }
                 }
                 action => {
-                    if in_conc {
-                        conc_buffer.actions.push(action);
-                    } else if in_loop {
+                    if in_loop {
                         loop_buffer.actions.push(action);
+                    } else if in_conc {
+                        conc_buffer.actions.push(action);
                     } else {
                         action_buffer.actions.push(action);
                     }

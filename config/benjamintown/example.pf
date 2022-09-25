@@ -1,0 +1,30 @@
+conc
+    loop 10
+        sleep 1 real
+        spawn pod 1 u1+
+    endloop
+    <&>
+    spawn pods fill u2
+    <&>
+    loop 7
+        sleep 200 sim
+        spawn pod 11 s1+
+    endloop
+endconc
+
+show person 1..10
+
+# sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
+
+sleep 3600 sim
+
+gather
+
+sleep 7200 sim
+
+
+dump people --avg
+dump pods --all --avg
+dump config
+
+kill

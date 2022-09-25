@@ -1,7 +1,4 @@
 conc
-    # TODO: mechanism to automatically schedule
-    # pods on the same line one after the other
-    # sleep 500 sim 
     spawn pods fill s1+-
     <&>
     spawn pods fill s2+-
@@ -27,8 +24,9 @@ gather
 
 sleep 7200 sim
 
+
 dump people --avg
-dump pods --all --avg
+dump pods --avg
 dump config
 
 kill

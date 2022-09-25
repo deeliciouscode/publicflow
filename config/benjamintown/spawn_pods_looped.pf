@@ -26,11 +26,14 @@ endloop
 
 
 
-# sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
-# sleep 3600 sim
+sleep $( 7200 + ( 8 * ( 3600 / $config.logic.pods_per_hour ))) sim
 
-# dump people --avg
-# dump pods --avg
-# dump config
+gather
 
-# kill
+sleep 3600 sim
+
+dump people --avg
+dump pods --avg
+dump config
+
+kill
