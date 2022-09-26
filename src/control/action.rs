@@ -31,7 +31,7 @@ pub enum Action {
         line_name: LineName,
         direction: Direction,
     },
-    MakePlatformQueuable {
+    MakePlatformQueueable {
         station_id: i32,
         line_name: LineName,
         direction: Direction,

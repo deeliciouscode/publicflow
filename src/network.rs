@@ -86,7 +86,7 @@ impl Network {
     ) {
         for station in &mut self.stations {
             if station.id == station_id {
-                station.make_queuable(&line_name, &direction);
+                station.make_queueable(&line_name, &direction);
             }
         }
     }

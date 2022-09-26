@@ -98,7 +98,7 @@ impl Person {
             PersonState::JustArrived {
                 pod_id: _,
                 station_id: _,
-            } => {} // This case is handled in ride_pod (when pod is in just arriced state)
+            } => {} // This case is handled in get_out_if_needed()
             PersonState::Transitioning {
                 station_id: _,
                 previous_pod_id: _,
@@ -264,9 +264,6 @@ impl Person {
                     }
                     None => {}
                 }
-            }
-            PersonState::InvalidState { reason } => {
-                panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
             }
             _ => {}
         }

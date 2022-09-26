@@ -39,10 +39,10 @@ pub fn parse_make(input_list: &Vec<&str>) -> Vec<Action> {
                             })
                         }
                     }
-                    "queuable" | "qu" => {
+                    "queueable" | "qu" => {
                         let (line, directions) = parse_str_to_line_and_directions(&arg.to_string());
                         for direction in directions {
-                            actions.push(Action::MakePlatformQueuable {
+                            actions.push(Action::MakePlatformQueueable {
                                 station_id: station_id,
                                 line_name: line.clone(),
                                 direction: direction,

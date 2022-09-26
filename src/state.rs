@@ -87,7 +87,7 @@ impl State {
                         .apply_make_platform_pass(station_id, line_name, direction);
                     recalculate_graph = true;
                 }
-                Action::MakePlatformQueuable {
+                Action::MakePlatformQueueable {
                     station_id,
                     line_name,
                     direction,

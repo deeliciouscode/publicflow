@@ -4,11 +4,9 @@ use crate::helper::functions::get_screen_coordinates;
 use crate::line::line::Line;
 use crate::pod::podsbox::PodsBox;
 use crate::station::platform::Platform;
-use crate::station::platformstate::PlatformState;
 use ggez::graphics::{Font, Text};
 use ggez::{graphics, Context, GameResult};
 use std::collections::HashSet;
-use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
 pub struct Station {
@@ -78,21 +76,7 @@ impl Station {
     pub fn make_operational(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) && &platform.direction == direction {
-                match &platform.state {
-                    PlatformState::Queuable { queue } => {
-                        platform.state = PlatformState::Operational {
-                            queue: queue.clone(),
-                        }
-                    }
-                    PlatformState::Passable => {
-                        platform.state = PlatformState::Operational {
-                            queue: VecDeque::from([]),
-                        }
-                    }
-                    PlatformState::Operational { queue: _ } => {
-                        println!("Is Operational already.")
-                    }
-                }
+                platform.state = platform.state.make_operational();
             }
         }
     }
@@ -100,29 +84,15 @@ impl Station {
     pub fn make_passable(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) && &platform.direction == direction {
-                platform.state = PlatformState::Passable
+                platform.state = platform.state.make_passable()
             }
         }
     }
 
-    pub fn make_queuable(&mut self, line: &LineName, direction: &Direction) {
+    pub fn make_queueable(&mut self, line: &LineName, direction: &Direction) {
         for platform in &mut self.platforms {
             if platform.lines_using_this.contains(line) && &platform.direction == direction {
-                match &platform.state {
-                    PlatformState::Operational { queue } => {
-                        platform.state = PlatformState::Queuable {
-                            queue: queue.clone(),
-                        }
-                    }
-                    PlatformState::Passable => {
-                        platform.state = PlatformState::Queuable {
-                            queue: VecDeque::from([]),
-                        }
-                    }
-                    PlatformState::Queuable { queue: _ } => {
-                        println!("Is Queuable already.")
-                    }
-                }
+                platform.state = platform.state.make_queueable()
             }
         }
     }

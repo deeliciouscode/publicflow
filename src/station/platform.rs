@@ -74,16 +74,16 @@ impl Platform {
         }
     }
 
-    pub fn _is_queuable(&self) -> bool {
+    pub fn _is_queueable(&self) -> bool {
         match self.state {
-            PlatformState::Queuable { queue: _ } => true,
+            PlatformState::Queueable { queue: _ } => true,
             _ => false,
         }
     }
 
     pub fn is_passable(&self) -> bool {
         match self.state {
-            PlatformState::Passable => true,
+            PlatformState::_Passable => true,
             _ => false,
         }
     }
@@ -104,7 +104,7 @@ impl Platform {
 
     pub fn _try_get_queue(&self) -> Option<&VecDeque<i32>> {
         match &self.state {
-            PlatformState::Queuable { queue } => {
+            PlatformState::Queueable { queue } => {
                 return Some(&queue);
             }
             PlatformState::Operational { queue } => {
@@ -116,10 +116,10 @@ impl Platform {
 
     pub fn register_pod(&mut self, pod_id: i32) -> bool {
         match &self.state {
-            PlatformState::Queuable { queue } => {
+            PlatformState::Queueable { queue } => {
                 let mut new_queue = queue.clone();
                 new_queue.push_back(pod_id);
-                self.state = PlatformState::Queuable { queue: new_queue };
+                self.state = PlatformState::Queueable { queue: new_queue };
                 return false;
             }
             PlatformState::Operational { queue } => {
