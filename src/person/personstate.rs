@@ -25,9 +25,6 @@ pub enum PersonState {
         previous_pod_id: i32,
         time_in_station: i32,
     },
-    InvalidState {
-        reason: String,
-    },
 }
 
 impl Default for PersonState {
@@ -52,9 +49,7 @@ impl PersonState {
                 just_got_in: true,
             },
             // _ => panic!("Person can only take a pod from ReadyToTakePod state.")
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only take a pod from ReadyToTakePod state."),
-            },
+            _ => panic!("Person can only take a pod from ReadyToTakePod state."),
         }
     }
 
@@ -67,9 +62,9 @@ impl PersonState {
                 pod_id: *pod_id,
                 station_id: station_id,
             },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only arrive if in RidingPod state."),
-            },
+            _ => {
+                panic!("Person can only arrive if in RidingPod state.")
+            }
         }
     }
 
@@ -80,9 +75,7 @@ impl PersonState {
                 station_id: *station_id,
                 time_in_station: 0,
             },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only transition if in JustArrived state."),
-            },
+            _ => panic!("Person can only transition if in JustArrived state."),
         }
     }
 
@@ -95,11 +88,7 @@ impl PersonState {
             } => PersonState::ReadyToTakePod {
                 station_id: *station_id,
             },
-            _ => PersonState::InvalidState {
-                reason: String::from(
-                    "Person can only get ready to take a pod if in Transitioning state.",
-                ),
-            },
+            _ => panic!("Person can only get ready to take a pod if in Transitioning state."),
         }
     }
     pub fn wait_a_sec(&self) -> PersonState {
@@ -113,9 +102,7 @@ impl PersonState {
                 station_id: *station_id,
                 time_in_station: time_in_station + 1,
             },
-            _ => PersonState::InvalidState {
-                reason: String::from("Person can only wait if in Transitioning state"),
-            },
+            _ => panic!("Person can only wait if in Transitioning state"),
         }
     }
 
@@ -134,9 +121,7 @@ impl PersonState {
                     panic!("just_got_in has to be true for this function to be applied")
                 }
             }
-            _ => PersonState::InvalidState {
-                reason: String::from("remove_just_got_in can only be applied to RidingPod State"),
-            },
+            _ => panic!("remove_just_got_in can only be applied to RidingPod State"),
         }
     }
 

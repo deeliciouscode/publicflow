@@ -105,9 +105,6 @@ impl Pod {
             } => {
                 self.check_if_in_station(network, *station_id);
             }
-            PodState::InvalidState { reason } => {
-                panic!("Pod {} is in invalid state. Reason: {}", self.id, reason)
-            }
         }
     }
 
@@ -147,7 +144,6 @@ impl Pod {
             } => {
                 self.metrics.increase_time_in_queue();
             }
-            PodState::InvalidState { reason: _ } => {}
         }
         self.time_series
             .add_timestamp(time_passed, self.metrics.clone());
@@ -407,7 +403,6 @@ impl Pod {
                 let station = network.try_get_station_by_id_unmut(station_id).unwrap();
                 self.coordinates = get_screen_coordinates(station.coordinates, config);
             }
-            _ => {}
         }
     }
 

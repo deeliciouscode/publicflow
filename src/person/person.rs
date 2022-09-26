@@ -112,9 +112,6 @@ impl Person {
                     self.state = self.state.to_ready();
                 }
             }
-            PersonState::InvalidState { reason } => {
-                panic!("Person {} is in invalid state. Reason: {}", self.id, reason);
-            }
         }
     }
 
@@ -148,7 +145,6 @@ impl Person {
             } => {
                 self.metrics.increase_time_in_station();
             }
-            _ => {}
         }
         self.time_series
             .add_timestamp(time_passed, self.metrics.clone());

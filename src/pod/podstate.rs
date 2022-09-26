@@ -28,9 +28,6 @@ pub enum PodState {
         station_id: i32,
         time_in_station: i32,
     },
-    InvalidState {
-        reason: String,
-    },
 }
 
 // State Transitions
@@ -51,9 +48,7 @@ impl PodState {
                 time_to_next_station: time_to_next_station,
                 distance_between: distance,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only appart from InStation state."),
-            },
+            _ => panic!("Pod can only appart from InStation state."),
         }
     }
 
@@ -68,9 +63,7 @@ impl PodState {
                 station_id: *station_id_to,
                 traveled_distance: *distance_between,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only go in queue if in BetweenStations state."),
-            },
+            _ => panic!("Pod can only go in queue if in BetweenStations state."),
         }
     }
 
@@ -92,9 +85,7 @@ impl PodState {
                 station_id: *station_id,
                 traveled_distance: *traveled_distance,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only arrive if in BetweenStations state."),
-            },
+            _ => panic!("Pod can only arrive if in BetweenStations state."),
         }
     }
 
@@ -107,9 +98,7 @@ impl PodState {
                 station_id: *station_id,
                 time_in_station: 0,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only get to InStation if in JustArrived state."),
-            },
+            _ => panic!("Pod can only get to InStation if in JustArrived state."),
         }
     }
 
@@ -122,9 +111,7 @@ impl PodState {
                 station_id: *station_id,
                 time_in_station: time_in_station + 1,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only wait if in InStation state"),
-            },
+            _ => panic!("Pod can only wait if in InStation state"),
         }
     }
 
@@ -141,9 +128,7 @@ impl PodState {
                 time_to_next_station: time_to_next_station - 1,
                 distance_between: *distance_between,
             },
-            _ => PodState::InvalidState {
-                reason: String::from("Pod can only drive if in BetweenStations state"),
-            },
+            _ => panic!("Pod can only drive if in BetweenStations state"),
         }
     }
 
