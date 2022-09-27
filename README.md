@@ -1,18 +1,26 @@
 # publicflow
-Here is where the Code for my BA will live
+The Repo for my Thesis: Modellierung von Personentransport in
+vernetzten Systemen
 
-## Usefull Commands
-- cargo doc --open : opens documentation of depedencies in browser
+# Versions
+- rustup 1.25.1
+- rustc 1.62.1
 
-## Literatur
-- Artificial Intelligence: A modern approach: A* (http://aima.cs.berkeley.edu)
-- Graphtheorie
+# How to
+## Simulation
+- Install rustup
+- Use rustup to install the rust version mentioned above 
+- read the Thesis to see how the config and the cli work (Description here in README will follow)
+- cargo run
 
-## Gerneral
-ggez: for drawing use sprite batch (especially for people)
+## Analyis
+- Install pyenv
+- install python 3.10.7
+- create a virtual environment in python version 3.10.7 using pyenv
+- navigate to the analysis folder
+- pip install -r requirements.txt
+- run any of the notebooks
 
-## TODO:
+# Notes
+It may be necessary to install additional drivers, 'cargo run' will tell you when something is missing.
 
-- make routing more robust
-- do not implement platform state 'passsable' for now since it would add a lot of complexities
-- 
