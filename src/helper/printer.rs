@@ -17,7 +17,11 @@ pub fn print_get_station(network: &Network, id: i32) {
                 "Pods in Station: {:?}",
                 station.get_pods_in_station_as_vec()
             );
-            println!("People in Station: {}", station.people_in_station.len());
+            println!(
+                "No. of People in Station: {}",
+                station.people_in_station.len()
+            );
+            println!("People in Station: {:?}", station.people_in_station);
             println!("Coordinates: {:?}", station.coordinates);
             println!("----------------------");
         }

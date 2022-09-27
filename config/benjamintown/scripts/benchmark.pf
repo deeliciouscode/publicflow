@@ -1,7 +1,6 @@
 conc
     # TODO: mechanism to automatically schedule
-    # pods on the same line one after the other
-    # sleep 500 sim 
+    # pods on the same line one after the other 
     spawn pods fill s1+-
     <&>
     spawn pods fill s2+-
@@ -21,11 +20,11 @@ conc
     spawn pods fill t12+-
 endconc
 
-sleep 3600 sim
+sleep $(60 * 60) sim # wait 1 hour before gathering metrics
 
 gather
 
-sleep 7200 sim
+sleep $(60 * 60 * 5) sim # 5 hours of data
 
 
 dump people --avg
