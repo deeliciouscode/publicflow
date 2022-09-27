@@ -9,8 +9,8 @@ visual:
   vsync: true
 logic:
   number_of_people: 5000
-  pod_capacity: 78
-  line_pods_per_hour: 23
+  pod_capacity: 82
+  line_pods_per_hour: 22
   station_pods_per_hour: 60 # TODO: use this as a hard limit for the stations
   speed_multiplier: 50
   transition_time: 60

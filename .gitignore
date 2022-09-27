@@ -24,7 +24,6 @@ Cargo.lock
 /.vscode/
 /.meta/
 /.meta/*
-/metrics/
-/metrics/*
 
-overleaf.md
+/metrics/*
+!metrics/gather/
